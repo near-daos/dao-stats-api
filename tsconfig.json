@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "esModuleInterop": true,
+    "lib": [
+      "es2019"
+    ],
+    "paths": {
+      "@dao-stats/config": [
+        "libs/config/src"
+      ],
+      "@dao-stats/config/*": [
+        "libs/config/src/*"
+      ],
+      "@dao-stats/common": [
+        "libs/common/src"
+      ],
+      "@dao-stats/common/*": [
+        "libs/common/src/*"
+      ],
+      "@dao-stats/cache": [
+        "libs/cache/src"
+      ],
+      "@dao-stats/cache/*": [
+        "libs/cache/src/*"
+      ],
+      "@dao-stats/migrations": [
+        "libs/migrations/src"
+      ],
+      "@dao-stats/migrations/*": [
+        "libs/migrations/src/*"
+      ]
+    }
+  }
+}
