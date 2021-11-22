@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
-import { RedisService } from 'libs/redis/redis.service';
+import { RedisService } from 'libs/redis/src/redis.service';
 
 @Injectable()
 export class AggregatorService {

@@ -2,7 +2,7 @@ import { CacheModule, Module } from '@nestjs/common';
 import { CacheConfigService } from '@dao-stats/config/api-config';
 
 import { CacheService } from './cache.service';
-import { RedisModule } from 'libs/redis/redis.module';
+import { RedisModule } from 'libs/redis/src/redis.module';
 
 @Module({
   imports: [

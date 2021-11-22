@@ -10,7 +10,7 @@ import { CacheConfigService } from '@dao-stats/config/api-config';
 import { HttpCacheModule } from '@dao-stats/cache';
 
 import { AppController } from './api.controller';
-import { RedisModule } from 'libs/redis/redis.module';
+import { RedisModule } from 'libs/redis/src/redis.module';
 
 @Module({
   imports: [

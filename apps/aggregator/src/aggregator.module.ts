@@ -10,7 +10,7 @@ import configuration, {
 
 import { AggregatorService } from './aggregator.service';
 import { AggregatorValidationSchema } from '@dao-stats/config/validation';
-import { RedisModule } from 'libs/redis/redis.module';
+import { RedisModule } from 'libs/redis/src/redis.module';
 
 @Module({
   imports: [
