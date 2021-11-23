@@ -1,3 +1,5 @@
+import { AggregationOutput } from './aggregation-output.interface';
+
 export declare class Aggregator {
-  aggregate(): Promise<void>;
+  aggregate(): Promise<AggregationOutput>;
 }
