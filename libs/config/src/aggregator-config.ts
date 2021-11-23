@@ -10,6 +10,7 @@ export { CacheConfigService } from './cache';
 const aggregator = registerAs('aggregator', () => {
   return {
     pollingInterval: parseInt(process.env.AGGREGATOR_POLLING_INTERVAL, 10),
+    smartContracts: process.env.SMART_CONTRACTS.split(','),
   };
 });
 

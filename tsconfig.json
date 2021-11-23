@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -39,6 +40,18 @@
       ],
       "@dao-stats/migrations/*": [
         "libs/migrations/src/*"
+      ],
+      "@dao-stats/astro": [
+        "libs/astro/src"
+      ],
+      "@dao-stats/astro/*": [
+        "libs/astro/src/*"
+      ],
+      "@dao-stats/sputnik-dao": [
+        "libs/sputnik-dao/src"
+      ],
+      "@dao-stats/sputnik-dao/*": [
+        "libs/sputnik-dao/src/*"
       ]
     }
   }

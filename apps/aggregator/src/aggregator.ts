@@ -19,9 +19,9 @@ export default class Aggregator {
       new ClassSerializerInterceptor(app.get(Reflector)),
     );
 
-    await app.listen(() =>
-      this.logger.log('Aggregator Microservice is listening...'),
-    );
+    await app.listen();
+
+    this.logger.log('Aggregator Microservice is listening...');
 
     // Run initial aggregation
     app.get(AggregatorService).scheduleAggregation();

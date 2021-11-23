@@ -1,0 +1,12 @@
+indexer:
+  db:
+    host: '104.199.89.51'
+    port: '5432'
+    database: 'mainnet_explorer'
+    username: 'public_readonly'
+    password: 'nearprotocol'
+
+near:
+  env: testnet
+  credentials: '.near-credentials'
+  contractName: 'sputnik-v1.testnet'
