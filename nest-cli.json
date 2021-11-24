@@ -68,6 +68,26 @@
       "compilerOptions": {
         "tsConfigPath": "libs/migrations/tsconfig.lib.json"
       }
+    },
+    "astro": {
+      "type": "library",
+      "root": "libs/astro",
+      "entryFile": "index",
+      "sourceRoot": "libs/astro/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/astro/tsconfig.lib.json",
+        "assets": [ {"include": "**/*.yml", "outDir": "./dist"}]
+      }
+    },
+    "sputnik-dao": {
+      "type": "library",
+      "root": "libs/sputnik-dao",
+      "entryFile": "index",
+      "sourceRoot": "libs/sputnik-dao/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/sputnik-dao/tsconfig.lib.json",
+        "assets": [ {"include": "**/*.yml", "outDir": "./dist"}]
+      }
     }
   }
 }

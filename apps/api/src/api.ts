@@ -49,9 +49,9 @@ export default class Api {
       new ClassSerializerInterceptor(app.get(Reflector)),
     );
 
-    const configService = app.get(ConfigService);
+    const configService: ConfigService = app.get(ConfigService);
 
-    const { port } = configService.get('api');
+    const port = configService.get<number>('api.port');
 
     await app.listen(port, () =>
       this.logger.log('API Service is listening...'),
