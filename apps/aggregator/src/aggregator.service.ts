@@ -1,8 +1,11 @@
+import { Transaction } from '@dao-stats/common/entities/transaction.entity';
 import { Aggregator } from '@dao-stats/common/interfaces';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import PromisePool from '@supercharge/promise-pool';
+import { TransactionService } from 'libs/transaction/src';
 
 @Injectable()
 export class AggregatorService {
@@ -12,6 +15,7 @@ export class AggregatorService {
     private readonly configService: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
+    private readonly transactionService: TransactionService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -37,7 +41,37 @@ export class AggregatorService {
         AggregationService,
       ) as Aggregator;
 
-      await aggregationService.aggregate();
+      const lastTx: Transaction = await this.transactionService.lastTransaction(
+        contract,
+      );
+
+      const today = new Date();
+      const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
+
+      let from = lastTx?.blockTimestamp || yearAgo.getTime() * 1000 * 1000; //nanos
+      const to = new Date().getTime() * 1000 * 1000;
+
+      const { transactions } = await aggregationService.aggregate(from, to);
+
+      this.logger.log(
+        `Persisting aggregated Transactions: ${transactions.length}`,
+      );
+      const { results, errors } = await PromisePool.withConcurrency(500)
+        .for(transactions)
+        .process(
+          async (tx) =>
+            await this.transactionService.create([
+              {
+                ...tx,
+                contractId: contract,
+              },
+            ]),
+        );
+      this.logger.log(`Succesfully stored aggregated Transactions`);
+
+      if (errors && errors.length) {
+        errors.map((error) => this.logger.error(error));
+      }
     }
   }
 }

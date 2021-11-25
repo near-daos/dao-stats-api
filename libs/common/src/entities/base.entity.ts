@@ -6,13 +6,13 @@ export abstract class BaseEntity {
   @ApiHideProperty()
   @Exclude()
   @Column({ type: 'boolean', default: false })
-  isArchived: boolean;
+  isArchived?: boolean;
 
   @CreateDateColumn({
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiHideProperty()
   @Exclude()
@@ -20,5 +20,5 @@ export abstract class BaseEntity {
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  updatedAt: Date;
+  updatedAt?: Date;
 }

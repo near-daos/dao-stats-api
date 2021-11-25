@@ -23,6 +23,7 @@ export default class Aggregator {
 
     this.logger.log('Aggregator Microservice is listening...');
 
+    //TODO: handle the very 1st aggregation
     // Run initial aggregation
     app.get(AggregatorService).scheduleAggregation();
   }
