@@ -48,7 +48,7 @@ export class AggregatorService {
       const today = new Date();
       const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
 
-      let from = lastTx?.blockTimestamp || yearAgo.getTime() * 1000 * 1000; //nanos
+      const from = lastTx?.blockTimestamp || yearAgo.getTime() * 1000 * 1000; //nanos
       const to = new Date().getTime() * 1000 * 1000;
 
       const { transactions } = await aggregationService.aggregate(from, to);
@@ -67,7 +67,7 @@ export class AggregatorService {
               },
             ]),
         );
-      this.logger.log(`Succesfully stored aggregated Transactions`);
+      this.logger.log(`Successfully stored aggregated Transactions`);
 
       if (errors && errors.length) {
         errors.map((error) => this.logger.error(error));

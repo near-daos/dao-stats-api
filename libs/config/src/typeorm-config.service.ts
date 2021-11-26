@@ -33,7 +33,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations,
       cli,
       namingStrategy,
-      autoLoadEntities: true
+      autoLoadEntities: true,
     };
   }
 }

@@ -7,9 +7,9 @@ export abstract class Contract extends BaseEntity {
   @PrimaryColumn()
   contractId: string;
 
-  @Column()
+  @Column({ nullable: true })
   contractName: string;
-  
+
   @Column({ nullable: true })
   description: string;
 }

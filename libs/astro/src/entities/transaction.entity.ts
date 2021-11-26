@@ -10,7 +10,7 @@ export class Transaction {
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
     cascade: true,
     createForeignKeyConstraints: false,
-    nullable: true
+    nullable: true,
   })
   receipts: Receipt[];
 
