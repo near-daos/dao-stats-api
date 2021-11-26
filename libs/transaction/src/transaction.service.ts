@@ -20,4 +20,29 @@ export class TransactionService {
       order: { blockTimestamp: 'DESC' },
     });
   }
+
+  findTransactions(
+    contractId: string,
+    from?: number,
+    to?: number,
+  ): Promise<Transaction[]> {
+    let queryBuilder = this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.contractId = :contractId', { contractId })
+      .orderBy('transaction.block_timestamp', 'ASC');
+
+    queryBuilder = from
+      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
+          from,
+        })
+      : queryBuilder;
+
+    queryBuilder = to
+      ? queryBuilder.andWhere('transaction.block_timestamp < :to', {
+          to,
+        })
+      : queryBuilder;
+
+    return queryBuilder.getMany();
+  }
 }

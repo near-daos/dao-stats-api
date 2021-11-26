@@ -19,7 +19,7 @@ export default class Api {
       logger,
     });
     app.enableCors();
-    app.setGlobalPrefix('/api/v1');
+    app.setGlobalPrefix('/api/v1/:contract');
 
     if (process.env.NODE_ENV === 'development') {
       (app as any).httpAdapter.instance.set('json spaces', 2);

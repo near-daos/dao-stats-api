@@ -1,12 +1,16 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { BaseEntity } from '..';
+import { HasContract } from '../interfaces/has-contract.interface';
 
-import { ContractEntity } from './contract.entity';
 import { Receipt } from './receipt.entity';
 
 @Entity({ name: 'transactions' })
-export class Transaction extends ContractEntity {
+export class Transaction extends BaseEntity implements HasContract {
   @PrimaryColumn()
   transactionHash: string;
+
+  @Column()
+  contractId: string;
 
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
     cascade: true,
