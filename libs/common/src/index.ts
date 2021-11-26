@@ -1,2 +1,2 @@
 export * from './constants';
-export * from './base.entity';
+export * from './entities/base.entity';

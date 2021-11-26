@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "commonjs",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -52,6 +51,12 @@
       ],
       "@dao-stats/sputnik-dao/*": [
         "libs/sputnik-dao/src/*"
+      ],
+      "@dao-stats/transactions": [
+        "libs/transactions/src"
+      ],
+      "@dao-stats/transactions/*": [
+        "libs/transactions/src/*"
       ]
     }
   }

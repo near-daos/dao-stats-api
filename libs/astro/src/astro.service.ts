@@ -1,14 +1,65 @@
-import { Aggregator } from '@dao-stats/common/interfaces';
+import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Decimal from 'decimal.js';
+import PromisePool from '@supercharge/promise-pool';
+import { NearIndexerService } from './near-indexer.service';
 
 @Injectable()
 export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly nearIndexerService: NearIndexerService,
+  ) {}
 
-  public async aggregate(): Promise<void> {
+  public async aggregate(
+    fromTimestamp?: number,
+    toTimestamp?: number,
+  ): Promise<AggregationOutput> {
     this.logger.log('Aggregating Astro DAO...');
+
+    const { contractName } = this.configService.get('near');
+
+    const chunkSize = 5 * 24 * 60 * 60 * 1000 * 1000 * 1000; // 5 days
+    const chunks = [];
+    let from = fromTimestamp; //TODO: validation
+    while (true) {
+      const to = Math.min(Decimal.sum(from, chunkSize).toNumber(), toTimestamp);
+      chunks.push({ from, to });
+
+      if (to >= toTimestamp) {
+        break;
+      }
+
+      from = to;
+    }
+
+    this.logger.log(`Querying for Near Indexer Transactions...`);
+    const { results: transactions, errors: txErrors } =
+      await PromisePool.withConcurrency(2)
+        .for(chunks)
+        .process(async ({ from, to }) => {
+          return await this.nearIndexerService.findTransactionsByAccountIds(
+            contractName,
+            from,
+            to,
+          );
+        });
+
+    this.logger.log(
+      `Received Total Transactions: ${
+        transactions.flat().length
+      }. Errors count: ${txErrors.length}`,
+    );
+
+    if (txErrors && txErrors.length) {
+      txErrors.map((error) => this.logger.error(error));
+    }
+
+    return {
+      transactions: transactions.flat(),
+    };
   }
 }

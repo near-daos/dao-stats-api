@@ -8,7 +8,6 @@ export default registerAs('db_default', () => ({
   database: process.env.DATABASE_NAME,
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
-  entities: [],
   synchronize: true,
   migrationsTableName: 'migration_table',
   migrations: ['migration/*.js'],

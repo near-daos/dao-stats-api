@@ -13,7 +13,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username,
       password,
       database,
-      entities,
       synchronize,
       migrationsTableName,
       migrations,
@@ -29,12 +28,12 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username,
       password,
       database,
-      entities,
       synchronize,
       migrationsTableName,
       migrations,
       cli,
       namingStrategy,
+      autoLoadEntities: true
     };
   }
 }

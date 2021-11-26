@@ -11,6 +11,14 @@ import { HttpCacheModule } from '@dao-stats/cache';
 
 import { AppController } from './api.controller';
 import { RedisModule } from 'libs/redis/src/redis.module';
+import { GeneralModule } from './general/general.module';
+import { TenantInterceptor } from './interceptors/tenant.interceptor';
+import {
+  Contract,
+  Receipt,
+  ReceiptAction,
+  Transaction,
+} from '@dao-stats/common/entities';
 
 @Module({
   imports: [
@@ -26,9 +34,12 @@ import { RedisModule } from 'libs/redis/src/redis.module';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
+    TypeOrmModule.forFeature([Contract, Receipt, ReceiptAction, Transaction]),
     HttpCacheModule,
     RedisModule,
+    GeneralModule,
   ],
   controllers: [AppController],
+  providers: [TenantInterceptor],
 })
 export class AppModule {}
