@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
 } from '@dao-stats/config/aggregator-config';
+import { Contract } from '@dao-stats/common/entities';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import configuration, {
       load: configuration,
       envFilePath: ['.env.local', '.env'],
     }),
+    TypeOrmModule.forFeature([Contract]),
   ],
   providers: [...migrationScripts],
 })
