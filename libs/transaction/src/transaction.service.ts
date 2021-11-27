@@ -1,13 +1,16 @@
 import { Transaction } from '@dao-stats/common/entities/transaction.entity';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
+import { Connection, Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
+
+    @InjectConnection()
+    private connection: Connection,
   ) {}
 
   create(transactions: Transaction[]): Promise<Transaction[]> {
@@ -19,6 +22,16 @@ export class TransactionService {
       where: { contractId },
       order: { blockTimestamp: 'DESC' },
     });
+  }
+
+  async getContractTotalCount(contractId: string): Promise<number> {
+    const query = `
+        select count(distinct receiver_account_id) from transactions where contract_id = $1
+    `;
+
+    const qr = await this.connection.query(query, [contractId]);
+
+    return qr?.[0]?.count;
   }
 
   findTransactions(

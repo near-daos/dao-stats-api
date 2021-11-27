@@ -1,4 +1,4 @@
-import { MetricRequest } from '@dao-stats/common/dto/metric-request.dto';
+import { TenantContext } from '@dao-stats/common/dto/tenant-context.dto';
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -28,7 +28,7 @@ export class GeneralController {
     type: String,
   })
   @Get('/')
-  async total(@Param() request: MetricRequest): Promise<GeneralTotalResponse> {
+  async total(@Param() request: TenantContext): Promise<GeneralTotalResponse> {
     return this.generalService.totals(request);
   }
 }
