@@ -1,4 +1,5 @@
 import { Transaction } from '@dao-stats/common/entities/transaction.entity';
+import { TransactionType } from '@dao-stats/common/types/transaction-type';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
@@ -24,14 +25,31 @@ export class TransactionService {
     });
   }
 
-  async getContractTotalCount(contractId: string): Promise<number> {
-    const query = `
-        select count(distinct receiver_account_id) from transactions where contract_id = $1
-    `;
+  async getContractTotalCount(
+    contractId: string,
+    from?: number,
+    to?: number,
+  ): Promise<number> {
+    let queryBuilder = this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.contractId = :contractId', { contractId })
+      .andWhere('transaction.type = :type', {
+        type: TransactionType.CreateDao,
+      });
 
-    const qr = await this.connection.query(query, [contractId]);
+    queryBuilder = from
+      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
+          from,
+        })
+      : queryBuilder;
 
-    return qr?.[0]?.count;
+    queryBuilder = to
+      ? queryBuilder.andWhere('transaction.block_timestamp < :to', {
+          to,
+        })
+      : queryBuilder;
+
+    return queryBuilder.getCount();
   }
 
   findTransactions(

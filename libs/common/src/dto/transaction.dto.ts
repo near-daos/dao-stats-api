@@ -1,3 +1,4 @@
+import { TransactionType } from '../types/transaction-type';
 import { ReceiptDto } from './receipt.dto';
 
 export class TransactionDto {
@@ -10,4 +11,5 @@ export class TransactionDto {
   receiptConversionGasBurnt: string;
   receiptConversionTokensBurnt: string;
   blockTimestamp: number;
+  type: TransactionType;
 }

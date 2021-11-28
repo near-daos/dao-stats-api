@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
 import { NearIndexerService } from './near-indexer.service';
+import { findAllByKey } from './utils';
+import { TransactionType } from '@dao-stats/common/types/transaction-type';
+import { Transaction } from './entities';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -59,7 +62,25 @@ export class AggregationService implements Aggregator {
     }
 
     return {
-      transactions: transactions.flat(),
+      transactions: transactions.flat().map((tx) => (
+        {
+          ...tx,
+          type: this.getTransactionType(tx),
+        }
+      )),
     };
+  }
+
+  // TODO: a raw casting - revisit this
+  private getTransactionType(tx: Transaction): TransactionType {
+    const methods = findAllByKey(tx, 'method_name');
+
+    return methods.includes('create')
+      ? TransactionType.CreateDao
+      : methods.includes('add_proposal')
+      ? TransactionType.AddProposal
+      : methods.includes('act_proposal')
+      ? TransactionType.ActProposal
+      : null;
   }
 }

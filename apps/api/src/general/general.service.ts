@@ -24,10 +24,23 @@ export class GeneralService {
       contract,
     );
 
+    const today = new Date();
+    const weekAgo = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - 7,
+    );
+    const weekAgoDaoCount = await this.transactionService.getContractTotalCount(
+      contract,
+      weekAgo.getTime() * 1000 * 1000,
+    );
+
     return {
       dao: {
         count: daoCount,
-        growth: 0,
+        growth: Math.ceil(
+          (weekAgoDaoCount / (daoCount - weekAgoDaoCount)) * 100,
+        ),
       },
     };
   }
