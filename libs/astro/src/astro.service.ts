@@ -1,12 +1,12 @@
+import { Near } from 'near-api-js';
+import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { NEAR_PROVIDER, NEAR_RPC_PROVIDER } from '@dao-stats/common';
 import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
-import { NearIndexerService } from './near-indexer.service';
-import { Near } from 'near-api-js';
-import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { findAllByKey, millisToNanos } from './utils';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
 import { Transaction } from './entities';

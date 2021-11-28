@@ -40,6 +40,12 @@
       "@dao-stats/migrations/*": [
         "libs/migrations/src/*"
       ],
+      "@dao-stats/near-indexer": [
+        "libs/near-indexer/src"
+      ],
+      "@dao-stats/near-indexer/*": [
+        "libs/near-indexer/src/*"
+      ],
       "@dao-stats/astro": [
         "libs/astro/src"
       ],
