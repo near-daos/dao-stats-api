@@ -1,9 +1,12 @@
+import { NEAR_PROVIDER, NEAR_RPC_PROVIDER } from '@dao-stats/common';
 import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
 import { NearIndexerService } from './near-indexer.service';
+import { Near } from 'near-api-js';
+import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { findAllByKey, millisToNanos } from './utils';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
 import { Transaction } from './entities';
@@ -15,6 +18,10 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
+    @Inject(NEAR_PROVIDER)
+    private readonly near: Near,
+    @Inject(NEAR_RPC_PROVIDER)
+    private readonly nearRPC: JsonRpcProvider,
   ) {}
 
   public async aggregate(
