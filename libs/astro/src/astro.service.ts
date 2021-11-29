@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
 import { NearIndexerService } from './near-indexer.service';
-import { findAllByKey } from './utils';
+import { findAllByKey, millisToNanos } from './utils';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
 import { Transaction } from './entities';
 
@@ -25,7 +25,7 @@ export class AggregationService implements Aggregator {
 
     const { contractName } = this.configService.get('near');
 
-    const chunkSize = 5 * 24 * 60 * 60 * 1000 * 1000 * 1000; // 5 days
+    const chunkSize = millisToNanos(5 * 24 * 60 * 60 * 1000); // 5 days
     const chunks = [];
     let from = fromTimestamp; //TODO: validation
     while (true) {

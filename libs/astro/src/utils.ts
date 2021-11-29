@@ -17,3 +17,15 @@ export const findAllByKey = (obj: Object, keyToFind: string) => {
     [],
   );
 };
+
+export const millisToNanos = (millis: number): number => {
+  return millis * 1000 * 1000;
+};
+
+export const nanosToMillis = (nanos: number): number => {
+  return nanos / 1000 / 1000;
+};
+
+export const daysFromDate = (date: Date, days?: number): Date => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + (days || 0));
+};
