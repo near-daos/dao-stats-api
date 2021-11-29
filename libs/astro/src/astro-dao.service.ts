@@ -14,7 +14,7 @@ export class AstroDAOService implements DAO {
   ) {}
 
   async getFactoryContract(): Promise<Contract> {
-    const { contractName } = this.config.get('near');
+    const { contractName } = this.config.get('dao');
     const account = await this.near.account(contractName);
 
     return new Contract(account, contractName, {
@@ -24,7 +24,7 @@ export class AstroDAOService implements DAO {
   }
 
   async getTokenFactoryContract(): Promise<Contract> {
-    const { tokenFactoryContractName } = this.config.get('near');
+    const { tokenFactoryContractName } = this.config.get('dao');
     const account = await this.near.account(tokenFactoryContractName);
 
     return new Contract(account, tokenFactoryContractName, {

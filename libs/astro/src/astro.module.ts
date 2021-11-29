@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { nearProvider, nearRPCProvider } from '@dao-stats/config/near';
+import { NearConfigService } from '@dao-stats/config/near-config.service';
 import {
   NearIndexerDBProvider,
   NearIndexerService,
@@ -15,6 +16,7 @@ import configuration from './config/configuration';
     }),
   ],
   providers: [
+    NearConfigService,
     AggregationService,
     NearIndexerService,
     NearIndexerDBProvider,

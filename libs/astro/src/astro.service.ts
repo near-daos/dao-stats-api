@@ -30,7 +30,7 @@ export class AggregationService implements Aggregator {
   ): Promise<AggregationOutput> {
     this.logger.log('Aggregating Astro DAO...');
 
-    const { contractName } = this.configService.get('near');
+    const { contractName } = this.configService.get('dao');
 
     const chunkSize = millisToNanos(5 * 24 * 60 * 60 * 1000); // 5 days
     const chunks = [];
