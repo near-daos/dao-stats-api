@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from 'libs/transaction/src';
 import { Repository } from 'typeorm';
 import { GeneralDaoResponse } from './dto/general-dao.dto';
+import { GeneralLeaderboardResponse } from './dto/general-leaderboard.dto';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 
 @Injectable()
@@ -74,5 +75,23 @@ export class GeneralService {
     const { from, to } = metricQuery;
 
     return this.transactionService.getDaoCountHistory(contract, from, to);
+  }
+
+  async activity(
+    tenantContext: TenantContext,
+    metricQuery: MetricQuery,
+  ): Promise<GeneralDaoResponse> {
+    const { contract } = tenantContext;
+    const { from, to } = metricQuery;
+
+    return this.transactionService.getDaoActivityHistory(contract, from, to);
+  }
+
+  async activityLeaderboard(
+    tenantContext: TenantContext,
+  ): Promise<GeneralLeaderboardResponse> {
+    const { contract } = tenantContext;
+
+    return this.transactionService.getDaoActivityLeaderboard(contract);
   }
 }

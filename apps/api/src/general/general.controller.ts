@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { TenantInterceptor } from '../interceptors/tenant.interceptor';
 import { GeneralDaoResponse } from './dto/general-dao.dto';
+import { GeneralLeaderboardResponse } from './dto/general-leaderboard.dto';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { GeneralService } from './general.service';
 
@@ -52,5 +53,44 @@ export class GeneralController {
     @Query() metricQuery: MetricQuery,
   ): Promise<GeneralDaoResponse> {
     return this.generalService.daos(request, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: GeneralDaoResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(TenantInterceptor)
+  @ApiParam({
+    name: 'contract',
+    type: String,
+  })
+  @Get('/activity')
+  async activity(
+    @Param() request: TenantContext,
+    @Query() metricQuery: MetricQuery,
+  ): Promise<GeneralDaoResponse> {
+    return this.generalService.activity(request, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: GeneralDaoResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(TenantInterceptor)
+  @ApiParam({
+    name: 'contract',
+    type: String,
+  })
+  @Get('/activity/leaderboard')
+  async activityLeaderboard(
+    @Param() request: TenantContext,
+  ): Promise<GeneralLeaderboardResponse> {
+    return this.generalService.activityLeaderboard(request);
   }
 }
