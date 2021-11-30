@@ -49,7 +49,7 @@ export class AggregatorService {
       const today = new Date();
       const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
 
-      const from = millisToNanos(lastTx?.blockTimestamp || yearAgo.getTime());
+      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.getTime());
       const to = millisToNanos(new Date().getTime());
 
       const { transactions } = await aggregationService.aggregate(from, to);
