@@ -1,12 +1,12 @@
 import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
+import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
-import { NearIndexerService } from './near-indexer.service';
+import { AstroDAOService } from './astro-dao.service';
 import { findAllByKey, millisToNanos } from './utils';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
-import { Transaction } from './entities';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -15,6 +15,7 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
+    private readonly astroDAO: AstroDAOService,
   ) {}
 
   public async aggregate(
@@ -23,7 +24,7 @@ export class AggregationService implements Aggregator {
   ): Promise<AggregationOutput> {
     this.logger.log('Aggregating Astro DAO...');
 
-    const { contractName } = this.configService.get('near');
+    const { contractName } = this.configService.get('dao');
 
     const chunkSize = millisToNanos(5 * 24 * 60 * 60 * 1000); // 5 days
     const chunks = [];
@@ -62,12 +63,10 @@ export class AggregationService implements Aggregator {
     }
 
     return {
-      transactions: transactions.flat().map((tx) => (
-        {
-          ...tx,
-          type: this.getTransactionType(tx),
-        }
-      )),
+      transactions: transactions.flat().map((tx) => ({
+        ...tx,
+        type: this.getTransactionType(tx),
+      })),
     };
   }
 

@@ -9,6 +9,8 @@ indexer:
 near:
   env: testnet
   credentials: '.near-credentials'
+
+dao:
   contractName: 'sputnik-dao.near'
   tokenFactoryContractName: 'tkn.near'
   bridgeTokenFactoryContractName: 'factory.bridge.near'
