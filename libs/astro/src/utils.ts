@@ -27,5 +27,9 @@ export const nanosToMillis = (nanos: number): number => {
 };
 
 export const daysFromDate = (date: Date, days?: number): Date => {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + (days || 0));
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + (days || 0),
+  );
 };

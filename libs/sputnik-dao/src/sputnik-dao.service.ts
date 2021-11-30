@@ -5,8 +5,6 @@ import { Injectable, Logger } from '@nestjs/common';
 export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
 
-  constructor() {}
-
   public async aggregate(): Promise<AggregationOutput> {
     this.logger.log('Aggregating Sputnik DAO...');
 

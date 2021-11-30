@@ -82,7 +82,7 @@ export class TransactionService {
     const endDate = new Date().getTime();
     const days = [];
     while (true) {
-      let dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
+      const dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
 
       days.push({
         start: millisToNanos(from),

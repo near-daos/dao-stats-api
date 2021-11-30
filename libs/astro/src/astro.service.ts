@@ -1,5 +1,5 @@
 import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
-import { NearIndexerService } from '@dao-stats/near-indexer';
+import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
@@ -7,7 +7,6 @@ import PromisePool from '@supercharge/promise-pool';
 import { AstroDAOService } from './astro-dao.service';
 import { findAllByKey, millisToNanos } from './utils';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
-import { Transaction } from '@dao-stats/near-indexer/entities';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -64,12 +63,10 @@ export class AggregationService implements Aggregator {
     }
 
     return {
-      transactions: transactions.flat().map((tx) => (
-        {
-          ...tx,
-          type: this.getTransactionType(tx),
-        }
-      )),
+      transactions: transactions.flat().map((tx) => ({
+        ...tx,
+        type: this.getTransactionType(tx),
+      })),
     };
   }
 
