@@ -3,7 +3,6 @@ import { default as configuration } from './configuration';
 import { default as database } from './database';
 import { default as redis } from './redis-config';
 import { default as near } from './near-config';
-import { default as dao } from './dao-config';
 
 export { default as validate } from './validationSchema';
 export { TypeOrmConfigService } from './typeorm-config.service';
@@ -16,4 +15,4 @@ const aggregator = registerAs('aggregator', () => {
   };
 });
 
-export default [configuration, database, aggregator, redis, near, dao];
+export default [configuration, database, aggregator, redis, near];

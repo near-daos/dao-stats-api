@@ -1,7 +1,7 @@
 import { connect, providers } from 'near-api-js';
 import { UnencryptedFileSystemKeyStore } from 'near-api-js/lib/key_stores';
-import { NearConfigService } from '@dao-stats/config/near-config.service';
-import { NEAR_PROVIDER, NEAR_RPC_PROVIDER } from '@dao-stats/common/constants';
+import { NearConfigService } from './near-config.service';
+import { NEAR_PROVIDER, NEAR_RPC_PROVIDER } from './constants';
 
 export const nearProvider = {
   provide: NEAR_PROVIDER,

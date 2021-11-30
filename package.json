@@ -121,6 +121,8 @@
       "@dao-stats/redis": "<rootDir>/libs/redis/src",
       "@dao-stats/migrations/(.*)": "<rootDir>/libs/migrations/src/$1",
       "@dao-stats/migrations": "<rootDir>/libs/migrations/src",
+      "@dao-stats/near/(.*)": "<rootDir>/libs/near/src/$1",
+      "@dao-stats/near": "<rootDir>/libs/near/src",
       "@dao-stats/near-indexer/(.*)": "<rootDir>/libs/near-indexer/src/$1",
       "@dao-stats/near-indexer": "<rootDir>/libs/near-indexer/src",
       "@dao-stats/astro/(.*)": "<rootDir>/libs/astro/src/$1",

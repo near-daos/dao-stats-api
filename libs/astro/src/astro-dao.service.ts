@@ -2,8 +2,8 @@ import { Near, Contract } from 'near-api-js';
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
+import { NEAR_PROVIDER } from '@dao-stats/near';
 import { DAO } from '@dao-stats/common/interfaces/dao.interface';
-import { NEAR_PROVIDER } from '@dao-stats/common';
 
 @Injectable()
 export class AstroDAOService implements DAO {
