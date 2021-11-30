@@ -82,7 +82,6 @@ export class TransactionService {
     to?: number,
   ): Promise<GeneralDaoResponse> {
     const { CreateDao } = TransactionType;
-
     const days = this.getDailyIntervals(from, new Date().getTime()).map(
       (day) => ({
         ...day,
