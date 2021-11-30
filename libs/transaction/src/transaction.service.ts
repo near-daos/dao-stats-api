@@ -7,6 +7,7 @@ import { Connection, Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import { GeneralLeaderboardResponse } from 'apps/api/src/general/dto/general-leaderboard.dto';
+import { DaoTenantContext } from '@dao-stats/common/dto/dao-tenant-context.dto';
 
 @Injectable()
 export class TransactionService {
@@ -32,16 +33,22 @@ export class TransactionService {
   }
 
   async getContractTotalCount(
-    contractId: string,
+    context: DaoTenantContext,
     from?: number,
     to?: number,
   ): Promise<number> {
+    const { contract, dao } = context;
+
     let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
-      .where('transaction.contractId = :contractId', { contractId })
+      .where('transaction.contractId = :contract', { contract })
       .andWhere('transaction.type = :type', {
         type: TransactionType.CreateDao,
       });
+
+    queryBuilder = dao
+      ? queryBuilder.andWhere('transaction.receiver_account_id = :dao', { dao })
+      : queryBuilder;
 
     queryBuilder = from
       ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
@@ -59,14 +66,18 @@ export class TransactionService {
   }
 
   async getContractActivityTotalCount(
-    contractId: string,
+    context: DaoTenantContext,
     from?: number,
     to?: number,
   ): Promise<number> {
+    const { contract, dao } = context;
     const { CreateDao } = TransactionType;
     const query = `
-        select count(distinct receiver_account_id) from transactions 
-        where contract_id = '${contractId}' and type != '${CreateDao}'
+        select count(${
+          dao ? '' : 'distinct'
+        } receiver_account_id) from transactions 
+        where contract_id = '${contract}' and type != '${CreateDao}'
+        ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
         ${to ? `and block_timestamp < ${to}` : ''}
     `;

@@ -1,4 +1,5 @@
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { DaoTenantContext } from '@dao-stats/common/dto/dao-tenant-context.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 import { TenantContext } from '@dao-stats/common/dto/tenant-context.dto';
 import { Contract } from '@dao-stats/common/entities';
@@ -21,32 +22,30 @@ export class GeneralService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(tenantContext: TenantContext): Promise<GeneralTotalResponse> {
-    const { contract } = tenantContext;
-
+  async totals(context: DaoTenantContext): Promise<GeneralTotalResponse> {
     const daoCount = await this.transactionService.getContractTotalCount(
-      contract,
+      context,
     );
 
     const today = new Date();
     const weekAgo = daysFromDate(today, -7);
     const weekAgoDaoCount = await this.transactionService.getContractTotalCount(
-      contract,
+      context,
       millisToNanos(weekAgo.getTime()),
     );
 
     const activity =
-      await this.transactionService.getContractActivityTotalCount(contract);
+      await this.transactionService.getContractActivityTotalCount(context);
     const weekAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
-        contract,
+        context,
         millisToNanos(weekAgo.getTime()),
       );
 
     const twoWeeksAgo = daysFromDate(weekAgo, -7);
     const twoWeeksAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
-        contract,
+        context,
         millisToNanos(twoWeeksAgo.getTime()),
         millisToNanos(weekAgo.getTime()),
       );
