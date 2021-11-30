@@ -1,4 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { Contract } from '.';
 import { BaseEntity } from '..';
 import { HasContract } from '../interfaces/has-contract.interface';
 import { TransactionType } from '../types/transaction-type';
@@ -11,6 +19,8 @@ export class Transaction extends BaseEntity implements HasContract {
   transactionHash: string;
 
   @Column()
+  @ManyToOne(() => Contract, (contract) => contract.contractId)
+  @JoinColumn({ name: 'contract_id' })
   contractId: string;
 
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {

@@ -103,8 +103,8 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct receiver_account_id) from transactions 
-            where contract_id = '${contractId}' and type != '${CreateDao}'
+            select count(receiver_account_id) from transactions 
+            where contract_id = '${contractId}' and type = '${CreateDao}'
             ${end ? `and block_timestamp < ${end}` : ''}
           `,
         );
