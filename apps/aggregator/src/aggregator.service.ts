@@ -1,3 +1,4 @@
+import { millisToNanos } from '@dao-stats/astro/utils';
 import { Transaction } from '@dao-stats/common/entities/transaction.entity';
 import { Aggregator } from '@dao-stats/common/interfaces';
 import { Injectable, Logger } from '@nestjs/common';
@@ -48,8 +49,8 @@ export class AggregatorService {
       const today = new Date();
       const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
 
-      const from = lastTx?.blockTimestamp || yearAgo.getTime() * 1000 * 1000; //nanos
-      const to = new Date().getTime() * 1000 * 1000;
+      const from = millisToNanos(lastTx?.blockTimestamp || yearAgo.getTime());
+      const to = millisToNanos(new Date().getTime());
 
       const { transactions } = await aggregationService.aggregate(from, to);
 

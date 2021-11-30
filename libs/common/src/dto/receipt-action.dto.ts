@@ -4,5 +4,5 @@ export class ReceiptActionDto {
   receiptPredecessorAccountId: string;
   receiptReceiverAccountId: string;
   actionKind: string;
-  args: string;
+  args: Record<string, unknown>;
 }
