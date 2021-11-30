@@ -19,6 +19,7 @@ import {
   ReceiptAction,
   Transaction,
 } from '@dao-stats/common/entities';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import {
     HttpCacheModule,
     RedisModule,
     GeneralModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [TenantInterceptor],

@@ -11,17 +11,17 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TenantInterceptor } from '../interceptors/tenant.interceptor';
-import { GeneralTotalResponse } from './dto/general-total.dto';
-import { GeneralService } from './general.service';
+import { UsersTotalResponse } from './dto/users-total.dto';
+import { UsersService } from './users.service';
 
-@ApiTags('General')
-@Controller('general')
-export class GeneralController {
-  constructor(private readonly generalService: GeneralService) {}
+@ApiTags('Users')
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
 
   @ApiResponse({
     status: 200,
-    type: GeneralTotalResponse,
+    type: UsersTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -32,30 +32,28 @@ export class GeneralController {
     type: String,
   })
   @Get('/')
-  async total(
+  async total(@Param() context: DaoTenantContext): Promise<UsersTotalResponse> {
+    return this.usersService.totals(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: UsersTotalResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(TenantInterceptor)
+  @ApiParam({
+    name: 'contract',
+    type: String,
+  })
+  @Get('/history')
+  async usersHistory(
     @Param() context: DaoTenantContext,
-  ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals(context);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: MetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(TenantInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
-  @Get('/daos')
-  async daos(
-    @Param() context: TenantContext,
     @Query() metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.daos(context, metricQuery);
+    return this.usersService.totalsHistory(context, metricQuery);
   }
 
   @ApiResponse({
@@ -70,36 +68,16 @@ export class GeneralController {
     name: 'contract',
     type: String,
   })
-  @Get('/activity')
-  async activity(
-    @Param() context: TenantContext,
-    @Query() metricQuery: MetricQuery,
-  ): Promise<MetricResponse> {
-    return this.generalService.activity(context, metricQuery);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: MetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(TenantInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
-  @Get('/activity/leaderboard')
-  async activityLeaderboard(
+  @Get('/leaderboard')
+  async usersLeaderboard(
     @Param() context: TenantContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.activityLeaderboard(context);
+    return this.usersService.leaderboard(context);
   }
 
   @ApiResponse({
     status: 200,
-    type: GeneralTotalResponse,
+    type: UsersTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -112,7 +90,27 @@ export class GeneralController {
   @Get('/:dao')
   async daoTotal(
     @Param() context: DaoTenantContext,
-  ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals(context);
+  ): Promise<UsersTotalResponse> {
+    return this.usersService.totals(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: UsersTotalResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(TenantInterceptor)
+  @ApiParam({
+    name: 'contract',
+    type: String,
+  })
+  @Get('/:dao/history')
+  async daoUsersHistory(
+    @Param() context: DaoTenantContext,
+    @Query() metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.totalsHistory(context, metricQuery);
   }
 }
