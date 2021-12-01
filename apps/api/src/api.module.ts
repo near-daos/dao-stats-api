@@ -20,6 +20,7 @@ import {
   Transaction,
 } from '@dao-stats/common/entities';
 import { UsersModule } from './users/users.module';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UsersModule } from './users/users.module';
     RedisModule,
     GeneralModule,
     UsersModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [ContractInterceptor],
