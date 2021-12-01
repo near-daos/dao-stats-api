@@ -28,17 +28,18 @@ export class UsersService {
     );
 
     const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const weekAgoUsersCount = await this.transactionService.getUsersTotalCount(
+    const dayAgo = daysFromDate(today, -1);
+    const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
       context,
-      millisToNanos(weekAgo.getTime()),
+      null,
+      millisToNanos(dayAgo.getTime()),
     );
 
     return {
       users: {
         count: usersCount,
-        growth: Math.ceil(
-          (weekAgoUsersCount / (usersCount - weekAgoUsersCount)) * 100,
+        growth: Math.floor(
+          ((usersCount - dayAgoUsersCount) / dayAgoUsersCount) * 100,
         ),
       },
     };

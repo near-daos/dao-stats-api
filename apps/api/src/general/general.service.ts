@@ -31,6 +31,7 @@ export class GeneralService {
     const dayAgo = daysFromDate(today, -1);
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
+      null,
       millisToNanos(dayAgo.getTime()),
     );
 
@@ -39,17 +40,22 @@ export class GeneralService {
     const dayAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
         context,
+        null,
         millisToNanos(dayAgo.getTime()),
       );
 
     return {
       dao: {
         count: daoCount,
-        growth: Math.ceil((dayAgoDaoCount / daoCount) * 100),
+        growth: Math.floor(
+          ((daoCount - dayAgoDaoCount) / dayAgoDaoCount) * 100,
+        ),
       },
       activity: {
         count: activity,
-        growth: Math.ceil((dayAgoActivity / activity) * 100),
+        growth: Math.floor(
+          ((activity - dayAgoActivity) / dayAgoActivity) * 100,
+        ),
       },
     };
   }

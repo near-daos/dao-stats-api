@@ -220,7 +220,7 @@ export class TransactionService {
           dao,
           activity: {
             count,
-            growth: Math.ceil(
+            growth: Math.floor(
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
@@ -361,7 +361,7 @@ export class TransactionService {
           dao,
           activity: {
             count,
-            growth: Math.ceil(
+            growth: Math.floor(
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
