@@ -16,6 +16,7 @@ fullnameOverride: ""
 
 aggregatorNameOverride: "dao-stats-aggregator"
 aggregatorFullnameOverride: "dao-stats-aggregator"
+aggregatorConfig: ""
 
 container:
   # Specifies the internal container port

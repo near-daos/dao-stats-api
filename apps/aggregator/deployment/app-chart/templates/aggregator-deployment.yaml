@@ -65,6 +65,10 @@ spec:
               name: redis-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /usr/src/app/dist/config/astro-config.yml
+            name: aggregator-config
+            subPath: astro-config.yml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
