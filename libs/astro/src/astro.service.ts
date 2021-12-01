@@ -4,9 +4,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import PromisePool from '@supercharge/promise-pool';
+import { DAOStatsMetric, TransactionType } from '@dao-stats/common/types';
+import { DAOStatsDto, TransactionDto } from '@dao-stats/common/dto';
 import { AstroDAOService } from './astro-dao.service';
-import { findAllByKey, millisToNanos } from './utils';
-import { TransactionType } from '@dao-stats/common/types/transaction-type';
+import { RoleGroup } from './types';
+import {
+  findAllByKey,
+  isRoleGroup,
+  isRoleGroupCouncil,
+  millisToNanos,
+} from './utils';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -15,15 +22,29 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
-    private readonly astroDAO: AstroDAOService,
+    private readonly astroDAOService: AstroDAOService,
   ) {}
 
   public async aggregate(
+    contractId: string,
+    from?: number,
+    to?: number,
+  ): Promise<AggregationOutput> {
+    this.logger.log('Aggregating Astro DAO metrics...');
+
+    const metrics = await this.aggregateMetrics(contractId);
+
+    this.logger.log('Aggregating Astro DAO transactions...');
+
+    const transactions = await this.aggregateTransactions(from, to);
+
+    return { transactions, metrics };
+  }
+
+  private async aggregateTransactions(
     fromTimestamp?: number,
     toTimestamp?: number,
-  ): Promise<AggregationOutput> {
-    this.logger.log('Aggregating Astro DAO...');
-
+  ): Promise<TransactionDto[]> {
     const { contractName } = this.configService.get('dao');
 
     const chunkSize = millisToNanos(5 * 24 * 60 * 60 * 1000); // 5 days
@@ -62,12 +83,10 @@ export class AggregationService implements Aggregator {
       txErrors.map((error) => this.logger.error(error));
     }
 
-    return {
-      transactions: transactions.flat().map((tx) => ({
-        ...tx,
-        type: this.getTransactionType(tx),
-      })),
-    };
+    return transactions.flat().map((tx) => ({
+      ...tx,
+      type: this.getTransactionType(tx),
+    }));
   }
 
   // TODO: a raw casting - revisit this
@@ -81,5 +100,35 @@ export class AggregationService implements Aggregator {
       : methods.includes('act_proposal')
       ? TransactionType.ActProposal
       : null;
+  }
+
+  private async aggregateMetrics(contractId): Promise<DAOStatsDto[]> {
+    const contracts = await this.astroDAOService.getContracts();
+    const { results } = await PromisePool.for(contracts)
+      .withConcurrency(2)
+      .process(async (contract) => {
+        const policy = await contract.get_policy();
+        const council = policy.roles.find(isRoleGroupCouncil);
+        const councilSize = council
+          ? (council.kind as RoleGroup).Group.length
+          : 0;
+        const groups = policy.roles.filter(isRoleGroup);
+        return [
+          {
+            contractId,
+            dao: contract.contractId,
+            metric: DAOStatsMetric.CouncilSize,
+            value: councilSize,
+          },
+          {
+            contractId,
+            dao: contract.contractId,
+            metric: DAOStatsMetric.GroupsCount,
+            value: groups.length,
+          },
+        ];
+      });
+
+    return results.flat();
   }
 }

@@ -1,3 +1,5 @@
+import { Role, RoleGroup } from './types';
+
 export const btoaJSON = (b: string) => {
   try {
     return JSON.parse(Buffer.from(b, 'base64').toString('utf-8'));
@@ -32,4 +34,12 @@ export const daysFromDate = (date: Date, days?: number): Date => {
     date.getMonth(),
     date.getDate() + (days || 0),
   );
+};
+
+export const isRoleGroup = (role: Role) => {
+  return (role.kind as RoleGroup).Group !== undefined;
+};
+
+export const isRoleGroupCouncil = (role: Role) => {
+  return isRoleGroup(role) && ['council', 'Council'].includes(role.name);
 };
