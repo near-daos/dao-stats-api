@@ -4,4 +4,5 @@ export interface DAO {
   getFactoryContract(): Promise<Contract>;
   getTokenFactoryContract(): Promise<Contract>;
   getContract(contractId: string): Promise<Contract>;
+  getContracts(): Promise<Contract[]>;
 }

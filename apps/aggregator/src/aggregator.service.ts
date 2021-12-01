@@ -1,5 +1,5 @@
 import { millisToNanos } from '@dao-stats/astro/utils';
-import { Transaction } from '@dao-stats/common/entities/transaction.entity';
+import { Transaction } from '@dao-stats/common/entities';
 import { Aggregator } from '@dao-stats/common/interfaces';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +7,8 @@ import { LazyModuleLoader } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 import { TransactionService } from 'libs/transaction/src';
+import { DAOStatsService } from '@dao-stats/common/dao-stats.service';
+import { DAOStatsHistoryService } from '@dao-stats/common/dao-stats-history.service';
 
 @Injectable()
 export class AggregatorService {
@@ -17,6 +19,8 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
+    private readonly daoStatsService: DAOStatsService,
+    private readonly daoStatsHistoryService: DAOStatsHistoryService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -52,13 +56,20 @@ export class AggregatorService {
       const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.getTime());
       const to = millisToNanos(new Date().getTime());
 
-      const { transactions } = await aggregationService.aggregate(from, to);
+      const { transactions, metrics } = await aggregationService.aggregate(
+        contractId,
+        from,
+        to,
+      );
 
       this.logger.log(
         `Persisting aggregated Transactions: ${transactions.length}`,
       );
-      const { results, errors } = await PromisePool.withConcurrency(500)
+      await PromisePool.withConcurrency(500)
         .for(transactions)
+        .handleError((error) => {
+          this.logger.error(error);
+        })
         .process(
           async (tx) =>
             await this.transactionService.create([
@@ -80,9 +91,17 @@ export class AggregatorService {
         );
       this.logger.log(`Successfully stored aggregated Transactions`);
 
-      if (errors && errors.length) {
-        errors.map((error) => this.logger.error(error));
-      }
+      await PromisePool.withConcurrency(500)
+        .for(metrics)
+        .handleError((error) => {
+          this.logger.error(error);
+        })
+        .process(async (metric) => {
+          await this.daoStatsService.createOrUpdate(metric);
+          await this.daoStatsHistoryService.createOrUpdate(metric);
+        });
+
+      this.logger.log(`Successfully stored aggregated metrics`);
     }
   }
 }

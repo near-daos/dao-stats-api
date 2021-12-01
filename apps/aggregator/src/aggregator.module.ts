@@ -12,6 +12,8 @@ import { AggregatorService } from './aggregator.service';
 import { AggregatorValidationSchema } from '@dao-stats/config/validation';
 import { RedisModule } from 'libs/redis/src/redis.module';
 import { TransactionModule } from 'libs/transaction/src';
+import { DAOStatsModule } from '@dao-stats/common/dao-stats.module';
+import { DAOStatsHistoryModule } from '@dao-stats/common/dao-stats-history.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { TransactionModule } from 'libs/transaction/src';
     ScheduleModule.forRoot(),
     RedisModule,
     TransactionModule,
+    DAOStatsModule,
+    DAOStatsHistoryModule,
   ],
   providers: [AggregatorService],
 })

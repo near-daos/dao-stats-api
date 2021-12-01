@@ -1,9 +1,10 @@
-import { Near, Contract } from 'near-api-js';
+import { Near, Contract as NearContract } from 'near-api-js';
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
-import { DAO } from '@dao-stats/common/interfaces/dao.interface';
+import { DAO } from '@dao-stats/common/interfaces';
+import { Contract, TokenContract, FactoryContract } from './types';
 
 @Injectable()
 export class AstroDAOService implements DAO {
@@ -13,21 +14,21 @@ export class AstroDAOService implements DAO {
     private readonly near: Near,
   ) {}
 
-  async getFactoryContract(): Promise<Contract> {
+  async getFactoryContract(): Promise<FactoryContract> {
     const { contractName } = this.config.get('dao');
     const account = await this.near.account(contractName);
 
-    return new Contract(account, contractName, {
-      viewMethods: ['get_dao_list', 'tx_status'],
+    return new NearContract(account, contractName, {
+      viewMethods: ['get_dao_list'],
       changeMethods: [],
-    });
+    }) as FactoryContract;
   }
 
-  async getTokenFactoryContract(): Promise<Contract> {
+  async getTokenFactoryContract(): Promise<TokenContract> {
     const { tokenFactoryContractName } = this.config.get('dao');
     const account = await this.near.account(tokenFactoryContractName);
 
-    return new Contract(account, tokenFactoryContractName, {
+    return new NearContract(account, tokenFactoryContractName, {
       viewMethods: [
         'get_required_deposit',
         'get_number_of_tokens',
@@ -35,13 +36,13 @@ export class AstroDAOService implements DAO {
         'get_token',
       ],
       changeMethods: ['create_token', 'storage_deposit'],
-    });
+    }) as TokenContract;
   }
 
   async getContract(contractName: string): Promise<Contract> {
     const account = await this.near.account(contractName);
 
-    return new Contract(account, contractName, {
+    return new NearContract(account, contractName, {
       viewMethods: [
         'get_config',
         'get_policy',
@@ -57,6 +58,12 @@ export class AstroDAOService implements DAO {
         'get_bounty_number_of_claims',
       ],
       changeMethods: ['add_proposal', 'act_proposal'],
-    });
+    }) as Contract;
+  }
+
+  public async getContracts(): Promise<Contract[]> {
+    const factoryContract = await this.getFactoryContract();
+    const daos = await factoryContract.get_dao_list();
+    return Promise.all(daos.map((dao) => this.getContract(dao)));
   }
 }
