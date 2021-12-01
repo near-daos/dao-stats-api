@@ -159,8 +159,6 @@ pipelines:
       - step: *set-aggregator
       - step: *set-api
 
-      - parallel: *build-test
-
       - parallel: *docker-build-publish
 
       - step:
@@ -177,8 +175,6 @@ pipelines:
 
       - step: *set-aggregator
       - step: *set-api
-
-      - parallel: *build-test
 
       - parallel: *docker-build-publish
           
@@ -197,8 +193,6 @@ pipelines:
       - step: *set-aggregator
       - step: *set-api
 
-      - parallel: *build-test
-
       - parallel: *docker-build-publish
 
       - step:
@@ -216,8 +210,6 @@ pipelines:
 
       - step: *set-aggregator
       - step: *set-api
-
-      - parallel: *build-test
 
       - parallel: *docker-build-publish
           
