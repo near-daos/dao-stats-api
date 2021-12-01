@@ -11,7 +11,7 @@ import { Observable, throwError } from 'rxjs';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class TenantInterceptor implements NestInterceptor {
+export class ContractInterceptor implements NestInterceptor {
   constructor(
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,

@@ -12,7 +12,7 @@ import { HttpCacheModule } from '@dao-stats/cache';
 import { AppController } from './api.controller';
 import { RedisModule } from 'libs/redis/src/redis.module';
 import { GeneralModule } from './general/general.module';
-import { TenantInterceptor } from './interceptors/tenant.interceptor';
+import { ContractInterceptor } from './interceptors/contract.interceptor';
 import {
   Contract,
   Receipt,
@@ -42,6 +42,6 @@ import { UsersModule } from './users/users.module';
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [TenantInterceptor],
+  providers: [ContractInterceptor],
 })
 export class AppModule {}
