@@ -93,7 +93,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { CreateDao } = TransactionType;
-    const days = this.getDailyIntervals(from, new Date().getTime()).map(
+    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
       (day) => ({
         ...day,
         start: millisToNanos(from),
@@ -129,7 +129,7 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, new Date().getTime());
+    const days = this.getDailyIntervals(from, to || new Date().getTime());
 
     const { CreateDao } = TransactionType;
 
@@ -267,7 +267,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { contract, dao } = context;
-    const days = this.getDailyIntervals(from, new Date().getTime()).map(
+    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
       (day) => ({
         ...day,
         start: millisToNanos(from),
@@ -415,7 +415,7 @@ export class TransactionService {
     const days = [];
     while (true) {
       const dayStart = timestamp;
-      let dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
+      const dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
 
       days.push({
         start: millisToNanos(dayStart),

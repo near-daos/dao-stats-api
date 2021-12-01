@@ -124,6 +124,7 @@ definitions:
                 helm template dao-stats-$APP_NAME $CHART_FOLDER \
                   --set image.tag=$DOCKER_ENV_TAG \
                   --set ingress.host=$K8S_INGRESS_HOST \
+                  --set aggregatorConfig=$AGGREGATOR_CONFIG \
                   --set service.type=LoadBalancer \
                   > manifests/$APP_NAME.yml
               done
