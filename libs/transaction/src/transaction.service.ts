@@ -96,7 +96,7 @@ export class TransactionService {
     const days = this.getDailyIntervals(from, new Date().getTime()).map(
       (day) => ({
         ...day,
-        start: from,
+        start: millisToNanos(from),
       }),
     );
 
@@ -192,11 +192,12 @@ export class TransactionService {
       errors.map((error) => this.logger.error(error));
     }
 
-    const weekAgoActivity = await this.connection.query(
+    const dayAgo = daysFromDate(today, -1);
+    const dayAgoActivity = await this.connection.query(
       this.getTotalActivityQuery(
         contractId,
         null,
-        millisToNanos(weekAgo.getTime()),
+        millisToNanos(dayAgo.getTime()),
       ),
     );
 
@@ -210,15 +211,18 @@ export class TransactionService {
 
     const metrics = totalActivity.map(
       ({ receiver_account_id: dao, receiver_count: count }) => {
-        const weekAgoCount = weekAgoActivity.find(
-          ({ receiver_account_id }) => receiver_account_id === dao,
-        )?.receiver_count;
+        const dayAgoCount =
+          dayAgoActivity.find(
+            ({ receiver_account_id }) => receiver_account_id === dao,
+          )?.receiver_count || 0;
 
         return {
           dao,
           activity: {
             count,
-            growth: Math.ceil(((count - weekAgoCount) / weekAgoCount) * 100),
+            growth: Math.ceil(
+              ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
+            ),
           },
           overview: days.map((day) => ({
             ...day,
@@ -266,7 +270,7 @@ export class TransactionService {
     const days = this.getDailyIntervals(from, new Date().getTime()).map(
       (day) => ({
         ...day,
-        start: from,
+        start: millisToNanos(from),
       }),
     );
 
@@ -301,7 +305,7 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     const today = new Date();
-    const weekAgo = daysFromDate(today, -107);
+    const weekAgo = daysFromDate(today, -7);
     const days = this.getDailyIntervals(
       weekAgo.getTime(),
       new Date().getTime(),
@@ -329,11 +333,12 @@ export class TransactionService {
       errors.map((error) => this.logger.error(error));
     }
 
-    const weekAgoActivity = await this.connection.query(
+    const dayAgo = daysFromDate(today, -1);
+    const dayAgoActivity = await this.connection.query(
       this.getUsersActivityQuery(
         contractId,
         null,
-        millisToNanos(weekAgo.getTime()),
+        millisToNanos(dayAgo.getTime()),
       ),
     );
 
@@ -347,15 +352,18 @@ export class TransactionService {
 
     const metrics = totalActivity.map(
       ({ receiver_account_id: dao, signer_count: count }) => {
-        const weekAgoCount = weekAgoActivity.find(
-          ({ receiver_account_id }) => receiver_account_id === dao,
-        )?.signer_count;
+        const dayAgoCount =
+          dayAgoActivity.find(
+            ({ receiver_account_id }) => receiver_account_id === dao,
+          )?.signer_count || 0;
 
         return {
           dao,
           activity: {
             count,
-            growth: Math.ceil(((count - weekAgoCount) / weekAgoCount) * 100),
+            growth: Math.ceil(
+              ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
+            ),
           },
           overview: days.map((day) => ({
             ...day,

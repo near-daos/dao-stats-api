@@ -28,40 +28,28 @@ export class GeneralService {
     );
 
     const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const weekAgoDaoCount = await this.transactionService.getContractTotalCount(
+    const dayAgo = daysFromDate(today, -1);
+    const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
-      millisToNanos(weekAgo.getTime()),
+      millisToNanos(dayAgo.getTime()),
     );
 
     const activity =
       await this.transactionService.getContractActivityTotalCount(context);
-    const weekAgoActivity =
+    const dayAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
         context,
-        millisToNanos(weekAgo.getTime()),
-      );
-
-    const twoWeeksAgo = daysFromDate(weekAgo, -7);
-    const twoWeeksAgoActivity =
-      await this.transactionService.getContractActivityTotalCount(
-        context,
-        millisToNanos(twoWeeksAgo.getTime()),
-        millisToNanos(weekAgo.getTime()),
+        millisToNanos(dayAgo.getTime()),
       );
 
     return {
       dao: {
         count: daoCount,
-        growth: Math.ceil(
-          (weekAgoDaoCount / (daoCount - weekAgoDaoCount)) * 100,
-        ),
+        growth: Math.ceil((dayAgoDaoCount / daoCount) * 100),
       },
       activity: {
         count: activity,
-        growth: Math.ceil(
-          ((weekAgoActivity - twoWeeksAgoActivity) / twoWeeksAgoActivity) * 100,
-        ),
+        growth: Math.ceil((dayAgoActivity / activity) * 100),
       },
     };
   }
