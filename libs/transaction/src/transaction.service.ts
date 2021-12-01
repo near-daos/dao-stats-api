@@ -5,7 +5,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
-import { DaoTenantContext } from '@dao-stats/common/dto/dao-tenant-context.dto';
+import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 
@@ -33,7 +33,7 @@ export class TransactionService {
   }
 
   async getContractTotalCount(
-    context: DaoTenantContext,
+    context: DaoContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
@@ -66,7 +66,7 @@ export class TransactionService {
   }
 
   async getContractActivityTotalCount(
-    context: DaoTenantContext,
+    context: DaoContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
@@ -242,7 +242,7 @@ export class TransactionService {
   }
 
   async getUsersTotalCount(
-    context: DaoTenantContext,
+    context: DaoContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
@@ -262,7 +262,7 @@ export class TransactionService {
   }
 
   async getUsersCountHistory(
-    context: DaoTenantContext,
+    context: DaoContractContext,
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {

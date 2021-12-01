@@ -1,9 +1,9 @@
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
-import { DaoTenantContext } from '@dao-stats/common/dto/dao-tenant-context.dto';
+import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { TenantContext } from '@dao-stats/common/dto/tenant-context.dto';
+import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Contract } from '@dao-stats/common/entities';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -22,7 +22,7 @@ export class UsersService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(context: DaoTenantContext): Promise<UsersTotalResponse> {
+  async totals(context: DaoContractContext): Promise<UsersTotalResponse> {
     const usersCount = await this.transactionService.getUsersTotalCount(
       context,
     );
@@ -45,7 +45,7 @@ export class UsersService {
   }
 
   async totalsHistory(
-    context: DaoTenantContext,
+    context: DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
@@ -54,9 +54,9 @@ export class UsersService {
   }
 
   async leaderboard(
-    tenantContext: TenantContext,
+    contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contract } = tenantContext;
+    const { contract } = contractContext;
 
     return this.transactionService.getUsersLeaderboard(contract);
   }
