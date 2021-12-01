@@ -1,5 +1,8 @@
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { DaoTenantContext } from '@dao-stats/common/dto/dao-tenant-context.dto';
+import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
+import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { TenantContext } from '@dao-stats/common/dto/tenant-context.dto';
 import { Contract } from '@dao-stats/common/entities';
 import { Injectable } from '@nestjs/common';
@@ -7,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from 'libs/transaction/src';
 import { Repository } from 'typeorm';
-import { GeneralDaoResponse } from './dto/general-dao.dto';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 
 @Injectable()
@@ -20,32 +22,30 @@ export class GeneralService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(tenantContext: TenantContext): Promise<GeneralTotalResponse> {
-    const { contract } = tenantContext;
-
+  async totals(context: DaoTenantContext): Promise<GeneralTotalResponse> {
     const daoCount = await this.transactionService.getContractTotalCount(
-      contract,
+      context,
     );
 
     const today = new Date();
     const weekAgo = daysFromDate(today, -7);
     const weekAgoDaoCount = await this.transactionService.getContractTotalCount(
-      contract,
+      context,
       millisToNanos(weekAgo.getTime()),
     );
 
     const activity =
-      await this.transactionService.getContractActivityTotalCount(contract);
+      await this.transactionService.getContractActivityTotalCount(context);
     const weekAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
-        contract,
+        context,
         millisToNanos(weekAgo.getTime()),
       );
 
     const twoWeeksAgo = daysFromDate(weekAgo, -7);
     const twoWeeksAgoActivity =
       await this.transactionService.getContractActivityTotalCount(
-        contract,
+        context,
         millisToNanos(twoWeeksAgo.getTime()),
         millisToNanos(weekAgo.getTime()),
       );
@@ -69,10 +69,28 @@ export class GeneralService {
   async daos(
     tenantContext: TenantContext,
     metricQuery: MetricQuery,
-  ): Promise<GeneralDaoResponse> {
+  ): Promise<MetricResponse> {
     const { contract } = tenantContext;
     const { from, to } = metricQuery;
 
     return this.transactionService.getDaoCountHistory(contract, from, to);
+  }
+
+  async activity(
+    tenantContext: TenantContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contract } = tenantContext;
+    const { from, to } = metricQuery;
+
+    return this.transactionService.getDaoActivityHistory(contract, from, to);
+  }
+
+  async activityLeaderboard(
+    tenantContext: TenantContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contract } = tenantContext;
+
+    return this.transactionService.getDaoActivityLeaderboard(contract);
   }
 }

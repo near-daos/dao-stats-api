@@ -30,9 +30,9 @@ export class AggregatorService {
   public async scheduleAggregation(): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
-    for (const contract of smartContracts) {
+    for (const contractId of smartContracts) {
       const { AggregationModule, AggregationService } = await import(
-        '../../../libs/' + contract + '/'
+        '../../../libs/' + contractId + '/'
       );
       const moduleRef = await this.lazyModuleLoader.load(
         () => AggregationModule,
@@ -43,13 +43,13 @@ export class AggregatorService {
       ) as Aggregator;
 
       const lastTx: Transaction = await this.transactionService.lastTransaction(
-        contract,
+        contractId,
       );
 
       const today = new Date();
       const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
 
-      const from = millisToNanos(lastTx?.blockTimestamp || yearAgo.getTime());
+      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.getTime());
       const to = millisToNanos(new Date().getTime());
 
       const { transactions } = await aggregationService.aggregate(from, to);
@@ -64,7 +64,17 @@ export class AggregatorService {
             await this.transactionService.create([
               {
                 ...tx,
-                contractId: contract,
+                contractId,
+                receipts: tx.receipts.map((receipt) => ({
+                  ...receipt,
+                  contractId,
+                  receiptActions: receipt.receiptActions.map(
+                    (receiptAction) => ({
+                      ...receiptAction,
+                      contractId,
+                    }),
+                  ),
+                })),
               },
             ]),
         );

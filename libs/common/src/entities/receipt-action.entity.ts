@@ -1,11 +1,18 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Contract } from '.';
+import { HasContract } from '../interfaces/has-contract.interface';
 
 import { Receipt } from './receipt.entity';
 
 @Entity({ name: 'action_receipt_actions' })
-export class ReceiptAction {
+export class ReceiptAction implements HasContract {
   @PrimaryColumn()
   receiptId: string;
+
+  @Column({ nullable: true })
+  @ManyToOne(() => Contract, (contract) => contract.contractId)
+  @JoinColumn({ name: 'contract_id' })
+  contractId: string;
 
   @PrimaryColumn()
   indexInActionReceipt: number;
