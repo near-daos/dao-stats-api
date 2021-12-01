@@ -1,3 +1,4 @@
+{% if false %}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -19,3 +20,5 @@ spec:
           backend:
             serviceName: {{ include "dao-stats-api.fullname" . }}
             servicePort: 80
+
+{% endif %}
