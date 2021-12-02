@@ -30,16 +30,18 @@ export class ActivityService {
 
     const today = new Date();
     const dayAgo = daysFromDate(today, -1);
-    const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
-      context,
-      millisToNanos(dayAgo.getTime()),
-    );
+    const dayAgoProposalsCount =
+      await this.transactionService.getProposalsTotalCount(
+        context,
+        millisToNanos(dayAgo.getTime()),
+      );
 
     return {
       proposals: {
         count: proposalsCount,
         growth: Math.ceil(
-          (dayAgoUsersCount / (proposalsCount - dayAgoUsersCount)) * 100,
+          (dayAgoProposalsCount / (proposalsCount - dayAgoProposalsCount)) *
+            100,
         ),
       },
     };
