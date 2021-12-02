@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Contract } from '.';
-import { HasContract } from '../interfaces/has-contract.interface';
+import { HasContract } from '../interfaces';
 
 import { Receipt } from './receipt.entity';
 
@@ -17,7 +17,7 @@ export class ReceiptAction implements HasContract {
   @PrimaryColumn()
   indexInActionReceipt: number;
 
-  @ManyToOne((_) => Receipt, (receipt) => receipt.receiptActions, {
+  @ManyToOne(() => Receipt, (receipt) => receipt.receiptActions, {
     nullable: true,
     createForeignKeyConstraints: false,
   })

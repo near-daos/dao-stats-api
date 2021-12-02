@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Contract, Receipt, ReceiptAction } from '@dao-stats/common/entities';
+import { Contract, Receipt, ReceiptAction } from '@dao-stats/common';
 import { Transaction } from '@dao-stats/common/entities/transaction.entity';
 
 import { TransactionService } from './transaction.service';

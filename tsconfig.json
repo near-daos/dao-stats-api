@@ -64,6 +64,12 @@
       "@dao-stats/sputnik-dao/*": [
         "libs/sputnik-dao/src/*"
       ],
+      "@dao-stats/redis": [
+        "libs/redis/src"
+      ],
+      "@dao-stats/redis/*": [
+        "libs/redis/src/*"
+      ],
       "@dao-stats/transaction": [
         "libs/transaction/src"
       ],

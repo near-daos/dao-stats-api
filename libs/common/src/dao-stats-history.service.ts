@@ -3,11 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DAOStatsHistory } from './entities';
-import { ContractContext, DaoContractContext } from '@dao-stats/common/dto';
-import {
-  DAOStatsAggregationFunction,
-  DAOStatsMetric,
-} from '@dao-stats/common/types';
+import { ContractContext, DaoContractContext } from './dto';
+import { DAOStatsAggregationFunction, DAOStatsMetric } from './types';
 
 @Injectable()
 export class DAOStatsHistoryService {
