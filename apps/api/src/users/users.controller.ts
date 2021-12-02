@@ -4,12 +4,7 @@ import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';
@@ -27,14 +22,8 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/')
-  async total(
-    @Param() context: DaoContractContext,
-  ): Promise<UsersTotalResponse> {
+  async total(@Param() context: ContractContext): Promise<UsersTotalResponse> {
     return this.usersService.totals(context);
   }
 
@@ -46,13 +35,9 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/history')
   async usersHistory(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
     @Query() metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.usersService.totalsHistory(context, metricQuery);
@@ -66,10 +51,6 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/leaderboard')
   async usersLeaderboard(
     @Param() context: ContractContext,
@@ -85,10 +66,6 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/:dao')
   async daoTotal(
     @Param() context: DaoContractContext,
@@ -104,10 +81,6 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/:dao/history')
   async daoUsersHistory(
     @Param() context: DaoContractContext,

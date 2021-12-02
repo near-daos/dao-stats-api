@@ -22,7 +22,9 @@ export class GeneralService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(context: DaoContractContext): Promise<GeneralTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<GeneralTotalResponse> {
     const daoCount = await this.transactionService.getContractTotalCount(
       context,
     );

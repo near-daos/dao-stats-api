@@ -22,7 +22,9 @@ export class UsersService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(context: DaoContractContext): Promise<UsersTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<UsersTotalResponse> {
     const usersCount = await this.transactionService.getUsersTotalCount(
       context,
     );
@@ -46,7 +48,7 @@ export class UsersService {
   }
 
   async totalsHistory(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
