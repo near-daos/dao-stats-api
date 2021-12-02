@@ -252,7 +252,7 @@ export class TransactionService {
       `,
     );
 
-    return qr?.[0].count;
+    return qr?.[0]?.count;
   }
 
   async getUsersCountHistory(
@@ -416,6 +416,26 @@ export class TransactionService {
     return {
       metrics: byDays.flat().sort((a, b) => a.end - b.end),
     };
+  }
+
+  async getTransactionTotalCount(
+    context: DaoContractContext | ContractContext,
+    from?: number,
+    to?: number,
+  ): Promise<number> {
+    const { contract, dao } = context as DaoContractContext;
+
+    const qr = await this.connection.query(
+      `
+        select count(transaction_hash) from transactions 
+        where contract_id = '${contract}'
+        ${dao ? `and receiver_account_id = '${dao}'` : ''}
+        ${from ? `and block_timestamp > ${from}` : ''}
+        ${to ? `and block_timestamp < ${to}` : ''}
+      `,
+    );
+
+    return qr?.[0]?.count;
   }
 
   async findTransactions(

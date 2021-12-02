@@ -21,6 +21,7 @@ import {
 } from '@dao-stats/common/entities';
 import { UsersModule } from './users/users.module';
 import { ActivityModule } from './activity/activity.module';
+import { FlowModule } from './flow/flow.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ActivityModule } from './activity/activity.module';
     GeneralModule,
     UsersModule,
     ActivityModule,
+    FlowModule,
   ],
   controllers: [AppController],
   providers: [ContractInterceptor],
