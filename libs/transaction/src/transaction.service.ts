@@ -2,7 +2,7 @@ import { Transaction } from '@dao-stats/common/entities/transaction.entity';
 import { TransactionType } from '@dao-stats/common/types/transaction-type';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
-import { Connection, Repository } from 'typeorm';
+import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
@@ -39,8 +39,13 @@ export class TransactionService {
   ): Promise<number> {
     const { contract, dao } = context;
 
-    let queryBuilder = this.transactionRepository
-      .createQueryBuilder('transaction')
+    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+      this.transactionRepository.createQueryBuilder('transaction'),
+      from,
+      to,
+    );
+
+    queryBuilder = queryBuilder
       .where('transaction.contractId = :contract', { contract })
       .andWhere('transaction.type = :type', {
         type: TransactionType.CreateDao,
@@ -48,18 +53,6 @@ export class TransactionService {
 
     queryBuilder = dao
       ? queryBuilder.andWhere('transaction.receiver_account_id = :dao', { dao })
-      : queryBuilder;
-
-    queryBuilder = from
-      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
-          from,
-        })
-      : queryBuilder;
-
-    queryBuilder = to
-      ? queryBuilder.andWhere('transaction.block_timestamp < :to', {
-          to,
-        })
       : queryBuilder;
 
     return queryBuilder.getCount();
@@ -382,27 +375,62 @@ export class TransactionService {
     };
   }
 
+  async getProposalsTotalCount(
+    context: DaoContractContext,
+    from?: number,
+    to?: number,
+  ): Promise<number> {
+    return this.getProposalQueryBuilder(context, from, to).getCount();
+  }
+
+  async getProposalsCountHistory(
+    context: DaoContractContext,
+    from?: number,
+    to?: number,
+  ): Promise<MetricResponse> {
+    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
+      (day) => ({
+        ...day,
+        start: millisToNanos(from),
+      }),
+    );
+
+    // TODO: optimize day-by-day querying
+    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .process(async ({ start, end }) => {
+        const count = await this.getProposalQueryBuilder(
+          context,
+          start,
+          end,
+        ).getCount();
+
+        return { count, start, end };
+      });
+
+    if (errors && errors.length) {
+      errors.map((error) => this.logger.error(error));
+    }
+
+    return {
+      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+    };
+  }
+
   async findTransactions(
     contractId: string,
     from?: number,
     to?: number,
   ): Promise<Transaction[]> {
-    let queryBuilder = this.transactionRepository
-      .createQueryBuilder('transaction')
+    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+      this.transactionRepository.createQueryBuilder('transaction'),
+      from,
+      to,
+    );
+
+    queryBuilder = queryBuilder
       .where('transaction.contractId = :contractId', { contractId })
       .orderBy('transaction.block_timestamp', 'ASC');
-
-    queryBuilder = from
-      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
-          from,
-        })
-      : queryBuilder;
-
-    queryBuilder = to
-      ? queryBuilder.andWhere('transaction.block_timestamp < :to', {
-          to,
-        })
-      : queryBuilder;
 
     return queryBuilder.getMany();
   }
@@ -466,5 +494,51 @@ export class TransactionService {
       order by signer_count DESC
       limit 10
     `;
+  }
+
+  private getProposalQueryBuilder(
+    context: DaoContractContext,
+    from?: number,
+    to?: number,
+  ): SelectQueryBuilder<Transaction> {
+    const { contract, dao } = context;
+
+    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+      this.transactionRepository.createQueryBuilder('transaction'),
+      from,
+      to,
+    );
+
+    queryBuilder = queryBuilder
+      .andWhere('transaction.contractId = :contract', { contract })
+      .andWhere('transaction.type = :type', {
+        type: TransactionType.AddProposal,
+      });
+
+    queryBuilder = dao
+      ? queryBuilder.andWhere('transaction.receiver_account_id = :dao', { dao })
+      : queryBuilder;
+
+    return queryBuilder;
+  }
+
+  private getTransactionIntervalQueryBuilder(
+    qb: SelectQueryBuilder<Transaction>,
+    from?: number,
+    to?: number,
+  ): SelectQueryBuilder<Transaction> {
+    qb = from
+      ? qb.andWhere('transaction.block_timestamp > :from', {
+          from,
+        })
+      : qb;
+
+    qb = to
+      ? qb.andWhere('transaction.block_timestamp < :to', {
+          to,
+        })
+      : qb;
+
+    return qb;
   }
 }

@@ -1,8 +1,4 @@
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
-import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -11,17 +7,19 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
-import { UsersTotalResponse } from './dto/users-total.dto';
-import { UsersService } from './users.service';
+import { ActivityTotalResponse } from './dto/activity-total.dto';
+import { ActivityService } from './activity.service';
+import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
+import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 
-@ApiTags('Users')
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+@ApiTags('Activity')
+@Controller('activity')
+export class ActivityController {
+  constructor(private readonly activityService: ActivityService) {}
 
   @ApiResponse({
     status: 200,
-    type: UsersTotalResponse,
+    type: ActivityTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -34,8 +32,8 @@ export class UsersController {
   @Get('/')
   async total(
     @Param() context: DaoContractContext,
-  ): Promise<UsersTotalResponse> {
-    return this.usersService.totals(context);
+  ): Promise<ActivityTotalResponse> {
+    return this.activityService.totals(context);
   }
 
   @ApiResponse({
@@ -51,35 +49,16 @@ export class UsersController {
     type: String,
   })
   @Get('/history')
-  async usersHistory(
+  async totalHistory(
     @Param() context: DaoContractContext,
     @Query() metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.totalsHistory(context, metricQuery);
+    return this.activityService.totalsHistory(context, metricQuery);
   }
 
   @ApiResponse({
     status: 200,
-    type: LeaderboardMetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
-  @Get('/leaderboard')
-  async usersLeaderboard(
-    @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.leaderboard(context);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: UsersTotalResponse,
+    type: ActivityTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -92,8 +71,8 @@ export class UsersController {
   @Get('/:dao')
   async daoTotal(
     @Param() context: DaoContractContext,
-  ): Promise<UsersTotalResponse> {
-    return this.usersService.totals(context);
+  ): Promise<ActivityTotalResponse> {
+    return this.activityService.totals(context);
   }
 
   @ApiResponse({
@@ -109,10 +88,10 @@ export class UsersController {
     type: String,
   })
   @Get('/:dao/history')
-  async daoUsersHistory(
+  async daosTotalHistory(
     @Param() context: DaoContractContext,
     @Query() metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.totalsHistory(context, metricQuery);
+    return this.activityService.totalsHistory(context, metricQuery);
   }
 }
