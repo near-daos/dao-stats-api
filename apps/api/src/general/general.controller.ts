@@ -4,12 +4,7 @@ import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { GeneralService } from './general.service';
@@ -27,13 +22,9 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/')
   async total(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
   }
@@ -46,10 +37,6 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/daos')
   async daos(
     @Param() context: ContractContext,
@@ -66,10 +53,6 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/activity')
   async activity(
     @Param() context: ContractContext,
@@ -86,10 +69,6 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/activity/leaderboard')
   async activityLeaderboard(
     @Param() context: ContractContext,
@@ -105,10 +84,6 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @ApiParam({
-    name: 'contract',
-    type: String,
-  })
   @Get('/:dao')
   async daoTotal(
     @Param() context: DaoContractContext,

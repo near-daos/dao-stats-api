@@ -8,6 +8,7 @@ import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
+import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 
 @Injectable()
 export class TransactionService {
@@ -33,11 +34,11 @@ export class TransactionService {
   }
 
   async getContractTotalCount(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
 
     let queryBuilder = this.getTransactionIntervalQueryBuilder(
       this.transactionRepository.createQueryBuilder('transaction'),
@@ -59,11 +60,11 @@ export class TransactionService {
   }
 
   async getContractActivityTotalCount(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
     const { CreateDao } = TransactionType;
     const query = `
         select count(${
@@ -235,11 +236,11 @@ export class TransactionService {
   }
 
   async getUsersTotalCount(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
 
     const qr = await this.connection.query(
       `
@@ -255,11 +256,11 @@ export class TransactionService {
   }
 
   async getUsersCountHistory(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
     const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
       (day) => ({
         ...day,
@@ -376,7 +377,7 @@ export class TransactionService {
   }
 
   async getProposalsTotalCount(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<number> {
@@ -384,7 +385,7 @@ export class TransactionService {
   }
 
   async getProposalsCountHistory(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
@@ -497,11 +498,11 @@ export class TransactionService {
   }
 
   private getProposalQueryBuilder(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     from?: number,
     to?: number,
   ): SelectQueryBuilder<Transaction> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
 
     let queryBuilder = this.getTransactionIntervalQueryBuilder(
       this.transactionRepository.createQueryBuilder('transaction'),

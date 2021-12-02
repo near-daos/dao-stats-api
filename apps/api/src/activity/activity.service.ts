@@ -1,4 +1,5 @@
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
@@ -20,7 +21,9 @@ export class ActivityService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async totals(context: DaoContractContext): Promise<ActivityTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<ActivityTotalResponse> {
     const proposalsCount = await this.transactionService.getProposalsTotalCount(
       context,
     );
@@ -43,7 +46,7 @@ export class ActivityService {
   }
 
   async totalsHistory(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
