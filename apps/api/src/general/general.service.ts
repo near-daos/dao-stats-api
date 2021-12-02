@@ -11,12 +11,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from 'libs/transaction/src';
 import { Repository } from 'typeorm';
 import { GeneralTotalResponse } from './dto/general-total.dto';
+import { DAOStatsHistoryService } from '@dao-stats/common/dao-stats-history.service';
+import {
+  DAOStatsAggregationFunction,
+  DAOStatsMetric,
+} from '@dao-stats/common/types';
+import { getGrowth } from '../utils';
 
 @Injectable()
 export class GeneralService {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
+    private readonly daoStatsHistoryService: DAOStatsHistoryService,
 
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
@@ -30,7 +37,8 @@ export class GeneralService {
     );
 
     const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = daysFromDate(today);
+
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
       null,
@@ -46,18 +54,36 @@ export class GeneralService {
         millisToNanos(dayAgo.getTime()),
       );
 
+    const groupsCount = await this.daoStatsHistoryService.getAggregationValue(
+      context,
+      DAOStatsAggregationFunction.Sum,
+      DAOStatsMetric.GroupsCount,
+      null,
+      today.getTime(),
+    );
+    const dayAgoGroupsCount =
+      await this.daoStatsHistoryService.getAggregationValue(
+        context,
+        DAOStatsAggregationFunction.Sum,
+        DAOStatsMetric.GroupsCount,
+        null,
+        dayAgo.getTime(),
+      );
+
+    console.log({ groupsCount, dayAgoGroupsCount });
+
     return {
       dao: {
         count: daoCount,
-        growth: Math.floor(
-          ((daoCount - dayAgoDaoCount) / dayAgoDaoCount) * 100,
-        ),
+        growth: getGrowth(daoCount, dayAgoDaoCount),
       },
       activity: {
         count: activity,
-        growth: Math.floor(
-          ((activity - dayAgoActivity) / dayAgoActivity) * 100,
-        ),
+        growth: getGrowth(activity, dayAgoActivity),
+      },
+      groups: {
+        count: groupsCount,
+        growth: getGrowth(groupsCount, dayAgoGroupsCount),
       },
     };
   }
