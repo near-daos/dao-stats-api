@@ -1,5 +1,7 @@
 import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
+import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
+import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { Contract } from '@dao-stats/common/entities';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -38,5 +40,14 @@ export class ActivityService {
         ),
       },
     };
+  }
+
+  async totalsHistory(
+    context: DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { from, to } = metricQuery;
+
+    return this.transactionService.getProposalsCountHistory(context, from, to);
   }
 }
