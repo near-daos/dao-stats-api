@@ -40,7 +40,7 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
-    type: UsersTotalResponse,
+    type: MetricResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -60,7 +60,7 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
-    type: MetricResponse,
+    type: LeaderboardMetricResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -98,7 +98,7 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
-    type: UsersTotalResponse,
+    type: MetricResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
