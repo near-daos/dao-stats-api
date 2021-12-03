@@ -4,14 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { LeaderboardMetricResponse, millisToNanos } from '@dao-stats/common';
-
 import {
   Contract,
   ContractContext,
   DaoContractContext,
   MetricQuery,
   MetricResponse,
+  LeaderboardMetricResponse,
+  millisToNanos,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { ActivityTotalResponse } from './dto/activity-total.dto';

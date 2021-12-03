@@ -4,14 +4,14 @@ import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import {
   ContractContext,
   DaoContractContext,
-  MetricQuery,
   MetricResponse,
+  MetricQuery,
+  MetricQueryPipe,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralTotalResponse } from './dto/general-total.dto';
+import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralService } from './general.service';
-import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('General')
 @Controller('general')

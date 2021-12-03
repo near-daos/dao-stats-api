@@ -1,10 +1,10 @@
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import { ContractContext, DaoContractContext } from '@dao-stats/common';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
-import { FlowService } from './flow.service';
 import { FlowTotalResponse } from './dto/flow-total.dto';
+import { FlowService } from './flow.service';
 
 @ApiTags('Flow')
 @Controller('flow')

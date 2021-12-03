@@ -18,6 +18,7 @@ export class CacheService {
       .subscribe();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async clearCache(eventInfo: any): Promise<any> {
     this.logger.log('Clearing cache...');
 

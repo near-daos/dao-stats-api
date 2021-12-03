@@ -1,11 +1,12 @@
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, Module } from '@nestjs/common';
 
-import { FlowController } from './flow.controller';
 import { CacheConfigService } from '@dao-stats/config/cache';
-import { TransactionModule } from 'libs/transaction/src';
+import { Contract } from '@dao-stats/common';
+import { TransactionModule } from '@dao-stats/transaction';
+
+import { FlowController } from './flow.controller';
 import { FlowService } from './flow.service';
-import { Contract } from '@dao-stats/common/entities';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [

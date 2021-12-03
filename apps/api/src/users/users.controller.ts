@@ -5,13 +5,13 @@ import {
   ContractContext,
   DaoContractContext,
   MetricQuery,
+  MetricQueryPipe,
   MetricResponse,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';
-import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('Users')
 @Controller('users')

@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { millisToNanos } from '@dao-stats/common/utils';
+
 import {
   Contract,
   ContractContext,
@@ -14,6 +14,7 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
+  millisToNanos,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto/general-total.dto';

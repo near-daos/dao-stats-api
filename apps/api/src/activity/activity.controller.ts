@@ -4,15 +4,15 @@ import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import {
   ContractContext,
   DaoContractContext,
-  MetricResponse,
   MetricQuery,
+  MetricQueryPipe,
+  MetricResponse,
+  LeaderboardMetricResponse,
 } from '@dao-stats/common';
 
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
 import { ActivityService } from './activity.service';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('Activity')
 @Controller('activity')
