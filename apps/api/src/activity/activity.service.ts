@@ -2,7 +2,9 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import moment from 'moment';
+import { millisToNanos } from 'libs/common/utils';
+import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 
 import {
   Contract,
@@ -31,18 +33,18 @@ export class ActivityService {
       context,
     );
 
-    const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
-    const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
-      context,
-      millisToNanos(dayAgo.getTime()),
-    );
+    const dayAgoProposalsCount =
+      await this.transactionService.getProposalsTotalCount(
+        context,
+        millisToNanos(moment().subtract(1, 'days').valueOf()),
+      );
 
     return {
       proposals: {
         count: proposalsCount,
         growth: Math.ceil(
-          (dayAgoUsersCount / (proposalsCount - dayAgoUsersCount)) * 100,
+          (dayAgoProposalsCount / (proposalsCount - dayAgoProposalsCount)) *
+            100,
         ),
       },
     };
@@ -55,5 +57,13 @@ export class ActivityService {
     const { from, to } = metricQuery;
 
     return this.transactionService.getProposalsCountHistory(context, from, to);
+  }
+
+  async leaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contract } = contractContext;
+
+    return this.transactionService.getProposalsLeaderboard(contract);
   }
 }

@@ -2,8 +2,7 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from 'libs/common/utils';
 import {
   Contract,
   ContractContext,
@@ -17,6 +16,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto/general-total.dto';
+import moment from 'moment';
 import { getGrowth } from '../utils';
 
 @Injectable()
@@ -37,13 +37,13 @@ export class GeneralService {
       context,
     );
 
+    const dayAgo = moment().subtract(1, 'days');
     const today = new Date();
-    const dayAgo = daysFromDate(today);
 
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
       null,
-      millisToNanos(dayAgo.getTime()),
+      millisToNanos(dayAgo.valueOf()),
     );
 
     const activity =
@@ -52,7 +52,7 @@ export class GeneralService {
       await this.transactionService.getContractActivityTotalCount(
         context,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       );
 
     const groupsCount = await this.daoStatsHistoryService.getAggregationValue(
@@ -68,10 +68,8 @@ export class GeneralService {
         DAOStatsAggregationFunction.Sum,
         DAOStatsMetric.GroupsCount,
         null,
-        dayAgo.getTime(),
+        dayAgo.valueOf(),
       );
-
-    console.log({ groupsCount, dayAgoGroupsCount });
 
     return {
       dao: {

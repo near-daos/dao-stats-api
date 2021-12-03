@@ -3,8 +3,9 @@ import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
-
-import { millisToNanos } from '@dao-stats/astro/utils';
+import { RedisService } from 'libs/redis/src';
+import moment from 'moment';
+import { millisToNanos } from 'libs/common/utils';
 import {
   Aggregator,
   Transaction,
@@ -24,6 +25,7 @@ export class AggregatorService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DAOStatsService,
     private readonly daoStatsHistoryService: DAOStatsHistoryService,
+    private readonly redisService: RedisService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -53,11 +55,10 @@ export class AggregatorService {
         contractId,
       );
 
-      const today = new Date();
-      const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
+      const yearAgo = moment().subtract(1, 'year');
 
-      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.getTime());
-      const to = millisToNanos(new Date().getTime());
+      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.valueOf());
+      const to = millisToNanos(moment().valueOf());
 
       const { transactions, metrics } = await aggregationService.aggregate(
         contractId,

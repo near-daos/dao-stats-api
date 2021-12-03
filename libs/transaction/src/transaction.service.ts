@@ -2,8 +2,9 @@ import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
+import moment from 'moment';
+import { millisToNanos } from 'libs/common/utils';
 
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import {
   ContractContext,
   DaoContractContext,
@@ -12,6 +13,7 @@ import {
   Transaction,
   TransactionType,
 } from '@dao-stats/common';
+import { getDailyIntervals } from 'apps/api/src/utils';
 
 @Injectable()
 export class TransactionService {
@@ -72,7 +74,7 @@ export class TransactionService {
     const query = `
         select count(${
           dao ? '' : 'distinct'
-        } receiver_account_id) from transactions 
+        } receiver_account_id)::int from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
@@ -90,12 +92,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { CreateDao } = TransactionType;
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -103,7 +100,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(receiver_account_id) from transactions 
+            select count(receiver_account_id)::int from transactions 
             where contract_id = '${contractId}' and type = '${CreateDao}'
             ${end ? `and block_timestamp < ${end}` : ''}
           `,
@@ -117,7 +114,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -126,7 +129,7 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || new Date().getTime());
+    const days = getDailyIntervals(from, to || moment().valueOf());
 
     const { CreateDao } = TransactionType;
 
@@ -136,7 +139,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct receiver_account_id) from transactions 
+            select count(distinct receiver_account_id)::int from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             ${start ? `and block_timestamp > ${start}` : ''}
             ${end ? `and block_timestamp < ${end}` : ''}
@@ -151,7 +154,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -160,12 +169,8 @@ export class TransactionService {
   ): Promise<LeaderboardMetricResponse> {
     const { CreateDao } = TransactionType;
 
-    const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const days = this.getDailyIntervals(
-      weekAgo.getTime(),
-      new Date().getTime(),
-    );
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -173,7 +178,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(receiver_account_id), receiver_account_id from transactions 
+            select count(receiver_account_id)::int, receiver_account_id from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             
             ${start ? `and block_timestamp > ${start}` : ''}
@@ -189,12 +194,12 @@ export class TransactionService {
       errors.map((error) => this.logger.error(error));
     }
 
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity = await this.connection.query(
       this.getTotalActivityQuery(
         contractId,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       ),
     );
 
@@ -202,7 +207,7 @@ export class TransactionService {
       this.getTotalActivityQuery(
         contractId,
         null,
-        millisToNanos(today.getTime()),
+        millisToNanos(moment().valueOf()),
       ),
     );
 
@@ -221,12 +226,12 @@ export class TransactionService {
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
-          overview: days.map((day) => ({
-            ...day,
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
             count:
               byDays.find(
-                ({ receiver_account_id, start }) =>
-                  receiver_account_id === dao && start === day.start,
+                ({ receiver_account_id, end }) =>
+                  receiver_account_id === dao && end === timestamp,
               )?.count || 0,
           })),
         };
@@ -247,7 +252,7 @@ export class TransactionService {
 
     const qr = await this.connection.query(
       `
-        select count(distinct signer_account_id) from transactions 
+        select count(distinct signer_account_id)::int from transactions 
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
@@ -255,7 +260,7 @@ export class TransactionService {
       `,
     );
 
-    return qr?.[0].count;
+    return qr?.[0]?.count;
   }
 
   async getUsersCountHistory(
@@ -264,12 +269,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { contract, dao } = context as DaoContractContext;
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -277,7 +277,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct signer_account_id) from transactions 
+            select count(distinct signer_account_id)::int from transactions 
             where contract_id = '${contract}'
             ${dao ? `and receiver_account_id = '${dao}'` : ''}
             ${end ? `and block_timestamp < ${end}` : ''}
@@ -292,7 +292,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -301,12 +307,8 @@ export class TransactionService {
   ): Promise<LeaderboardMetricResponse> {
     const { CreateDao } = TransactionType;
 
-    const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const days = this.getDailyIntervals(
-      weekAgo.getTime(),
-      new Date().getTime(),
-    );
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -314,7 +316,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct signer_account_id), receiver_account_id from transactions 
+            select count(distinct signer_account_id)::int, receiver_account_id from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             
             ${start ? `and block_timestamp > ${start}` : ''}
@@ -323,19 +325,19 @@ export class TransactionService {
           `,
         );
 
-        return { ...qr?.[0], start, end };
+        return { usersCount: [...qr], start, end };
       });
 
     if (errors && errors.length) {
       errors.map((error) => this.logger.error(error));
     }
 
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity = await this.connection.query(
       this.getUsersActivityQuery(
         contractId,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       ),
     );
 
@@ -343,7 +345,7 @@ export class TransactionService {
       this.getUsersActivityQuery(
         contractId,
         null,
-        millisToNanos(today.getTime()),
+        millisToNanos(moment().valueOf()),
       ),
     );
 
@@ -362,13 +364,14 @@ export class TransactionService {
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
-          overview: days.map((day) => ({
-            ...day,
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
             count:
-              byDays.find(
-                ({ receiver_account_id, start }) =>
-                  receiver_account_id === dao && start === day.start,
-              )?.count || 0,
+              byDays
+                .find(({ end }) => end === timestamp)
+                ?.usersCount?.find(
+                  ({ receiver_account_id }) => receiver_account_id === dao,
+                )?.count || 0,
           })),
         };
       },
@@ -392,12 +395,7 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -405,7 +403,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const count = await this.getProposalQueryBuilder(
           context,
-          start,
+          null,
           end,
         ).getCount();
 
@@ -417,7 +415,105 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
+    };
+  }
+
+  async getTransactionTotalCount(
+    context: DaoContractContext | ContractContext,
+    from?: number,
+    to?: number,
+  ): Promise<number> {
+    const { contract, dao } = context as DaoContractContext;
+
+    const qr = await this.connection.query(
+      `
+        select count(transaction_hash)::int from transactions 
+        where contract_id = '${contract}'
+        ${dao ? `and receiver_account_id = '${dao}'` : ''}
+        ${from ? `and block_timestamp > ${from}` : ''}
+        ${to ? `and block_timestamp < ${to}` : ''}
+      `,
+    );
+
+    return qr?.[0]?.count;
+  }
+
+  async getProposalsLeaderboard(
+    contractId: string,
+  ): Promise<LeaderboardMetricResponse> {
+    const today = moment();
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), today.valueOf());
+
+    // TODO: optimize day-by-day querying
+    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .process(async ({ start, end }) => {
+        const qr = await this.connection.query(
+          this.getProposalsLeaderboardQuery(contractId, null, end),
+        );
+
+        return { proposalsCount: [...qr], start, end };
+      });
+
+    if (errors && errors.length) {
+      errors.map((error) => this.logger.error(error));
+    }
+
+    const dayAgo = moment().subtract(1, 'days');
+    const dayAgoProposalsCount = await this.connection.query(
+      this.getProposalsLeaderboardQuery(
+        contractId,
+        null,
+        millisToNanos(dayAgo.valueOf()),
+      ),
+    );
+
+    const totalProposalsCount = await this.connection.query(
+      this.getProposalsLeaderboardQuery(
+        contractId,
+        null,
+        millisToNanos(today.valueOf()),
+      ),
+    );
+
+    const metrics = totalProposalsCount.map(
+      ({ receiver_account_id: dao, signer_count: count }) => {
+        const dayAgoCount =
+          dayAgoProposalsCount.find(
+            ({ receiver_account_id }) => receiver_account_id === dao,
+          )?.signer_count || 0;
+
+        return {
+          dao,
+          activity: {
+            count,
+            growth: Math.floor(
+              ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
+            ),
+          },
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
+            count:
+              byDays
+                .find(({ end }) => end === timestamp)
+                ?.proposalsCount?.find(
+                  ({ receiver_account_id }) => receiver_account_id === dao,
+                )?.signer_count || 0,
+          })),
+        };
+      },
+    );
+
+    return {
+      metrics,
     };
   }
 
@@ -439,29 +535,13 @@ export class TransactionService {
     return queryBuilder.getMany();
   }
 
-  private getDailyIntervals(
-    from: number,
-    to: number,
-  ): { start: number; end: number }[] {
-    let timestamp = from;
-    const days = [];
-    while (true) {
-      const dayStart = timestamp;
-      const dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
-
-      days.push({
-        start: millisToNanos(dayStart),
-        end: millisToNanos(dayEnd),
-      });
-
-      if (timestamp > to) {
-        break;
-      }
-
-      timestamp = dayEnd;
-    }
-
-    return days;
+  async getFirstTransaction(contractId: string): Promise<Transaction> {
+    return this.transactionRepository.findOne({
+      where: {
+        contractId,
+      },
+      order: { blockTimestamp: 'ASC' },
+    });
   }
 
   private getTotalActivityQuery(
@@ -472,7 +552,7 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     return `
-      select count(receiver_account_id) as receiver_count, receiver_account_id from transactions 
+      select count(receiver_account_id)::int as receiver_count, receiver_account_id from transactions 
       where contract_id = '${contractId}' and type != '${CreateDao}'
       ${from ? `and block_timestamp > ${from}` : ''}
       ${to ? `and block_timestamp < ${to}` : ''}
@@ -490,13 +570,30 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     return `
-      select count(distinct signer_account_id) as signer_count, receiver_account_id from transactions 
+      select count(distinct signer_account_id)::int as signer_count, receiver_account_id from transactions 
       where contract_id = '${contractId}' and type != '${CreateDao}'
       ${from ? `and block_timestamp > ${from}` : ''}
       ${to ? `and block_timestamp < ${to}` : ''}
       group by receiver_account_id
       order by signer_count DESC
       limit 10
+    `;
+  }
+
+  private getProposalsLeaderboardQuery(
+    contractId: string,
+    from?: number,
+    to?: number,
+  ): string {
+    const { AddProposal } = TransactionType;
+
+    return `
+        select count(signer_account_id)::int as signer_count, receiver_account_id from transactions 
+        where contract_id = '${contractId}' and type = '${AddProposal}'
+        ${from ? `and block_timestamp > ${from}` : ''}
+        ${to ? `and block_timestamp < ${to}` : ''}
+        group by receiver_account_id
+        order by signer_count DESC
     `;
   }
 

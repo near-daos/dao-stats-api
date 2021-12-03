@@ -11,6 +11,7 @@ import {
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { GeneralService } from './general.service';
+import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('General')
 @Controller('general')
@@ -43,7 +44,7 @@ export class GeneralController {
   @Get('/daos')
   async daos(
     @Param() context: ContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.daos(context, metricQuery);
   }
@@ -59,7 +60,7 @@ export class GeneralController {
   @Get('/activity')
   async activity(
     @Param() context: ContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.activity(context, metricQuery);
   }

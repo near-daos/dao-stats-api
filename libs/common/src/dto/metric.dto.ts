@@ -2,10 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class Metric {
   @ApiProperty()
-  start: number;
-
-  @ApiProperty()
-  end: number;
+  timestamp: number;
 
   @ApiProperty()
   count: number;

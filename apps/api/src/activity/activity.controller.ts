@@ -11,6 +11,8 @@ import {
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
 import { ActivityService } from './activity.service';
+import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
+import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('Activity')
 @Controller('activity')
@@ -43,9 +45,24 @@ export class ActivityController {
   @Get('/history')
   async totalHistory(
     @Param() context: ContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.activityService.totalsHistory(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/leaderboard')
+  async usersLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.activityService.leaderboard(context);
   }
 
   @ApiResponse({
@@ -74,7 +91,7 @@ export class ActivityController {
   @Get('/:dao/history')
   async daosTotalHistory(
     @Param() context: DaoContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.activityService.totalsHistory(context, metricQuery);
   }

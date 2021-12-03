@@ -8,6 +8,10 @@ import configuration, {
   validate,
 } from '@dao-stats/config/api-config';
 import { HttpCacheModule } from '@dao-stats/cache';
+
+import { RedisModule } from 'libs/redis/src/redis.module';
+import { GeneralModule } from './general/general.module';
+import { ContractInterceptor } from './interceptors/contract.interceptor';
 import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import {
   Contract,
@@ -15,13 +19,11 @@ import {
   ReceiptAction,
   Transaction,
 } from '@dao-stats/common';
-import { RedisModule } from '@dao-stats/redis';
 
-import { AppController } from './api.controller';
-import { GeneralModule } from './general/general.module';
-import { ContractInterceptor } from './interceptors/contract.interceptor';
 import { UsersModule } from './users/users.module';
 import { ActivityModule } from './activity/activity.module';
+import { FlowModule } from './flow/flow.module';
+import { ContractModule } from './contract/contract.module';
 
 @Module({
   imports: [
@@ -40,11 +42,12 @@ import { ActivityModule } from './activity/activity.module';
     TypeOrmModule.forFeature([Contract, Receipt, ReceiptAction, Transaction]),
     HttpCacheModule,
     RedisModule,
+    ContractModule,
     GeneralModule,
     UsersModule,
     ActivityModule,
+    FlowModule,
   ],
-  controllers: [AppController],
   providers: [ContractInterceptor],
 })
 export class AppModule {}

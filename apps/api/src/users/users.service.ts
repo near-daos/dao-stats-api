@@ -2,8 +2,8 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { millisToNanos } from 'libs/common/utils';
 
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
 import {
   Contract,
   ContractContext,
@@ -14,6 +14,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { UsersTotalResponse } from './dto/users-total.dto';
+import moment from 'moment';
 
 @Injectable()
 export class UsersService {
@@ -32,12 +33,11 @@ export class UsersService {
       context,
     );
 
-    const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
       context,
       null,
-      millisToNanos(dayAgo.getTime()),
+      millisToNanos(dayAgo.valueOf()),
     );
 
     return {

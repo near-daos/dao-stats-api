@@ -52,6 +52,7 @@
     "firebase-admin": "^9.10.0",
     "ioredis": "^4.14.1",
     "js-yaml": "^4.1.0",
+    "moment": "^2.29.1",
     "near-api-js": "^0.43.1",
     "object-hash": "^2.2.0",
     "parse-redis-url-simple": "^1.0.2",
