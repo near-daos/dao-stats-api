@@ -72,8 +72,6 @@ export class GeneralService {
         dayAgo.valueOf(),
       );
 
-    console.log({ groupsCount, dayAgoGroupsCount });
-
     return {
       dao: {
         count: daoCount,

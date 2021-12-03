@@ -73,7 +73,7 @@ export class TransactionService {
     const query = `
         select count(${
           dao ? '' : 'distinct'
-        } receiver_account_id) from transactions 
+        } receiver_account_id)::int from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
@@ -99,7 +99,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(receiver_account_id) from transactions 
+            select count(receiver_account_id)::int from transactions 
             where contract_id = '${contractId}' and type = '${CreateDao}'
             ${end ? `and block_timestamp < ${end}` : ''}
           `,
@@ -138,7 +138,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct receiver_account_id) from transactions 
+            select count(distinct receiver_account_id)::int from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             ${start ? `and block_timestamp > ${start}` : ''}
             ${end ? `and block_timestamp < ${end}` : ''}
@@ -177,7 +177,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(receiver_account_id), receiver_account_id from transactions 
+            select count(receiver_account_id)::int, receiver_account_id from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             
             ${start ? `and block_timestamp > ${start}` : ''}
@@ -251,7 +251,7 @@ export class TransactionService {
 
     const qr = await this.connection.query(
       `
-        select count(distinct signer_account_id) from transactions 
+        select count(distinct signer_account_id)::int from transactions 
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
@@ -276,7 +276,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct signer_account_id) from transactions 
+            select count(distinct signer_account_id)::int from transactions 
             where contract_id = '${contract}'
             ${dao ? `and receiver_account_id = '${dao}'` : ''}
             ${end ? `and block_timestamp < ${end}` : ''}
@@ -315,7 +315,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const qr = await this.connection.query(
           `
-            select count(distinct signer_account_id), receiver_account_id from transactions 
+            select count(distinct signer_account_id)::int, receiver_account_id from transactions 
             where contract_id = '${contractId}' and type != '${CreateDao}'
             
             ${start ? `and block_timestamp > ${start}` : ''}
@@ -324,7 +324,7 @@ export class TransactionService {
           `,
         );
 
-        return { ...qr?.[0], start, end };
+        return { usersCount: [...qr], start, end };
       });
 
     if (errors && errors.length) {
@@ -366,10 +366,11 @@ export class TransactionService {
           overview: days.map(({ end: timestamp }) => ({
             timestamp,
             count:
-              byDays.find(
-                ({ receiver_account_id, end }) =>
-                  receiver_account_id === dao && end === timestamp,
-              )?.count || 0,
+              byDays
+                .find(({ end }) => end === timestamp)
+                ?.usersCount?.find(
+                  ({ receiver_account_id }) => receiver_account_id === dao,
+                )?.count || 0,
           })),
         };
       },
@@ -432,7 +433,7 @@ export class TransactionService {
 
     const qr = await this.connection.query(
       `
-        select count(transaction_hash) from transactions 
+        select count(transaction_hash)::int from transactions 
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp > ${from}` : ''}
@@ -566,7 +567,7 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     return `
-      select count(receiver_account_id) as receiver_count, receiver_account_id from transactions 
+      select count(receiver_account_id)::int as receiver_count, receiver_account_id from transactions 
       where contract_id = '${contractId}' and type != '${CreateDao}'
       ${from ? `and block_timestamp > ${from}` : ''}
       ${to ? `and block_timestamp < ${to}` : ''}
@@ -584,7 +585,7 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     return `
-      select count(distinct signer_account_id) as signer_count, receiver_account_id from transactions 
+      select count(distinct signer_account_id)::int as signer_count, receiver_account_id from transactions 
       where contract_id = '${contractId}' and type != '${CreateDao}'
       ${from ? `and block_timestamp > ${from}` : ''}
       ${to ? `and block_timestamp < ${to}` : ''}
@@ -602,7 +603,7 @@ export class TransactionService {
     const { AddProposal } = TransactionType;
 
     return `
-        select count(signer_account_id) as signer_count, receiver_account_id from transactions 
+        select count(signer_account_id)::int as signer_count, receiver_account_id from transactions 
         where contract_id = '${contractId}' and type = '${AddProposal}'
         ${from ? `and block_timestamp > ${from}` : ''}
         ${to ? `and block_timestamp < ${to}` : ''}
