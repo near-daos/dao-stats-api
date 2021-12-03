@@ -4,7 +4,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import moment from 'moment';
 
-import { millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos, nanosToMillis } from '@dao-stats/astro/utils';
 import {
   ContractContext,
   DaoContractContext,
@@ -91,7 +91,11 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { CreateDao } = TransactionType;
-    const days = this.getDailyIntervals(from, to || moment().valueOf());
+    const days = await this.getDailyIntervals(
+      contractId,
+      from,
+      to || moment().valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -128,7 +132,11 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || moment().valueOf());
+    const days = await this.getDailyIntervals(
+      contractId,
+      from,
+      to || moment().valueOf(),
+    );
 
     const { CreateDao } = TransactionType;
 
@@ -169,7 +177,11 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     const weekAgo = moment().subtract(7, 'days');
-    const days = this.getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const days = await this.getDailyIntervals(
+      contractId,
+      weekAgo.valueOf(),
+      moment().valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -268,7 +280,11 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { contract, dao } = context as DaoContractContext;
-    const days = this.getDailyIntervals(from, to || moment().valueOf());
+    const days = await this.getDailyIntervals(
+      contract,
+      from,
+      to || moment().valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -307,7 +323,11 @@ export class TransactionService {
     const { CreateDao } = TransactionType;
 
     const weekAgo = moment().subtract(7, 'days');
-    const days = this.getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const days = await this.getDailyIntervals(
+      contractId,
+      weekAgo.valueOf(),
+      moment().valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -394,7 +414,11 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || moment().valueOf());
+    const days = await this.getDailyIntervals(
+      context.contract,
+      from,
+      to || moment().valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -449,7 +473,11 @@ export class TransactionService {
   ): Promise<LeaderboardMetricResponse> {
     const today = moment();
     const weekAgo = moment().subtract(7, 'days');
-    const days = this.getDailyIntervals(weekAgo.valueOf(), today.valueOf());
+    const days = await this.getDailyIntervals(
+      contractId,
+      weekAgo.valueOf(),
+      today.valueOf(),
+    );
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -534,11 +562,18 @@ export class TransactionService {
     return queryBuilder.getMany();
   }
 
-  private getDailyIntervals(
+  private async getDailyIntervals(
+    contractId: string,
     from: number,
     to: number,
-  ): { start: number; end: number }[] {
+  ): Promise<{ start: number; end: number }[]> {
     let timestamp = from;
+    if (!timestamp) {
+      const tx = await this.getFirstTransaction(contractId);
+
+      timestamp = nanosToMillis(tx.blockTimestamp);
+    }
+
     const days = [];
     while (true) {
       const dayStart = timestamp;
@@ -656,5 +691,14 @@ export class TransactionService {
       : qb;
 
     return qb;
+  }
+
+  private getFirstTransaction(contractId: string): Promise<Transaction> {
+    return this.transactionRepository.findOne({
+      where: {
+        contractId,
+      },
+      order: { blockTimestamp: 'ASC' },
+    });
   }
 }
