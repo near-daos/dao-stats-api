@@ -110,7 +110,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -144,7 +150,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -210,12 +222,12 @@ export class TransactionService {
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
-          overview: days.map((day) => ({
-            ...day,
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
             count:
               byDays.find(
-                ({ receiver_account_id, start }) =>
-                  receiver_account_id === dao && start === day.start,
+                ({ receiver_account_id, end }) =>
+                  receiver_account_id === dao && end === timestamp,
               )?.count || 0,
           })),
         };
@@ -276,7 +288,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -342,12 +360,12 @@ export class TransactionService {
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
-          overview: days.map((day) => ({
-            ...day,
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
             count:
               byDays.find(
-                ({ receiver_account_id, start }) =>
-                  receiver_account_id === dao && start === day.start,
+                ({ receiver_account_id, end }) =>
+                  receiver_account_id === dao && end === timestamp,
               )?.count || 0,
           })),
         };
@@ -392,7 +410,13 @@ export class TransactionService {
     }
 
     return {
-      metrics: byDays.flat().sort((a, b) => a.end - b.end),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -470,11 +494,11 @@ export class TransactionService {
               ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
             ),
           },
-          overview: days.map((day) => ({
-            ...day,
+          overview: days.map(({ end: timestamp }) => ({
+            timestamp,
             count:
               byDays
-                .find(({ start }) => start === day.start)
+                .find(({ end }) => end === timestamp)
                 ?.proposalsCount?.find(
                   ({ receiver_account_id }) => receiver_account_id === dao,
                 )?.signer_count || 0,
