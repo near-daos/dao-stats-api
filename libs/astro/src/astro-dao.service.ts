@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
-import { DAO } from '@dao-stats/common/interfaces';
+import { DAO } from '@dao-stats/common';
 import { Contract, TokenContract, FactoryContract } from './types';
 
 @Injectable()

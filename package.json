@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "build-api": "nest build api",
+    "build-astro": "nest build astro",
     "build-aggregator": "nest build aggregator",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start-api": "nest start api",
@@ -129,8 +130,8 @@
       "@dao-stats/astro": "<rootDir>/libs/astro/src",
       "@dao-stats/sputnik-dao/(.*)": "<rootDir>/libs/sputnik-dao/src/$1",
       "@dao-stats/sputnik-dao": "<rootDir>/libs/sputnik-dao/src",
-      "@sputnik-v2/transaction/(.*)": "<rootDir>/libs/transaction/src/$1",
-      "@sputnik-v2/transaction": "<rootDir>/libs/transaction/src"
+      "@dao-stats/transaction/(.*)": "<rootDir>/libs/transaction/src/$1",
+      "@dao-stats/transaction": "<rootDir>/libs/transaction/src"
     }
   }
 }

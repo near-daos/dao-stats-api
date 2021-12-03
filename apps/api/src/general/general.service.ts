@@ -1,22 +1,30 @@
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
-import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
-import { Contract } from '@dao-stats/common/entities';
+import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TransactionService } from 'libs/transaction/src';
-import { Repository } from 'typeorm';
+
+import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import {
+  Contract,
+  ContractContext,
+  DaoContractContext,
+  DAOStatsHistoryService,
+  DAOStatsAggregationFunction,
+  DAOStatsMetric,
+  MetricQuery,
+  MetricResponse,
+  LeaderboardMetricResponse,
+} from '@dao-stats/common';
+import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto/general-total.dto';
+import { getGrowth } from '../utils';
 
 @Injectable()
 export class GeneralService {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
+    private readonly daoStatsHistoryService: DAOStatsHistoryService,
 
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
@@ -30,7 +38,8 @@ export class GeneralService {
     );
 
     const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = daysFromDate(today);
+
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
       null,
@@ -46,18 +55,36 @@ export class GeneralService {
         millisToNanos(dayAgo.getTime()),
       );
 
+    const groupsCount = await this.daoStatsHistoryService.getAggregationValue(
+      context,
+      DAOStatsAggregationFunction.Sum,
+      DAOStatsMetric.GroupsCount,
+      null,
+      today.getTime(),
+    );
+    const dayAgoGroupsCount =
+      await this.daoStatsHistoryService.getAggregationValue(
+        context,
+        DAOStatsAggregationFunction.Sum,
+        DAOStatsMetric.GroupsCount,
+        null,
+        dayAgo.getTime(),
+      );
+
+    console.log({ groupsCount, dayAgoGroupsCount });
+
     return {
       dao: {
         count: daoCount,
-        growth: Math.floor(
-          ((daoCount - dayAgoDaoCount) / dayAgoDaoCount) * 100,
-        ),
+        growth: getGrowth(daoCount, dayAgoDaoCount),
       },
       activity: {
         count: activity,
-        growth: Math.floor(
-          ((activity - dayAgoActivity) / dayAgoActivity) * 100,
-        ),
+        growth: getGrowth(activity, dayAgoActivity),
+      },
+      groups: {
+        count: groupsCount,
+        growth: getGrowth(groupsCount, dayAgoGroupsCount),
       },
     };
   }

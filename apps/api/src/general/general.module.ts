@@ -1,11 +1,15 @@
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, Module } from '@nestjs/common';
 
-import { GeneralController } from './general.controller';
 import { CacheConfigService } from '@dao-stats/config/cache';
-import { TransactionModule } from 'libs/transaction/src';
+import {
+  Contract,
+  DAOStatsModule,
+  DAOStatsHistoryModule,
+} from '@dao-stats/common';
+import { TransactionModule } from '@dao-stats/transaction';
+import { GeneralController } from './general.controller';
 import { GeneralService } from './general.service';
-import { Contract } from '@dao-stats/common/entities';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -14,6 +18,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
     TypeOrmModule.forFeature([Contract]),
     TransactionModule,
+    DAOStatsModule,
+    DAOStatsHistoryModule,
   ],
   providers: [GeneralService],
   controllers: [GeneralController],

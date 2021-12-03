@@ -1,11 +1,17 @@
-import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
-import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
+import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
-import { DAOStatsMetric, TransactionType } from '@dao-stats/common/types';
-import { DAOStatsDto, TransactionDto } from '@dao-stats/common/dto';
+
+import {
+  AggregationOutput,
+  Aggregator,
+  DAOStatsMetric,
+  DAOStatsDto,
+  TransactionDto,
+  TransactionType,
+} from '@dao-stats/common';
+import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
 import { AstroDAOService } from './astro-dao.service';
 import { RoleGroup } from './types';
 import {

@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { Contract } from '.';
-import { HasContract } from '../interfaces/has-contract.interface';
+import { HasContract } from '../interfaces';
 
 import { ReceiptAction } from './receipt-action.entity';
 import { Transaction } from './transaction.entity';
@@ -31,14 +31,14 @@ export class Receipt implements HasContract {
   @Column()
   originatedFromTransactionHash: string;
 
-  @ManyToOne((_) => Transaction, (transaction) => transaction.receipts)
+  @ManyToOne(() => Transaction, (transaction) => transaction.receipts)
   @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction?: Transaction;
 
   @Column({ type: 'bigint' })
   includedInBlockTimestamp: number;
 
-  @OneToMany((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
+  @OneToMany(() => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
   })

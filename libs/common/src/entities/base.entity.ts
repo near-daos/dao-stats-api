@@ -1,6 +1,6 @@
-import { ApiHideProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { CreateDateColumn, UpdateDateColumn, Column } from 'typeorm';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 export abstract class BaseEntity {
   @ApiHideProperty()

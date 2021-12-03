@@ -6,12 +6,10 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { Contract } from '.';
-import { BaseEntity } from '..';
-import { HasContract } from '../interfaces/has-contract.interface';
-import { TransactionType } from '../types/transaction-type';
-
-import { Receipt } from './receipt.entity';
+import { Contract, Receipt } from '.';
+import { BaseEntity } from './base.entity';
+import { HasContract } from '../interfaces';
+import { TransactionType } from '../types';
 
 @Entity({ name: 'transactions' })
 export class Transaction extends BaseEntity implements HasContract {

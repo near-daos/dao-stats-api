@@ -8,12 +8,11 @@ import configuration, {
   validate,
 } from '@dao-stats/config/aggregator-config';
 
-import { AggregatorService } from './aggregator.service';
 import { AggregatorValidationSchema } from '@dao-stats/config/validation';
-import { RedisModule } from 'libs/redis/src/redis.module';
-import { TransactionModule } from 'libs/transaction/src';
-import { DAOStatsModule } from '@dao-stats/common/dao-stats.module';
-import { DAOStatsHistoryModule } from '@dao-stats/common/dao-stats-history.module';
+import { RedisModule } from '@dao-stats/redis';
+import { TransactionModule } from '@dao-stats/transaction';
+import { DAOStatsModule, DAOStatsHistoryModule } from '@dao-stats/common';
+import { AggregatorService } from './aggregator.service';
 
 @Module({
   imports: [

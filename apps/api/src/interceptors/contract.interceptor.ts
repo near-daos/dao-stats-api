@@ -1,4 +1,5 @@
-import { Contract } from '@dao-stats/common/entities';
+import { Repository } from 'typeorm';
+import { Observable, throwError } from 'rxjs';
 import {
   BadRequestException,
   CallHandler,
@@ -7,8 +8,8 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Observable, throwError } from 'rxjs';
-import { Repository } from 'typeorm';
+
+import { Contract } from '@dao-stats/common';
 
 @Injectable()
 export class ContractInterceptor implements NestInterceptor {
