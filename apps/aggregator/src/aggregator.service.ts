@@ -5,7 +5,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 import { RedisService } from 'libs/redis/src';
 import moment from 'moment';
-import { millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from 'libs/common/utils';
 import {
   Aggregator,
   Transaction,

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
-import { millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from 'libs/common/utils';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 
 import {

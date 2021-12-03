@@ -11,6 +11,7 @@ import {
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';
+import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('Users')
 @Controller('users')
@@ -41,7 +42,7 @@ export class UsersController {
   @Get('/history')
   async usersHistory(
     @Param() context: ContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.usersService.totalsHistory(context, metricQuery);
   }
@@ -87,7 +88,7 @@ export class UsersController {
   @Get('/:dao/history')
   async daoUsersHistory(
     @Param() context: DaoContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.usersService.totalsHistory(context, metricQuery);
   }

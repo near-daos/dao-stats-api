@@ -1,4 +1,4 @@
-import { millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from 'libs/common/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
 import { Contract } from '@dao-stats/common/entities';

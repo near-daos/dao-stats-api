@@ -12,6 +12,7 @@ import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
 import { ActivityService } from './activity.service';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
+import { MetricQueryPipe } from '@dao-stats/common/pipes/metric-query.pipe';
 
 @ApiTags('Activity')
 @Controller('activity')
@@ -44,7 +45,7 @@ export class ActivityController {
   @Get('/history')
   async totalHistory(
     @Param() context: ContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.activityService.totalsHistory(context, metricQuery);
   }
@@ -90,7 +91,7 @@ export class ActivityController {
   @Get('/:dao/history')
   async daosTotalHistory(
     @Param() context: DaoContractContext,
-    @Query() metricQuery: MetricQuery,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.activityService.totalsHistory(context, metricQuery);
   }

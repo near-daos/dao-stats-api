@@ -2,8 +2,8 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { millisToNanos } from 'libs/common/utils';
 
-import { millisToNanos } from '@dao-stats/astro/utils';
 import {
   Contract,
   ContractContext,
