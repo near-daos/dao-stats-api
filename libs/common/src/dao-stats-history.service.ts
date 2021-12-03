@@ -5,6 +5,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { DAOStatsHistory } from './entities';
 import { ContractContext, DaoContractContext } from './dto';
 import { DAOStatsAggregationFunction, DAOStatsMetric } from './types';
+import { DaoStatsHistoryResult } from './interfaces';
 
 @Injectable()
 export class DAOStatsHistoryService {
@@ -32,8 +33,8 @@ export class DAOStatsHistoryService {
     context: ContractContext | DaoContractContext,
     func: DAOStatsAggregationFunction,
     metric: DAOStatsMetric,
-    fromTimestamp?: number,
-    toTimestamp?: number,
+    from?: number,
+    to?: number,
   ): Promise<number> {
     const { contract, dao } = context as DaoContractContext;
 
@@ -41,15 +42,15 @@ export class DAOStatsHistoryService {
       .createQueryBuilder()
       .select(`${func}(value) as value`);
 
-    if (fromTimestamp) {
-      query.andWhere('date >= to_timestamp(:timestamp)::date', {
-        timestamp: fromTimestamp / 1000,
+    if (from) {
+      query.andWhere('date >= to_timestamp(:from)::date', {
+        from: from / 1000,
       });
     }
 
-    if (toTimestamp) {
-      query.andWhere('date <= to_timestamp(:timestamp)::date', {
-        timestamp: toTimestamp / 1000,
+    if (to) {
+      query.andWhere('date <= to_timestamp(:to)::date', {
+        to: to / 1000,
       });
     }
 
@@ -71,5 +72,37 @@ export class DAOStatsHistoryService {
     }
 
     return parseInt(result['value']);
+  }
+
+  async getHistory(
+    contract: string,
+    func: DAOStatsAggregationFunction,
+    metric: DAOStatsMetric,
+    from?: number,
+    to?: number,
+  ): Promise<DaoStatsHistoryResult[]> {
+    const query = this.repository
+      .createQueryBuilder()
+      .select(`date, ${func}(value) as value`);
+
+    if (from) {
+      query.andWhere('date >= to_timestamp(:from)::date', {
+        from: from / 1000,
+      });
+    }
+
+    if (to) {
+      query.andWhere('date <= to_timestamp(:to)::date', {
+        to: to / 1000,
+      });
+    }
+
+    query.andWhere('contract_id = :contract', { contract });
+
+    return query
+      .andWhere('metric = :metric', { metric })
+      .groupBy('date')
+      .orderBy('date', 'DESC')
+      .execute();
   }
 }

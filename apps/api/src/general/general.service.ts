@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,16 +8,15 @@ import {
   Contract,
   ContractContext,
   DaoContractContext,
-  DAOStatsHistoryService,
   DAOStatsAggregationFunction,
+  DAOStatsHistoryService,
   DAOStatsMetric,
+  LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
-  LeaderboardMetricResponse,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto/general-total.dto';
-import moment from 'moment';
 import { getGrowth } from '../utils';
 
 @Injectable()
@@ -25,7 +25,6 @@ export class GeneralService {
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
     private readonly daoStatsHistoryService: DAOStatsHistoryService,
-
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
   ) {}
@@ -113,5 +112,28 @@ export class GeneralService {
     const { contract } = contractContext;
 
     return this.transactionService.getDaoActivityLeaderboard(contract);
+  }
+
+  async groups(
+    contractContext: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contract } = contractContext;
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory(
+      contract,
+      DAOStatsAggregationFunction.Sum,
+      DAOStatsMetric.GroupsCount,
+      from,
+      to,
+    );
+
+    return {
+      metrics: history.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: row.value,
+      })),
+    };
   }
 }
