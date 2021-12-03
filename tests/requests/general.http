@@ -16,5 +16,8 @@ Accept: application/json
 GET http://127.0.0.1:3000/api/v1/astro/general/groups
 Accept: application/json
 ###
+GET http://127.0.0.1:3000/api/v1/astro/general/groups/leaderboard
+Accept: application/json
+###
 GET http://127.0.0.1:3000/api/v1/astro/general/community.sputnik-dao.near
 Accept: application/json

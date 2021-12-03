@@ -5,7 +5,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { DaoStatsHistory } from './entities';
 import { DaoStatsMetric } from './types';
 
-interface DaoStatsHistoryParams {
+interface DaoStatsHistoryValueParams {
   from?: number;
   to?: number;
   contract: string;
@@ -13,6 +13,8 @@ interface DaoStatsHistoryParams {
   metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
 }
+
+type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
 
 interface DaoStatsHistoryHistoryResponse {
   date: Date;
@@ -48,7 +50,7 @@ export class DaoStatsHistoryService {
     dao,
     metric,
     func = 'SUM',
-  }: DaoStatsHistoryParams): Promise<number> {
+  }: DaoStatsHistoryValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value) as value`);
@@ -92,7 +94,7 @@ export class DaoStatsHistoryService {
     contract,
     dao,
     metric,
-  }: DaoStatsHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
+  }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
     const query = this.repository
       .createQueryBuilder()
       .select(`date, ${func}(value) as value`);
@@ -115,10 +117,15 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    return query
+    const result = await query
       .andWhere('metric = :metric', { metric })
       .groupBy('date')
       .orderBy('date', 'DESC')
       .execute();
+
+    return result.map((row) => ({
+      ...row,
+      value: parseInt(row.value),
+    }));
   }
 }

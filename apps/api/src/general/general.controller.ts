@@ -67,6 +67,21 @@ export class GeneralController {
 
   @ApiResponse({
     status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/activity/leaderboard')
+  async activityLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.generalService.activityLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: MetricResponse,
   })
   @ApiBadRequestResponse({
@@ -89,11 +104,11 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/activity/leaderboard')
-  async activityLeaderboard(
+  @Get('/groups/leaderboard')
+  async groupsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.activityLeaderboard(context);
+    return this.generalService.groupsLeaderboard(context);
   }
 
   @ApiResponse({

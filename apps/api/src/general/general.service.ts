@@ -10,6 +10,7 @@ import {
   DaoContractContext,
   DaoStatsHistoryService,
   DaoStatsMetric,
+  DaoStatsService,
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
@@ -23,11 +24,11 @@ export class GeneralService {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
+    private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
-  ) {
-  }
+  ) {}
 
   async totals(
     context: DaoContractContext | ContractContext,
@@ -132,5 +133,50 @@ export class GeneralService {
         count: row.value,
       })),
     };
+  }
+
+  async groupsLeaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contract } = contractContext;
+
+    const dayAgo = moment().subtract(1, 'day');
+    const weekAgo = moment().subtract(1, 'week');
+
+    const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
+      metric: DaoStatsMetric.GroupsCount,
+    });
+
+    const metrics = await Promise.all(
+      leaderboard.map(async ({ dao, value }) => {
+        const prevValue = await this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.GroupsCount,
+          to: dayAgo.valueOf(),
+        });
+        const history = await this.daoStatsHistoryService.getHistory({
+          contract,
+          dao,
+          metric: DaoStatsMetric.GroupsCount,
+          from: weekAgo.valueOf(),
+        });
+
+        return {
+          dao,
+          activity: {
+            count: value,
+            growth: getGrowth(value, prevValue),
+          },
+          overview: history.map((row) => ({
+            timestamp: row.date.valueOf(),
+            count: row.value,
+          })),
+        };
+      }),
+    );
+
+    return { metrics };
   }
 }

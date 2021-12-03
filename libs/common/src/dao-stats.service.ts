@@ -4,11 +4,17 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats } from './entities';
 
-interface DaoStatsParams {
+interface DaoStatsLeaderboardParams {
   contract: string;
   dao?: string;
   metric: string;
   func?: 'AVG' | 'SUM' | 'COUNT';
+  limit?: number;
+}
+
+interface DaoStatsLeaderboardResponse {
+  dao: string;
+  value: number;
 }
 
 @Injectable()
@@ -33,29 +39,32 @@ export class DaoStatsService {
       .execute();
   }
 
-  async getValue({
+  async getLeaderboard({
     contract,
     metric,
     dao,
     func = 'SUM',
-  }: DaoStatsParams): Promise<number> {
+    limit = 10,
+  }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value) as value`)
+      .select(`dao, ${func}(value) as value`)
       .where('contract_id = :contract', { contract });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
-    query.andWhere('metric = :metric', { metric });
+    const result = await query
+      .andWhere('metric = :metric', { metric })
+      .groupBy('dao')
+      .orderBy('value', 'DESC')
+      .take(limit)
+      .execute();
 
-    const result = await query.getRawOne();
-
-    if (!result || !result['value']) {
-      return 0;
-    }
-
-    return parseInt(result['value']);
+    return result.map((row) => ({
+      ...row,
+      value: parseInt(row.value),
+    }));
   }
 }
