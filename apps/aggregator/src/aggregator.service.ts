@@ -9,6 +9,8 @@ import PromisePool from '@supercharge/promise-pool';
 import { TransactionService } from 'libs/transaction/src';
 import { DAOStatsService } from '@dao-stats/common/dao-stats.service';
 import { DAOStatsHistoryService } from '@dao-stats/common/dao-stats-history.service';
+import { RedisService } from 'libs/redis/src';
+import moment from 'moment';
 
 @Injectable()
 export class AggregatorService {
@@ -21,6 +23,7 @@ export class AggregatorService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DAOStatsService,
     private readonly daoStatsHistoryService: DAOStatsHistoryService,
+    private readonly redisService: RedisService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -50,11 +53,10 @@ export class AggregatorService {
         contractId,
       );
 
-      const today = new Date();
-      const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
+      const yearAgo = moment().subtract(1, 'year');
 
-      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.getTime());
-      const to = millisToNanos(new Date().getTime());
+      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.valueOf());
+      const to = millisToNanos(moment().valueOf());
 
       const { transactions, metrics } = await aggregationService.aggregate(
         contractId,

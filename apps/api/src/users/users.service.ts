@@ -1,4 +1,4 @@
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from 'libs/transaction/src';
 import { Repository } from 'typeorm';
 import { UsersTotalResponse } from './dto/users-total.dto';
+import moment from 'moment';
 
 @Injectable()
 export class UsersService {
@@ -29,12 +30,11 @@ export class UsersService {
       context,
     );
 
-    const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
       context,
       null,
-      millisToNanos(dayAgo.getTime()),
+      millisToNanos(dayAgo.valueOf()),
     );
 
     return {

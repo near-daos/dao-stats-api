@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
+import moment from 'moment';
 
 export class MetricQuery {
   @ApiProperty()
@@ -9,5 +10,5 @@ export class MetricQuery {
 
   @ApiProperty({ required: false })
   @IsNumber()
-  to: number = new Date().getTime();
+  to: number = moment().valueOf();
 }

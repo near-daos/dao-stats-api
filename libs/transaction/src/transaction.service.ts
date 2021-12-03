@@ -4,7 +4,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import moment from 'moment';
+import { millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
@@ -87,12 +88,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { CreateDao } = TransactionType;
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = this.getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -123,7 +119,7 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || new Date().getTime());
+    const days = this.getDailyIntervals(from, to || moment().valueOf());
 
     const { CreateDao } = TransactionType;
 
@@ -157,12 +153,8 @@ export class TransactionService {
   ): Promise<LeaderboardMetricResponse> {
     const { CreateDao } = TransactionType;
 
-    const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const days = this.getDailyIntervals(
-      weekAgo.getTime(),
-      new Date().getTime(),
-    );
+    const weekAgo = moment().subtract(7, 'days');
+    const days = this.getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -186,12 +178,12 @@ export class TransactionService {
       errors.map((error) => this.logger.error(error));
     }
 
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity = await this.connection.query(
       this.getTotalActivityQuery(
         contractId,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       ),
     );
 
@@ -199,7 +191,7 @@ export class TransactionService {
       this.getTotalActivityQuery(
         contractId,
         null,
-        millisToNanos(today.getTime()),
+        millisToNanos(moment().valueOf()),
       ),
     );
 
@@ -261,12 +253,7 @@ export class TransactionService {
     to?: number,
   ): Promise<MetricResponse> {
     const { contract, dao } = context as DaoContractContext;
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = this.getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -298,12 +285,8 @@ export class TransactionService {
   ): Promise<LeaderboardMetricResponse> {
     const { CreateDao } = TransactionType;
 
-    const today = new Date();
-    const weekAgo = daysFromDate(today, -7);
-    const days = this.getDailyIntervals(
-      weekAgo.getTime(),
-      new Date().getTime(),
-    );
+    const weekAgo = moment().subtract(7, 'days');
+    const days = this.getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -327,12 +310,12 @@ export class TransactionService {
       errors.map((error) => this.logger.error(error));
     }
 
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity = await this.connection.query(
       this.getUsersActivityQuery(
         contractId,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       ),
     );
 
@@ -340,7 +323,7 @@ export class TransactionService {
       this.getUsersActivityQuery(
         contractId,
         null,
-        millisToNanos(today.getTime()),
+        millisToNanos(moment().valueOf()),
       ),
     );
 
@@ -389,12 +372,7 @@ export class TransactionService {
     from?: number,
     to?: number,
   ): Promise<MetricResponse> {
-    const days = this.getDailyIntervals(from, to || new Date().getTime()).map(
-      (day) => ({
-        ...day,
-        start: millisToNanos(from),
-      }),
-    );
+    const days = this.getDailyIntervals(from, to || moment().valueOf());
 
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
@@ -402,7 +380,7 @@ export class TransactionService {
       .process(async ({ start, end }) => {
         const count = await this.getProposalQueryBuilder(
           context,
-          start,
+          null,
           end,
         ).getCount();
 
@@ -438,6 +416,78 @@ export class TransactionService {
     return qr?.[0]?.count;
   }
 
+  async getProposalsLeaderboard(
+    contractId: string,
+  ): Promise<LeaderboardMetricResponse> {
+    const today = moment();
+    const weekAgo = moment().subtract(7, 'days');
+    const days = this.getDailyIntervals(weekAgo.valueOf(), today.valueOf());
+
+    // TODO: optimize day-by-day querying
+    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .process(async ({ start, end }) => {
+        const qr = await this.connection.query(
+          this.getProposalsLeaderboardQuery(contractId, null, end),
+        );
+
+        return { proposalsCount: [...qr], start, end };
+      });
+
+    if (errors && errors.length) {
+      errors.map((error) => this.logger.error(error));
+    }
+
+    const dayAgo = moment().subtract(1, 'days');
+    const dayAgoProposalsCount = await this.connection.query(
+      this.getProposalsLeaderboardQuery(
+        contractId,
+        null,
+        millisToNanos(dayAgo.valueOf()),
+      ),
+    );
+
+    const totalProposalsCount = await this.connection.query(
+      this.getProposalsLeaderboardQuery(
+        contractId,
+        null,
+        millisToNanos(today.valueOf()),
+      ),
+    );
+
+    const metrics = totalProposalsCount.map(
+      ({ receiver_account_id: dao, signer_count: count }) => {
+        const dayAgoCount =
+          dayAgoProposalsCount.find(
+            ({ receiver_account_id }) => receiver_account_id === dao,
+          )?.signer_count || 0;
+
+        return {
+          dao,
+          activity: {
+            count,
+            growth: Math.floor(
+              ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
+            ),
+          },
+          overview: days.map((day) => ({
+            ...day,
+            count:
+              byDays
+                .find(({ start }) => start === day.start)
+                ?.proposalsCount?.find(
+                  ({ receiver_account_id }) => receiver_account_id === dao,
+                )?.signer_count || 0,
+          })),
+        };
+      },
+    );
+
+    return {
+      metrics,
+    };
+  }
+
   async findTransactions(
     contractId: string,
     from?: number,
@@ -464,16 +514,16 @@ export class TransactionService {
     const days = [];
     while (true) {
       const dayStart = timestamp;
-      const dayEnd = daysFromDate(new Date(timestamp), 1).getTime();
+      const dayEnd = moment(timestamp).add(1, 'days').valueOf();
+
+      if (timestamp >= to) {
+        break;
+      }
 
       days.push({
         start: millisToNanos(dayStart),
         end: millisToNanos(dayEnd),
       });
-
-      if (timestamp > to) {
-        break;
-      }
 
       timestamp = dayEnd;
     }
@@ -514,6 +564,23 @@ export class TransactionService {
       group by receiver_account_id
       order by signer_count DESC
       limit 10
+    `;
+  }
+
+  private getProposalsLeaderboardQuery(
+    contractId: string,
+    from?: number,
+    to?: number,
+  ): string {
+    const { AddProposal } = TransactionType;
+
+    return `
+        select count(signer_account_id) as signer_count, receiver_account_id from transactions 
+        where contract_id = '${contractId}' and type = '${AddProposal}'
+        ${from ? `and block_timestamp > ${from}` : ''}
+        ${to ? `and block_timestamp < ${to}` : ''}
+        group by receiver_account_id
+        order by signer_count DESC
     `;
   }
 

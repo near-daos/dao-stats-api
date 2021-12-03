@@ -1,4 +1,4 @@
-import { daysFromDate, millisToNanos } from '@dao-stats/astro/utils';
+import { millisToNanos } from '@dao-stats/astro/utils';
 import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
 import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
 import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from 'libs/transaction/src';
 import { Repository } from 'typeorm';
 import { GeneralTotalResponse } from './dto/general-total.dto';
+import moment from 'moment';
 
 @Injectable()
 export class GeneralService {
@@ -29,12 +30,11 @@ export class GeneralService {
       context,
     );
 
-    const today = new Date();
-    const dayAgo = daysFromDate(today, -1);
+    const dayAgo = moment().subtract(1, 'days');
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
       null,
-      millisToNanos(dayAgo.getTime()),
+      millisToNanos(dayAgo.valueOf()),
     );
 
     const activity =
@@ -43,7 +43,7 @@ export class GeneralService {
       await this.transactionService.getContractActivityTotalCount(
         context,
         null,
-        millisToNanos(dayAgo.getTime()),
+        millisToNanos(dayAgo.valueOf()),
       );
 
     return {
