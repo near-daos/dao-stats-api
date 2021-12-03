@@ -40,11 +40,11 @@ export class UsersController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/users')
-  async usersHistory(
+  async users(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.totalsHistory(context, metricQuery);
+    return this.usersService.users(context, metricQuery);
   }
 
   @ApiResponse({
@@ -59,7 +59,38 @@ export class UsersController {
   async usersLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.leaderboard(context);
+    return this.usersService.usersLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/council')
+  async council(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.council(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/council/leaderboard')
+  async councilLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.usersService.councilLeaderboard(context);
   }
 
   @ApiResponse({
@@ -90,6 +121,6 @@ export class UsersController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.totalsHistory(context, metricQuery);
+    return this.usersService.users(context, metricQuery);
   }
 }

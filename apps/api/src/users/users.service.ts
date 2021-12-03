@@ -72,7 +72,7 @@ export class UsersService {
     };
   }
 
-  async totalsHistory(
+  async users(
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -81,11 +81,82 @@ export class UsersService {
     return this.transactionService.getUsersCountHistory(context, from, to);
   }
 
-  async leaderboard(
+  async usersLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     const { contract } = contractContext;
 
     return this.transactionService.getUsersLeaderboard(contract);
+  }
+
+  async council(
+    contractContext: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contract } = contractContext;
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      metric: DaoStatsMetric.CouncilSize,
+      func: 'AVG',
+      from,
+      to,
+    });
+
+    return {
+      metrics: history.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: row.value,
+      })),
+    };
+  }
+
+  async councilLeaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contract } = contractContext;
+
+    const dayAgo = moment().subtract(1, 'day');
+    const weekAgo = moment().subtract(1, 'week');
+
+    const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
+      metric: DaoStatsMetric.CouncilSize,
+      func: 'AVG',
+    });
+
+    const metrics = await Promise.all(
+      leaderboard.map(async ({ dao, value }) => {
+        const prevValue = await this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.CouncilSize,
+          func: 'AVG',
+          to: dayAgo.valueOf(),
+        });
+        const history = await this.daoStatsHistoryService.getHistory({
+          contract,
+          dao,
+          metric: DaoStatsMetric.CouncilSize,
+          func: 'AVG',
+          from: weekAgo.valueOf(),
+        });
+
+        return {
+          dao,
+          activity: {
+            count: value,
+            growth: getGrowth(value, prevValue),
+          },
+          overview: history.map((row) => ({
+            timestamp: row.date.valueOf(),
+            count: row.value,
+          })),
+        };
+      }),
+    );
+
+    return { metrics };
   }
 }
