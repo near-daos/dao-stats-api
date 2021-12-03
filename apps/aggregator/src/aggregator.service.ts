@@ -1,17 +1,17 @@
+import moment from 'moment';
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
-import { RedisService } from 'libs/redis/src';
-import moment from 'moment';
-import { millisToNanos } from 'libs/common/utils';
 import {
   Aggregator,
   Transaction,
   DAOStatsService,
   DAOStatsHistoryService,
+  millisToNanos,
 } from '@dao-stats/common';
+import { RedisService } from '@dao-stats/redis';
 import { TransactionService } from '@dao-stats/transaction';
 
 @Injectable()

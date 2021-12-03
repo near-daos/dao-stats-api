@@ -1,9 +1,9 @@
+import moment from 'moment';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
-import moment from 'moment';
-import { millisToNanos } from 'libs/common/utils';
+import { millisToNanos } from '@dao-stats/common';
 
 import {
   ContractContext,

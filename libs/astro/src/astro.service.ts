@@ -10,16 +10,12 @@ import {
   DAOStatsDto,
   TransactionDto,
   TransactionType,
+  millisToNanos,
 } from '@dao-stats/common';
 import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
+import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
 import { AstroDAOService } from './astro-dao.service';
 import { RoleGroup } from './types';
-import {
-  findAllByKey,
-  isRoleGroup,
-  isRoleGroupCouncil,
-  millisToNanos,
-} from './utils';
 
 @Injectable()
 export class AggregationService implements Aggregator {

@@ -8,3 +8,4 @@ export * from './dao-stats.service';
 export * from './dao-stats.module';
 export * from './dao-stats-history.service';
 export * from './dao-stats-history.module';
+export * from './utils';
