@@ -1,10 +1,10 @@
+import moment from 'moment';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import moment from 'moment';
-import { millisToNanos } from 'libs/common/utils';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
+
+import { LeaderboardMetricResponse, millisToNanos } from '@dao-stats/common';
 
 import {
   Contract,

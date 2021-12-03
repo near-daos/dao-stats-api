@@ -37,8 +37,7 @@ export class DAOStatsHistoryService {
   ): Promise<number> {
     const { contract, dao } = context as DaoContractContext;
 
-    const query = this.connection
-      .getRepository(DAOStatsHistory)
+    const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value) as value`);
 

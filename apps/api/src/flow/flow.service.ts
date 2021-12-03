@@ -1,14 +1,17 @@
-import { millisToNanos } from 'libs/common/utils';
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
-import { Contract } from '@dao-stats/common/entities';
+import moment from 'moment';
+import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TransactionService } from 'libs/transaction/src';
-import { Repository } from 'typeorm';
+
+import {
+  Contract,
+  ContractContext,
+  DaoContractContext,
+  millisToNanos,
+} from '@dao-stats/common';
+import { TransactionService } from '@dao-stats/transaction';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import moment from 'moment';
 
 @Injectable()
 export class FlowService {

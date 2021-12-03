@@ -35,8 +35,7 @@ export class DAOStatsService {
   ): Promise<number> {
     const { contract, dao } = context as DaoContractContext;
 
-    const query = this.connection
-      .getRepository(DAOStats)
+    const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value) as value`)
       .where('contract_id = :contract', { contract });
