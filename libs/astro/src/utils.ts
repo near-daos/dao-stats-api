@@ -6,7 +6,7 @@ export const btoaJSON = (b: string) => {
   } catch (e) {}
 };
 
-export const findAllByKey = (obj: Object, keyToFind: string) => {
+export const findAllByKey = (obj: Record<string, any>, keyToFind: string) => {
   if (!obj) return null;
 
   return Object.entries(obj).reduce(

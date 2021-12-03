@@ -1,15 +1,18 @@
-import { Transaction } from '@dao-stats/common/entities/transaction.entity';
-import { TransactionType } from '@dao-stats/common/types/transaction-type';
+import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
-import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import moment from 'moment';
+
 import { millisToNanos } from '@dao-stats/astro/utils';
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
+import {
+  ContractContext,
+  DaoContractContext,
+  MetricResponse,
+  LeaderboardMetricResponse,
+  Transaction,
+  TransactionType,
+} from '@dao-stats/common';
 
 @Injectable()
 export class TransactionService {

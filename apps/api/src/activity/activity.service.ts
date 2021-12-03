@@ -1,16 +1,19 @@
-import { millisToNanos } from '@dao-stats/astro/utils';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
-import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { Contract } from '@dao-stats/common/entities';
+import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TransactionService } from 'libs/transaction/src';
 import moment from 'moment';
-import { Repository } from 'typeorm';
+import { millisToNanos } from '@dao-stats/astro/utils';
+import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
+
+import {
+  Contract,
+  ContractContext,
+  DaoContractContext,
+  MetricQuery,
+  MetricResponse,
+} from '@dao-stats/common';
+import { TransactionService } from '@dao-stats/transaction';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
 
 @Injectable()

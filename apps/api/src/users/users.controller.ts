@@ -1,10 +1,13 @@
-import { DaoContractContext } from '@dao-stats/common/dto/dao-contract-context.dto';
-import { LeaderboardMetricResponse } from '@dao-stats/common/dto/leaderboard-metric-response.dto';
-import { MetricQuery } from '@dao-stats/common/dto/metric-query.dto';
-import { MetricResponse } from '@dao-stats/common/dto/metric-response.dto';
-import { ContractContext } from '@dao-stats/common/dto/contract-context.dto';
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+
+import {
+  ContractContext,
+  DaoContractContext,
+  MetricQuery,
+  MetricResponse,
+  LeaderboardMetricResponse,
+} from '@dao-stats/common';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';

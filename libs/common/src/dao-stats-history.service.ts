@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DAOStatsHistory } from './entities';
+import { ContractContext, DaoContractContext } from './dto';
+import { DAOStatsAggregationFunction, DAOStatsMetric } from './types';
 
 @Injectable()
 export class DAOStatsHistoryService {
@@ -24,5 +26,51 @@ export class DAOStatsHistoryService {
         overwrite: ['value'],
       })
       .execute();
+  }
+
+  async getAggregationValue(
+    context: ContractContext | DaoContractContext,
+    func: DAOStatsAggregationFunction,
+    metric: DAOStatsMetric,
+    fromTimestamp?: number,
+    toTimestamp?: number,
+  ): Promise<number> {
+    const { contract, dao } = context as DaoContractContext;
+
+    const query = this.connection
+      .getRepository(DAOStatsHistory)
+      .createQueryBuilder()
+      .select(`${func}(value) as value`);
+
+    if (fromTimestamp) {
+      query.andWhere('date >= to_timestamp(:timestamp)::date', {
+        timestamp: fromTimestamp / 1000,
+      });
+    }
+
+    if (toTimestamp) {
+      query.andWhere('date <= to_timestamp(:timestamp)::date', {
+        timestamp: toTimestamp / 1000,
+      });
+    }
+
+    query.andWhere('contract_id = :contract', { contract });
+
+    if (dao) {
+      query.andWhere('dao = :dao', { dao });
+    }
+
+    const result = await query
+      .andWhere('metric = :metric', { metric })
+      .groupBy('date')
+      .orderBy('date', 'DESC')
+      .take(1)
+      .getRawOne();
+
+    if (!result || !result['value']) {
+      return 0;
+    }
+
+    return parseInt(result['value']);
   }
 }

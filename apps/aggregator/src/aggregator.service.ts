@@ -1,16 +1,18 @@
-import { millisToNanos } from '@dao-stats/astro/utils';
-import { Transaction } from '@dao-stats/common/entities';
-import { Aggregator } from '@dao-stats/common/interfaces';
-import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
+import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
-import { TransactionService } from 'libs/transaction/src';
-import { DAOStatsService } from '@dao-stats/common/dao-stats.service';
-import { DAOStatsHistoryService } from '@dao-stats/common/dao-stats-history.service';
 import { RedisService } from 'libs/redis/src';
 import moment from 'moment';
+import { millisToNanos } from '@dao-stats/astro/utils';
+import {
+  Aggregator,
+  Transaction,
+  DAOStatsService,
+  DAOStatsHistoryService,
+} from '@dao-stats/common';
+import { TransactionService } from '@dao-stats/transaction';
 
 @Injectable()
 export class AggregatorService {
