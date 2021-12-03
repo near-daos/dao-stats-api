@@ -1,51 +1,20 @@
-###
-GET http://127.0.0.1:3000/api/v1/astro
-Accept: application/json
-
-### GENERAL ###
 GET http://127.0.0.1:3000/api/v1/astro/general
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/mochi.sputnik-dao.near
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/daos
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/activity
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/activity/leaderboard
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/groups
 Accept: application/json
-
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/community.sputnik-dao.near
-Accept: application/json
-
-### USERS ###
-GET http://127.0.0.1:3000/api/v1/astro/users
-Accept: application/json
-
-###
-GET http://127.0.0.1:3000/api/v1/astro/users/history
-Accept: application/json
-
-###
-GET http://127.0.0.1:3000/api/v1/astro/users/leaderboard
-Accept: application/json
-
-###
-GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near
-Accept: application/json
-
-###
-GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/history
 Accept: application/json
