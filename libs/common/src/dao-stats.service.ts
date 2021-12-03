@@ -2,9 +2,14 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { ContractContext, DaoContractContext } from './dto';
-import { DaoStatsAggregationFunction, DaoStatsMetric } from './types';
 import { DaoStats } from './entities';
+
+interface DaoStatsParams {
+  contract: string;
+  dao?: string;
+  metric: string;
+  func?: 'AVG' | 'SUM' | 'COUNT';
+}
 
 @Injectable()
 export class DaoStatsService {
@@ -28,13 +33,12 @@ export class DaoStatsService {
       .execute();
   }
 
-  async getAggregationValue(
-    context: ContractContext | DaoContractContext,
-    func: DaoStatsAggregationFunction,
-    metric: DaoStatsMetric,
-  ): Promise<number> {
-    const { contract, dao } = context as DaoContractContext;
-
+  async getValue({
+    contract,
+    metric,
+    dao,
+    func = 'SUM',
+  }: DaoStatsParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value) as value`)

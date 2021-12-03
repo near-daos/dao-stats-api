@@ -3,9 +3,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStatsHistory } from './entities';
-import { ContractContext, DaoContractContext } from './dto';
-import { DaoStatsAggregationFunction, DaoStatsMetric } from './types';
-import { DaoStatsHistoryResult } from './interfaces';
+import { DaoStatsMetric } from './types';
+
+interface DaoStatsHistoryParams {
+  from?: number;
+  to?: number;
+  contract: string;
+  dao?: string;
+  metric: DaoStatsMetric;
+  func?: 'AVG' | 'SUM' | 'COUNT';
+}
+
+interface DaoStatsHistoryHistoryResponse {
+  date: Date;
+  value: number;
+}
 
 @Injectable()
 export class DaoStatsHistoryService {
@@ -29,15 +41,14 @@ export class DaoStatsHistoryService {
       .execute();
   }
 
-  async getAggregationValue(
-    context: ContractContext | DaoContractContext,
-    func: DaoStatsAggregationFunction,
-    metric: DaoStatsMetric,
-    from?: number,
-    to?: number,
-  ): Promise<number> {
-    const { contract, dao } = context as DaoContractContext;
-
+  async getValue({
+    from,
+    to,
+    contract,
+    dao,
+    metric,
+    func = 'SUM',
+  }: DaoStatsHistoryParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value) as value`);
@@ -74,13 +85,14 @@ export class DaoStatsHistoryService {
     return parseInt(result['value']);
   }
 
-  async getHistory(
-    contract: string,
-    func: DaoStatsAggregationFunction,
-    metric: DaoStatsMetric,
-    from?: number,
-    to?: number,
-  ): Promise<DaoStatsHistoryResult[]> {
+  async getHistory({
+    func = 'SUM',
+    from,
+    to,
+    contract,
+    dao,
+    metric,
+  }: DaoStatsHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
     const query = this.repository
       .createQueryBuilder()
       .select(`date, ${func}(value) as value`);
@@ -98,6 +110,10 @@ export class DaoStatsHistoryService {
     }
 
     query.andWhere('contract_id = :contract', { contract });
+
+    if (dao) {
+      query.andWhere('dao = :dao', { dao });
+    }
 
     return query
       .andWhere('metric = :metric', { metric })

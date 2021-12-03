@@ -8,7 +8,6 @@ import {
   Contract,
   ContractContext,
   DaoContractContext,
-  DaoStatsAggregationFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   LeaderboardMetricResponse,
@@ -27,11 +26,14 @@ export class GeneralService {
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
-  ) {}
+  ) {
+  }
 
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<GeneralTotalResponse> {
+    const { contract, dao } = context as DaoContractContext;
+
     const daoCount = await this.transactionService.getContractTotalCount(
       context,
     );
@@ -54,21 +56,17 @@ export class GeneralService {
         millisToNanos(dayAgo.valueOf()),
       );
 
-    const groupsCount = await this.daoStatsHistoryService.getAggregationValue(
-      context,
-      DaoStatsAggregationFunction.Sum,
-      DaoStatsMetric.GroupsCount,
-      null,
-      today.getTime(),
-    );
-    const dayAgoGroupsCount =
-      await this.daoStatsHistoryService.getAggregationValue(
-        context,
-        DaoStatsAggregationFunction.Sum,
-        DaoStatsMetric.GroupsCount,
-        null,
-        dayAgo.valueOf(),
-      );
+    const groupsCount = await this.daoStatsHistoryService.getValue({
+      contract,
+      metric: DaoStatsMetric.GroupsCount,
+      to: today.getTime(),
+    });
+    const dayAgoGroupsCount = await this.daoStatsHistoryService.getValue({
+      contract,
+      dao,
+      metric: DaoStatsMetric.GroupsCount,
+      to: dayAgo.valueOf(),
+    });
 
     return {
       dao: {
@@ -121,13 +119,12 @@ export class GeneralService {
     const { contract } = contractContext;
     const { from, to } = metricQuery;
 
-    const history = await this.daoStatsHistoryService.getHistory(
+    const history = await this.daoStatsHistoryService.getHistory({
       contract,
-      DaoStatsAggregationFunction.Sum,
-      DaoStatsMetric.GroupsCount,
+      metric: DaoStatsMetric.GroupsCount,
       from,
       to,
-    );
+    });
 
     return {
       metrics: history.map((row) => ({
