@@ -40,7 +40,6 @@ export class GeneralService {
     );
 
     const dayAgo = moment().subtract(1, 'days');
-    const today = new Date();
 
     const dayAgoDaoCount = await this.transactionService.getContractTotalCount(
       context,
@@ -59,8 +58,8 @@ export class GeneralService {
 
     const groupsCount = await this.daoStatsHistoryService.getValue({
       contract,
+      dao,
       metric: DaoStatsMetric.GroupsCount,
-      to: today.getTime(),
     });
     const dayAgoGroupsCount = await this.daoStatsHistoryService.getValue({
       contract,

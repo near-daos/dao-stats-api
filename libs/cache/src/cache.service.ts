@@ -2,7 +2,7 @@ import { tap } from 'rxjs';
 import { Cache } from 'cache-manager';
 import { EVENT_CACHE_CLEAR } from '@dao-stats/common';
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
-import { RedisService } from 'libs/redis/src/redis.service';
+import { RedisService } from '@dao-stats/redis';
 
 @Injectable()
 export class CacheService {

@@ -1,27 +1,32 @@
+import moment from 'moment';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { millisToNanos } from '@dao-stats/common/utils';
 
 import {
   Contract,
   ContractContext,
   DaoContractContext,
+  DaoStatsHistoryService,
+  DaoStatsMetric,
+  DaoStatsService,
+  LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
-  LeaderboardMetricResponse,
+  millisToNanos,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { UsersTotalResponse } from './dto/users-total.dto';
-import moment from 'moment';
+import { getGrowth } from '../utils';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-
+    private readonly daoStatsService: DaoStatsService,
+    private readonly daoStatsHistoryService: DaoStatsHistoryService,
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
   ) {}
@@ -29,6 +34,7 @@ export class UsersService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<UsersTotalResponse> {
+    const { contract, dao } = context as DaoContractContext;
     const usersCount = await this.transactionService.getUsersTotalCount(
       context,
     );
@@ -40,12 +46,28 @@ export class UsersService {
       millisToNanos(dayAgo.valueOf()),
     );
 
+    const avgCouncilSize = await this.daoStatsHistoryService.getValue({
+      contract,
+      dao,
+      metric: DaoStatsMetric.CouncilSize,
+      func: 'AVG',
+    });
+    const dayAgoAvgCouncilSize = await this.daoStatsHistoryService.getValue({
+      contract,
+      dao,
+      metric: DaoStatsMetric.CouncilSize,
+      func: 'AVG',
+      to: dayAgo.valueOf(),
+    });
+
     return {
       users: {
         count: usersCount,
-        growth: Math.floor(
-          ((usersCount - dayAgoUsersCount) / dayAgoUsersCount) * 100,
-        ),
+        growth: getGrowth(usersCount, dayAgoUsersCount),
+      },
+      council: {
+        count: avgCouncilSize,
+        growth: getGrowth(avgCouncilSize, dayAgoAvgCouncilSize),
       },
     };
   }
