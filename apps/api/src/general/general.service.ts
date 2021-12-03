@@ -8,9 +8,9 @@ import {
   Contract,
   ContractContext,
   DaoContractContext,
-  DAOStatsAggregationFunction,
-  DAOStatsHistoryService,
-  DAOStatsMetric,
+  DaoStatsAggregationFunction,
+  DaoStatsHistoryService,
+  DaoStatsMetric,
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
@@ -24,7 +24,7 @@ export class GeneralService {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-    private readonly daoStatsHistoryService: DAOStatsHistoryService,
+    private readonly daoStatsHistoryService: DaoStatsHistoryService,
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
   ) {}
@@ -56,16 +56,16 @@ export class GeneralService {
 
     const groupsCount = await this.daoStatsHistoryService.getAggregationValue(
       context,
-      DAOStatsAggregationFunction.Sum,
-      DAOStatsMetric.GroupsCount,
+      DaoStatsAggregationFunction.Sum,
+      DaoStatsMetric.GroupsCount,
       null,
       today.getTime(),
     );
     const dayAgoGroupsCount =
       await this.daoStatsHistoryService.getAggregationValue(
         context,
-        DAOStatsAggregationFunction.Sum,
-        DAOStatsMetric.GroupsCount,
+        DaoStatsAggregationFunction.Sum,
+        DaoStatsMetric.GroupsCount,
         null,
         dayAgo.valueOf(),
       );
@@ -123,8 +123,8 @@ export class GeneralService {
 
     const history = await this.daoStatsHistoryService.getHistory(
       contract,
-      DAOStatsAggregationFunction.Sum,
-      DAOStatsMetric.GroupsCount,
+      DaoStatsAggregationFunction.Sum,
+      DaoStatsMetric.GroupsCount,
       from,
       to,
     );

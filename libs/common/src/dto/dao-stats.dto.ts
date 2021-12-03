@@ -1,8 +1,8 @@
-import { DAOStatsMetric } from '../types';
+import { DaoStatsMetric } from '../types';
 
-export interface DAOStatsDto {
+export interface DaoStatsDto {
   contractId: string;
   dao: string;
-  metric: DAOStatsMetric;
+  metric: DaoStatsMetric;
   value: number;
 }

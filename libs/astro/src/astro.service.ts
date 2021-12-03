@@ -6,15 +6,15 @@ import PromisePool from '@supercharge/promise-pool';
 import {
   AggregationOutput,
   Aggregator,
-  DAOStatsMetric,
-  DAOStatsDto,
+  DaoStatsMetric,
+  DaoStatsDto,
   TransactionDto,
   TransactionType,
   millisToNanos,
 } from '@dao-stats/common';
 import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
 import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
-import { AstroDAOService } from './astro-dao.service';
+import { AstroDaoService } from './astro-dao.service';
 import { RoleGroup } from './types';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
-    private readonly astroDAOService: AstroDAOService,
+    private readonly astroDaoService: AstroDaoService,
   ) {}
 
   public async aggregate(
@@ -104,8 +104,8 @@ export class AggregationService implements Aggregator {
       : null;
   }
 
-  private async aggregateMetrics(contractId): Promise<DAOStatsDto[]> {
-    const contracts = await this.astroDAOService.getContracts();
+  private async aggregateMetrics(contractId): Promise<DaoStatsDto[]> {
+    const contracts = await this.astroDaoService.getContracts();
     const { results } = await PromisePool.for(contracts)
       .withConcurrency(2)
       .process(async (contract) => {
@@ -119,13 +119,13 @@ export class AggregationService implements Aggregator {
           {
             contractId,
             dao: contract.contractId,
-            metric: DAOStatsMetric.CouncilSize,
+            metric: DaoStatsMetric.CouncilSize,
             value: councilSize,
           },
           {
             contractId,
             dao: contract.contractId,
-            metric: DAOStatsMetric.GroupsCount,
+            metric: DaoStatsMetric.GroupsCount,
             value: groups.length,
           },
         ];

@@ -3,23 +3,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { ContractContext, DaoContractContext } from './dto';
-import { DAOStatsAggregationFunction, DAOStatsMetric } from './types';
-import { DAOStats } from './entities';
+import { DaoStatsAggregationFunction, DaoStatsMetric } from './types';
+import { DaoStats } from './entities';
 
 @Injectable()
-export class DAOStatsService {
+export class DaoStatsService {
   constructor(
-    @InjectRepository(DAOStats)
-    private readonly repository: Repository<DAOStats>,
+    @InjectRepository(DaoStats)
+    private readonly repository: Repository<DaoStats>,
     @InjectConnection()
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DAOStats): Promise<InsertResult> {
+  async createOrUpdate(data: DaoStats): Promise<InsertResult> {
     return await this.connection
       .createQueryBuilder()
       .insert()
-      .into(DAOStats)
+      .into(DaoStats)
       .values(data)
       .orUpdate({
         conflict_target: ['contract_id', 'dao', 'metric'],
@@ -30,8 +30,8 @@ export class DAOStatsService {
 
   async getAggregationValue(
     context: ContractContext | DaoContractContext,
-    func: DAOStatsAggregationFunction,
-    metric: DAOStatsMetric,
+    func: DaoStatsAggregationFunction,
+    metric: DaoStatsMetric,
   ): Promise<number> {
     const { contract, dao } = context as DaoContractContext;
 

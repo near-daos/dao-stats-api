@@ -3,11 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
-import { DAO } from '@dao-stats/common';
+import { Dao } from '@dao-stats/common';
 import { Contract, TokenContract, FactoryContract } from './types';
 
 @Injectable()
-export class AstroDAOService implements DAO {
+export class AstroDaoService implements Dao {
   constructor(
     private readonly config: ConfigService,
     @Inject(NEAR_PROVIDER)

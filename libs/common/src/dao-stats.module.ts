@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { DAOStats } from './entities';
-import { DAOStatsService } from './dao-stats.service';
+import { DaoStats } from './entities';
+import { DaoStatsService } from './dao-stats.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DAOStats])],
-  providers: [DAOStatsService],
-  exports: [DAOStatsService],
+  imports: [TypeOrmModule.forFeature([DaoStats])],
+  providers: [DaoStatsService],
+  exports: [DaoStatsService],
 })
-export class DAOStatsModule {}
+export class DaoStatsModule {}

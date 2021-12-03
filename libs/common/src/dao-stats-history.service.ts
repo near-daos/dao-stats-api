@@ -2,25 +2,25 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { DAOStatsHistory } from './entities';
+import { DaoStatsHistory } from './entities';
 import { ContractContext, DaoContractContext } from './dto';
-import { DAOStatsAggregationFunction, DAOStatsMetric } from './types';
+import { DaoStatsAggregationFunction, DaoStatsMetric } from './types';
 import { DaoStatsHistoryResult } from './interfaces';
 
 @Injectable()
-export class DAOStatsHistoryService {
+export class DaoStatsHistoryService {
   constructor(
-    @InjectRepository(DAOStatsHistory)
-    private readonly repository: Repository<DAOStatsHistory>,
+    @InjectRepository(DaoStatsHistory)
+    private readonly repository: Repository<DaoStatsHistory>,
     @InjectConnection()
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DAOStatsHistory): Promise<InsertResult> {
+  async createOrUpdate(data: DaoStatsHistory): Promise<InsertResult> {
     return await this.connection
       .createQueryBuilder()
       .insert()
-      .into(DAOStatsHistory)
+      .into(DaoStatsHistory)
       .values(data)
       .orUpdate({
         conflict_target: ['date', 'contract_id', 'dao', 'metric'],
@@ -31,8 +31,8 @@ export class DAOStatsHistoryService {
 
   async getAggregationValue(
     context: ContractContext | DaoContractContext,
-    func: DAOStatsAggregationFunction,
-    metric: DAOStatsMetric,
+    func: DaoStatsAggregationFunction,
+    metric: DaoStatsMetric,
     from?: number,
     to?: number,
   ): Promise<number> {
@@ -76,8 +76,8 @@ export class DAOStatsHistoryService {
 
   async getHistory(
     contract: string,
-    func: DAOStatsAggregationFunction,
-    metric: DAOStatsMetric,
+    func: DaoStatsAggregationFunction,
+    metric: DaoStatsMetric,
     from?: number,
     to?: number,
   ): Promise<DaoStatsHistoryResult[]> {
