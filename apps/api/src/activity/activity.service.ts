@@ -66,6 +66,10 @@ export class ActivityService {
         growth: getGrowth(proposalsCount, dayAgoProposalsCount),
       },
       proposalsByType: Object.fromEntries(proposalsByType),
+      voteRate: {
+        count: 0,
+        growth: 0,
+      },
     };
   }
 
