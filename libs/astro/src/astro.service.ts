@@ -6,16 +6,16 @@ import PromisePool from '@supercharge/promise-pool';
 import {
   AggregationOutput,
   Aggregator,
-  DAOStatsMetric,
-  DAOStatsDto,
+  DaoStatsDto,
+  DaoStatsMetric,
   TransactionDto,
   TransactionType,
   millisToNanos,
 } from '@dao-stats/common';
-import { Transaction, NearIndexerService } from '@dao-stats/near-indexer';
+import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
-import { AstroDAOService } from './astro-dao.service';
-import { RoleGroup } from './types';
+import { ProposalKind, ProposalStatus, RoleGroup } from './types';
+import { AstroDaoService } from './astro-dao.service';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -24,7 +24,7 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
-    private readonly astroDAOService: AstroDAOService,
+    private readonly astroDaoService: AstroDaoService,
   ) {}
 
   public async aggregate(
@@ -104,10 +104,13 @@ export class AggregationService implements Aggregator {
       : null;
   }
 
-  private async aggregateMetrics(contractId): Promise<DAOStatsDto[]> {
-    const contracts = await this.astroDAOService.getContracts();
+  private async aggregateMetrics(contractId): Promise<DaoStatsDto[]> {
+    const contracts = await this.astroDaoService.getContracts();
     const { results } = await PromisePool.for(contracts)
       .withConcurrency(2)
+      .handleError((error) => {
+        this.logger.error(error);
+      })
       .process(async (contract) => {
         const policy = await contract.get_policy();
         const council = policy.roles.find(isRoleGroupCouncil);
@@ -115,18 +118,66 @@ export class AggregationService implements Aggregator {
           ? (council.kind as RoleGroup).Group.length
           : 0;
         const groups = policy.roles.filter(isRoleGroup);
+        const proposals = await contract.get_proposals({
+          from_index: 0,
+          limit: 10000,
+        });
+        const payouts = proposals.filter(
+          ({ kind }) => kind[ProposalKind.Transfer] !== undefined,
+        );
+        const councilMembers = proposals.filter((prop) => {
+          const kind =
+            prop.kind[ProposalKind.AddMemberToRole] ||
+            prop.kind[ProposalKind.RemoveMemberFromRole];
+          return kind ? kind.role.toLowerCase() === 'council' : false;
+        });
+        const policyChanges = proposals.filter(
+          ({ kind }) => kind[ProposalKind.ChangePolicy] !== undefined,
+        );
+        const expiredProposals = proposals.filter(
+          ({ status }) => status === ProposalStatus.Expired,
+        );
+
+        const common = {
+          contractId,
+          dao: contract.contractId,
+        };
+
         return [
           {
-            contractId,
-            dao: contract.contractId,
-            metric: DAOStatsMetric.CouncilSize,
+            ...common,
+            metric: DaoStatsMetric.CouncilSize,
             value: councilSize,
           },
           {
-            contractId,
-            dao: contract.contractId,
-            metric: DAOStatsMetric.GroupsCount,
+            ...common,
+            metric: DaoStatsMetric.GroupsCount,
             value: groups.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsCount,
+            value: proposals.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsPayoutCount,
+            value: payouts.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsCouncilMemberCount,
+            value: councilMembers.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsPolicyChangeCount,
+            value: policyChanges.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsExpiredCount,
+            value: expiredProposals.length,
           },
         ];
       });

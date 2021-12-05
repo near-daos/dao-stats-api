@@ -1,14 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TotalMetric } from '@dao-stats/common';
 import { ProposalsTypes } from './proposals-types.dto';
 
-export class ActivityTotalResponse {
+export class ProposalsTypesLeaderboard {
   @ApiProperty()
-  proposals: TotalMetric;
+  dao: string;
 
   @ApiProperty()
   proposalsByType: ProposalsTypes;
-
-  @ApiProperty()
-  voteRate: TotalMetric;
 }

@@ -1,8 +1,9 @@
-import { Contract } from '@dao-stats/common/entities';
+import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
+import { Contract } from '@dao-stats/common';
 import { ContractResponse } from './dto/contract.dto';
 
 @Injectable()

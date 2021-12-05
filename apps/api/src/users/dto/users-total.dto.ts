@@ -1,13 +1,13 @@
-import { TotalMetric } from '@dao-stats/common/dto/total.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { TotalMetric } from '@dao-stats/common';
 
 export class UsersTotalResponse {
   @ApiProperty()
-  users?: TotalMetric;
+  users: TotalMetric;
 
   @ApiProperty()
-  council?: TotalMetric;
+  council: TotalMetric;
 
   @ApiProperty()
-  interactions?: TotalMetric;
+  interactions: TotalMetric;
 }

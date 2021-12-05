@@ -7,8 +7,8 @@ import PromisePool from '@supercharge/promise-pool';
 import {
   Aggregator,
   Transaction,
-  DAOStatsService,
-  DAOStatsHistoryService,
+  DaoStatsService,
+  DaoStatsHistoryService,
   millisToNanos,
 } from '@dao-stats/common';
 import { RedisService } from '@dao-stats/redis';
@@ -23,8 +23,8 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
-    private readonly daoStatsService: DAOStatsService,
-    private readonly daoStatsHistoryService: DAOStatsHistoryService,
+    private readonly daoStatsService: DaoStatsService,
+    private readonly daoStatsHistoryService: DaoStatsHistoryService,
     private readonly redisService: RedisService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');

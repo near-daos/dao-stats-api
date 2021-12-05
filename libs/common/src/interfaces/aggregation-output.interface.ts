@@ -1,6 +1,6 @@
-import { DAOStatsDto, TransactionDto } from '../dto';
+import { DaoStatsDto, TransactionDto } from '../dto';
 
 export declare class AggregationOutput {
   transactions: TransactionDto[];
-  metrics: DAOStatsDto[];
+  metrics: DaoStatsDto[];
 }

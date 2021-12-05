@@ -1,6 +1,6 @@
 import { Contract } from 'near-api-js';
 
-export interface DAO {
+export interface Dao {
   getFactoryContract(): Promise<Contract>;
   getTokenFactoryContract(): Promise<Contract>;
   getContract(contractId: string): Promise<Contract>;

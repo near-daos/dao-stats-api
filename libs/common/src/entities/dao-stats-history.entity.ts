@@ -1,11 +1,11 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Contract } from './contract.entity';
-import { DAOStatsMetric } from '../types';
+import { DaoStatsMetric } from '../types';
 
 import { HasContract } from '../interfaces';
 
 @Entity({ name: 'dao_stats_history' })
-export class DAOStatsHistory implements HasContract {
+export class DaoStatsHistory implements HasContract {
   @PrimaryColumn({
     type: 'date',
     default: () => 'CURRENT_TIMESTAMP',
@@ -20,8 +20,8 @@ export class DAOStatsHistory implements HasContract {
   @PrimaryColumn()
   dao: string;
 
-  @PrimaryColumn({ type: 'enum', enum: DAOStatsMetric })
-  metric: DAOStatsMetric;
+  @PrimaryColumn({ type: 'enum', enum: DaoStatsMetric })
+  metric: DaoStatsMetric;
 
   @Column()
   value: number;

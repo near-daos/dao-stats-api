@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { NearModule } from '@dao-stats/near';
 
-import { AstroDAOService } from './astro-dao.service';
+import { AstroDaoService } from './astro-dao.service';
 import configuration from './config/configuration';
 
 @Module({
@@ -12,7 +12,7 @@ import configuration from './config/configuration';
     }),
     NearModule,
   ],
-  providers: [AstroDAOService],
-  exports: [AstroDAOService],
+  providers: [AstroDaoService],
+  exports: [AstroDaoService],
 })
-export class AstroDAOModule {}
+export class AstroDaoModule {}

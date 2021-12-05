@@ -1,10 +1,11 @@
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, Module } from '@nestjs/common';
 
-import { ContractController } from './contract.controller';
 import { CacheConfigService } from '@dao-stats/config/cache';
+import { Contract } from '@dao-stats/common';
+
+import { ContractController } from './contract.controller';
 import { ContractService } from './contract.service';
-import { Contract } from '@dao-stats/common/entities';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [

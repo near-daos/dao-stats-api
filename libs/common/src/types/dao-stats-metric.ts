@@ -1,4 +1,9 @@
-export enum DAOStatsMetric {
+export enum DaoStatsMetric {
   GroupsCount = 'GROUPS_COUNT',
   CouncilSize = 'COUNCIL_SIZE',
+  ProposalsCount = 'PROPOSALS_COUNT',
+  ProposalsPayoutCount = 'PROPOSALS_PAYOUT_COUNT',
+  ProposalsCouncilMemberCount = 'PROPOSALS_COUNCIL_MEMBER_COUNT',
+  ProposalsPolicyChangeCount = 'PROPOSALS_POLICY_CHANGE_COUNT',
+  ProposalsExpiredCount = 'PROPOSALS_EXPIRED_COUNT',
 }
