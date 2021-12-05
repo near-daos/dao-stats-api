@@ -73,12 +73,12 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const result = await query
+    const [result] = await query
       .andWhere('metric = :metric', { metric })
       .groupBy('date')
       .orderBy('date', 'DESC')
       .take(1)
-      .getRawOne();
+      .execute();
 
     if (!result || !result['value']) {
       return 0;

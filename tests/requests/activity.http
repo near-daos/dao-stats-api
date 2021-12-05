@@ -1,10 +1,16 @@
 GET http://127.0.0.1:3000/api/v1/astro/activity
 Accept: application/json
 ###
-GET http://127.0.0.1:3000/api/v1/astro/activity/history
+GET http://127.0.0.1:3000/api/v1/astro/activity/proposals/history
 Accept: application/json
 ###
-GET http://127.0.0.1:3000/api/v1/astro/activity/leaderboard
+GET http://127.0.0.1:3000/api/v1/astro/activity/proposals/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/activity/proposals-types/history
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/activity/proposals-types/leaderboard
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/activity/genesis.sputnik-dao.near

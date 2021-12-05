@@ -2,7 +2,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, Module } from '@nestjs/common';
 
 import { CacheConfigService } from '@dao-stats/config/cache';
-import { Contract } from '@dao-stats/common';
+import {
+  Contract,
+  DaoStatsModule,
+  DaoStatsHistoryModule,
+} from '@dao-stats/common';
 import { TransactionModule } from '@dao-stats/transaction';
 
 import { ActivityController } from './activity.controller';
@@ -13,6 +17,8 @@ import { ActivityService } from './activity.service';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
+    DaoStatsModule,
+    DaoStatsHistoryModule,
     TypeOrmModule.forFeature([Contract]),
     TransactionModule,
   ],

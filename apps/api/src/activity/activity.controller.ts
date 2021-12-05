@@ -12,6 +12,8 @@ import {
 
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
+import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
+import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
 import { ActivityService } from './activity.service';
 
 @ApiTags('Activity')
@@ -42,12 +44,12 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/history')
+  @Get('/proposals/history')
   async totalHistory(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.totalsHistory(context, metricQuery);
+    return this.activityService.proposalsHistory(context, metricQuery);
   }
 
   @ApiResponse({
@@ -58,11 +60,42 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/leaderboard')
-  async usersLeaderboard(
+  @Get('/proposals/leaderboard')
+  async proposalsTypes(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.activityService.leaderboard(context);
+    return this.activityService.proposalsLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: ProposalsTypesHistoryResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/proposals-types/history')
+  async proposalsTypesHistory(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<ProposalsTypesHistoryResponse> {
+    return this.activityService.proposalsTypesHistory(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: ProposalsTypesLeaderboardResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/proposals-types/leaderboard')
+  async proposalsTypesLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<ProposalsTypesLeaderboardResponse> {
+    return this.activityService.proposalsTypesLeaderboard(context);
   }
 
   @ApiResponse({
@@ -93,6 +126,6 @@ export class ActivityController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.totalsHistory(context, metricQuery);
+    return this.activityService.proposalsHistory(context, metricQuery);
   }
 }

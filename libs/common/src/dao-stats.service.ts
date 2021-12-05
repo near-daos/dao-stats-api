@@ -3,12 +3,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats } from './entities';
+import { DaoStatsMetric } from '@dao-stats/common/types';
 
-interface DaoStatsLeaderboardParams {
+interface DaoStatsValueParams {
   contract: string;
   dao?: string;
-  metric: string;
+  metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
+}
+
+interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
   limit?: number;
 }
 
@@ -37,6 +41,34 @@ export class DaoStatsService {
         overwrite: ['value'],
       })
       .execute();
+  }
+
+  async getValue({
+    contract,
+    dao,
+    metric,
+    func = 'SUM',
+  }: DaoStatsValueParams): Promise<number> {
+    const query = this.repository
+      .createQueryBuilder()
+      .select(`${func}(value) as value`);
+
+    query.andWhere('contract_id = :contract', { contract });
+
+    if (dao) {
+      query.andWhere('dao = :dao', { dao });
+    }
+
+    const [result] = await query
+      .andWhere('metric = :metric', { metric })
+      .take(1)
+      .execute();
+
+    if (!result || !result['value']) {
+      return 0;
+    }
+
+    return parseInt(result['value']);
   }
 
   async getLeaderboard({

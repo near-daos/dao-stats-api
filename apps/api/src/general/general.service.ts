@@ -57,7 +57,7 @@ export class GeneralService {
         millisToNanos(dayAgo.valueOf()),
       );
 
-    const groupsCount = await this.daoStatsHistoryService.getValue({
+    const groupsCount = await this.daoStatsService.getValue({
       contract,
       dao,
       metric: DaoStatsMetric.GroupsCount,
