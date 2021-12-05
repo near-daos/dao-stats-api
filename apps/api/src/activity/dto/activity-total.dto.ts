@@ -10,16 +10,5 @@ export class ActivityTotalResponse {
   proposalsByType: ProposalsTypes;
 
   @ApiProperty()
-  ratio?: {
-    total: number;
-    proposals: [
-      {
-        type: string;
-        count: number;
-      },
-    ];
-  };
-
-  @ApiProperty()
-  rate?: TotalMetric;
+  voteRate: TotalMetric;
 }

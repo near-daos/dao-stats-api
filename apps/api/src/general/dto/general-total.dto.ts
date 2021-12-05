@@ -3,11 +3,11 @@ import { TotalMetric } from '@dao-stats/common';
 
 export class GeneralTotalResponse {
   @ApiProperty()
-  dao?: TotalMetric;
+  dao: TotalMetric;
 
   @ApiProperty()
-  activity?: TotalMetric;
+  activity: TotalMetric;
 
   @ApiProperty()
-  groups?: TotalMetric;
+  groups: TotalMetric;
 }

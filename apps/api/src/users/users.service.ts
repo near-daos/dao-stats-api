@@ -69,6 +69,11 @@ export class UsersService {
         count: avgCouncilSize,
         growth: getGrowth(avgCouncilSize, dayAgoAvgCouncilSize),
       },
+      // TODO
+      interactions: {
+        count: 0,
+        growth: 0,
+      },
     };
   }
 

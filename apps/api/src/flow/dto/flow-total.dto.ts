@@ -3,5 +3,11 @@ import { TotalMetric } from '@dao-stats/common';
 
 export class FlowTotalResponse {
   @ApiProperty()
-  transactions?: TotalMetric;
+  totalIn: TotalMetric;
+
+  @ApiProperty()
+  totalOut: TotalMetric;
+
+  @ApiProperty()
+  transactions: TotalMetric;
 }

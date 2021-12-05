@@ -12,6 +12,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { FlowTotalResponse } from './dto/flow-total.dto';
+import { getGrowth } from '../utils';
 
 @Injectable()
 export class FlowService {
@@ -39,9 +40,19 @@ export class FlowService {
       );
 
     return {
+      // TODO
+      totalIn: {
+        count: 0,
+        growth: 0,
+      },
+      // TODO
+      totalOut: {
+        count: 0,
+        growth: 0,
+      },
       transactions: {
         count: txCount,
-        growth: Math.floor(((txCount - dayAgoTxCount) / dayAgoTxCount) * 100),
+        growth: getGrowth(txCount, dayAgoTxCount),
       },
     };
   }
