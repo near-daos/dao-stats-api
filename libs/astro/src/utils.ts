@@ -25,5 +25,5 @@ export const isRoleGroup = (role: Role) => {
 };
 
 export const isRoleGroupCouncil = (role: Role) => {
-  return isRoleGroup(role) && ['council', 'Council'].includes(role.name);
+  return isRoleGroup(role) && role.name.toLowerCase() === 'council';
 };
