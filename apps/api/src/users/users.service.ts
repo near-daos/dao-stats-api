@@ -1,8 +1,9 @@
 import moment from 'moment';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import PromisePool from '@supercharge/promise-pool';
 
 import {
   Contract,
@@ -18,10 +19,12 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { UsersTotalResponse } from './dto/users-total.dto';
-import { getGrowth } from '../utils';
+import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
@@ -42,8 +45,10 @@ export class UsersService {
     const dayAgo = moment().subtract(1, 'days');
     const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
       context,
-      null,
-      millisToNanos(dayAgo.valueOf()),
+      {
+        from: null,
+        to: millisToNanos(dayAgo.valueOf()),
+      },
     );
 
     const avgCouncilSize = await this.daoStatsHistoryService.getValue({
@@ -82,16 +87,98 @@ export class UsersService {
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
+    const days = getDailyIntervals(from, to || moment().valueOf());
 
-    return this.transactionService.getUsersCountHistory(context, from, to);
+    // TODO: optimize day-by-day querying
+    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .process(async ({ start, end }) => {
+        const qr = await this.transactionService.getUsersTotalCountDaily(
+          context,
+          {
+            from: null,
+            to: end,
+          },
+        );
+
+        return { ...qr?.[0], start, end };
+      });
+
+    if (errors && errors.length) {
+      errors.map((error) => this.logger.error(error));
+    }
+
+    return {
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
+    };
   }
 
   async usersLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contract } = contractContext;
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
-    return this.transactionService.getUsersLeaderboard(contract);
+    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .process(async ({ start, end }) => {
+        const qr = await this.transactionService.getUsersLeaderboard(context, {
+          from: null,
+          to: end,
+        });
+
+        return { usersCount: [...qr], start, end };
+      });
+
+    if (errors && errors.length) {
+      errors.map((error) => this.logger.error(error));
+    }
+
+    const dayAgo = moment().subtract(1, 'days');
+    const dayAgoActivity = await this.transactionService.getUsersActivityQuery(
+      context,
+      {
+        from: null,
+        to: dayAgo.valueOf(),
+      },
+    );
+
+    const totalActivity = await this.transactionService.getUsersActivityQuery(
+      context,
+      { from: null, to: moment().valueOf() },
+    );
+
+    const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
+      const dayAgoCount =
+        dayAgoActivity.find(
+          ({ receiver_account_id }) => receiver_account_id === dao,
+        )?.count || 0;
+
+      return {
+        dao,
+        activity: {
+          count,
+          growth: getGrowth(count, dayAgoCount),
+        },
+        overview: days.map(({ end: timestamp }) => ({
+          timestamp,
+          count:
+            byDays
+              .find(({ end }) => end === timestamp)
+              ?.usersCount?.find(
+                ({ receiver_account_id }) => receiver_account_id === dao,
+              )?.count || 0,
+        })),
+      };
+    });
+
+    return { metrics };
   }
 
   async council(

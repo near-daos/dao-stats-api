@@ -20,8 +20,8 @@ export const getDailyIntervals = (
     }
 
     days.push({
-      start: millisToNanos(dayStart),
-      end: millisToNanos(dayEnd),
+      start: dayStart,
+      end: dayEnd,
     });
 
     timestamp = dayEnd;
