@@ -7,4 +7,5 @@ export interface ContractInterface extends NearContract {
     from_index: number;
     limit: number;
   }): Promise<ProposalsResponse>;
+  get_last_proposal_id(): Promise<number>;
 }

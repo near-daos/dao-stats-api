@@ -14,7 +14,12 @@ import {
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
-import { ProposalKind, ProposalStatus, RoleGroup } from './types';
+import {
+  ProposalKind,
+  ProposalsResponse,
+  ProposalStatus,
+  RoleGroup,
+} from './types';
 import { AstroDaoService } from './astro-dao.service';
 
 @Injectable()
@@ -106,22 +111,31 @@ export class AggregationService implements Aggregator {
 
   private async aggregateMetrics(contractId): Promise<DaoStatsDto[]> {
     const contracts = await this.astroDaoService.getContracts();
+
     const { results } = await PromisePool.for(contracts)
       .withConcurrency(2)
       .handleError((error) => {
         this.logger.error(error);
       })
       .process(async (contract) => {
+        const getProposals = async () => {
+          const lastProposalId = await contract.get_last_proposal_id();
+          const promises: Promise<ProposalsResponse>[] = [];
+          for (let i = 0; i <= lastProposalId; i += 200) {
+            promises.push(
+              contract.get_proposals({ from_index: i, limit: 200 }),
+            );
+          }
+          return (await Promise.all(promises)).flat();
+        };
+
         const policy = await contract.get_policy();
         const council = policy.roles.find(isRoleGroupCouncil);
         const councilSize = council
           ? (council.kind as RoleGroup).Group.length
           : 0;
         const groups = policy.roles.filter(isRoleGroup);
-        const proposals = await contract.get_proposals({
-          from_index: 0,
-          limit: 10000,
-        });
+        const proposals = await getProposals();
         const payouts = proposals.filter(
           ({ kind }) => kind[ProposalKind.Transfer] !== undefined,
         );
