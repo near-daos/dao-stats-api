@@ -38,32 +38,30 @@ export class UsersService {
     context: DaoContractContext | ContractContext,
   ): Promise<UsersTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
-    const usersCount = await this.transactionService.getUsersTotalCount(
-      context,
-    );
 
     const dayAgo = moment().subtract(1, 'days');
-    const dayAgoUsersCount = await this.transactionService.getUsersTotalCount(
-      context,
-      {
-        from: null,
-        to: millisToNanos(dayAgo.valueOf()),
-      },
-    );
 
-    const avgCouncilSize = await this.daoStatsHistoryService.getValue({
-      contract,
-      dao,
-      metric: DaoStatsMetric.CouncilSize,
-      func: 'AVG',
-    });
-    const dayAgoAvgCouncilSize = await this.daoStatsHistoryService.getValue({
-      contract,
-      dao,
-      metric: DaoStatsMetric.CouncilSize,
-      func: 'AVG',
-      to: dayAgo.valueOf(),
-    });
+    const [usersCount, dayAgoUsersCount, avgCouncilSize, dayAgoAvgCouncilSize] =
+      await Promise.all([
+        this.transactionService.getUsersTotalCount(context),
+        this.transactionService.getUsersTotalCount(context, {
+          from: null,
+          to: millisToNanos(dayAgo.valueOf()),
+        }),
+        this.daoStatsService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.CouncilSize,
+          func: 'AVG',
+        }),
+        this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.CouncilSize,
+          func: 'AVG',
+          to: dayAgo.valueOf(),
+        }),
+      ]);
 
     return {
       users: {
@@ -220,20 +218,22 @@ export class UsersService {
 
     const metrics = await Promise.all(
       leaderboard.map(async ({ dao, value }) => {
-        const prevValue = await this.daoStatsHistoryService.getValue({
-          contract,
-          dao,
-          metric: DaoStatsMetric.CouncilSize,
-          func: 'AVG',
-          to: dayAgo.valueOf(),
-        });
-        const history = await this.daoStatsHistoryService.getHistory({
-          contract,
-          dao,
-          metric: DaoStatsMetric.CouncilSize,
-          func: 'AVG',
-          from: weekAgo.valueOf(),
-        });
+        const [prevValue, history] = await Promise.all([
+          this.daoStatsHistoryService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.CouncilSize,
+            func: 'AVG',
+            to: dayAgo.valueOf(),
+          }),
+          this.daoStatsHistoryService.getHistory({
+            contract,
+            dao,
+            metric: DaoStatsMetric.CouncilSize,
+            func: 'AVG',
+            from: weekAgo.valueOf(),
+          }),
+        ]);
 
         return {
           dao,

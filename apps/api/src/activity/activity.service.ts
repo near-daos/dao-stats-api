@@ -42,30 +42,29 @@ export class ActivityService {
   ): Promise<ActivityTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
 
-    const proposalsCount = await this.transactionService.getTotalCount(
-      context,
-      TransactionType.AddProposal,
-    );
-
-    const dayAgoProposalsCount = await this.transactionService.getTotalCount(
-      context,
-      TransactionType.AddProposal,
-      {
-        from: null,
-        to: moment().subtract(1, 'days').valueOf(),
-      },
-    );
-
-    const proposalsByType = await Promise.all(
-      Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
-        const value = await this.daoStatsService.getValue({
-          contract,
-          dao,
-          metric,
-        });
-        return [key, value];
-      }),
-    );
+    const [proposalsCount, dayAgoProposalsCount, ...proposalsByType] =
+      await Promise.all([
+        this.transactionService.getTotalCount(
+          context,
+          TransactionType.AddProposal,
+        ),
+        this.transactionService.getTotalCount(
+          context,
+          TransactionType.AddProposal,
+          {
+            from: null,
+            to: moment().subtract(1, 'days').valueOf(),
+          },
+        ),
+        ...Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
+          const value = await this.daoStatsService.getValue({
+            contract,
+            dao,
+            metric,
+          });
+          return [key, value];
+        }),
+      ]);
 
     return {
       proposals: {

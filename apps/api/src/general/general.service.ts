@@ -38,42 +38,42 @@ export class GeneralService {
   ): Promise<GeneralTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
 
-    const daoCount = await this.transactionService.getTotalCount(
-      context,
-      TransactionType.CreateDao,
-    );
-
     const dayAgo = moment().subtract(1, 'days');
 
-    const dayAgoDaoCount = await this.transactionService.getTotalCount(
-      context,
-      TransactionType.CreateDao,
-      {
+    const [
+      daoCount,
+      dayAgoDaoCount,
+      activity,
+      dayAgoActivity,
+      groupsCount,
+      dayAgoGroupsCount,
+    ] = await Promise.all([
+      this.transactionService.getTotalCount(context, TransactionType.CreateDao),
+      this.transactionService.getTotalCount(
+        context,
+        TransactionType.CreateDao,
+        {
+          from: null,
+          to: dayAgo.valueOf(),
+        },
+      ),
+      this.transactionService.getContractActivityCount(context, {
         from: null,
         to: dayAgo.valueOf(),
-      },
-    );
-
-    const activity = await this.transactionService.getContractActivityCount(
-      context,
-    );
-    const dayAgoActivity =
-      await this.transactionService.getContractActivityCount(context, {
-        from: null,
+      }),
+      this.transactionService.getContractActivityCount(context),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.GroupsCount,
+      }),
+      this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
-      });
-
-    const groupsCount = await this.daoStatsService.getValue({
-      contract,
-      dao,
-      metric: DaoStatsMetric.GroupsCount,
-    });
-    const dayAgoGroupsCount = await this.daoStatsHistoryService.getValue({
-      contract,
-      dao,
-      metric: DaoStatsMetric.GroupsCount,
-      to: dayAgo.valueOf(),
-    });
+      }),
+    ]);
 
     return {
       dao: {
@@ -222,18 +222,20 @@ export class GeneralService {
 
     const metrics = await Promise.all(
       leaderboard.map(async ({ dao, value }) => {
-        const prevValue = await this.daoStatsHistoryService.getValue({
-          contract,
-          dao,
-          metric: DaoStatsMetric.GroupsCount,
-          to: dayAgo.valueOf(),
-        });
-        const history = await this.daoStatsHistoryService.getHistory({
-          contract,
-          dao,
-          metric: DaoStatsMetric.GroupsCount,
-          from: weekAgo.valueOf(),
-        });
+        const [prevValue, history] = await Promise.all([
+          this.daoStatsHistoryService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.GroupsCount,
+            to: dayAgo.valueOf(),
+          }),
+          this.daoStatsHistoryService.getHistory({
+            contract,
+            dao,
+            metric: DaoStatsMetric.GroupsCount,
+            from: weekAgo.valueOf(),
+          }),
+        ]);
 
         return {
           dao,
