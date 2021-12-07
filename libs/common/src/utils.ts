@@ -16,3 +16,7 @@ export const yoctoToPico = (yocto: number): number => {
 export const picoToYocto = (pico: number): number => {
   return pico * 1e12;
 };
+
+export const picoToNear = (pico: number): number => {
+  return pico / 1e12;
+};

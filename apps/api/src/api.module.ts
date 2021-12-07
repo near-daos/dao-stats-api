@@ -18,11 +18,12 @@ import {
 import { RedisModule } from '@dao-stats/redis';
 
 import { ContractInterceptor } from './interceptors/contract.interceptor';
+import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
 import { ActivityModule } from './activity/activity.module';
 import { FlowModule } from './flow/flow.module';
-import { ContractModule } from './contract/contract.module';
+import { TvlModule } from './tvl/tvl.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ContractModule } from './contract/contract.module';
     UsersModule,
     ActivityModule,
     FlowModule,
+    TvlModule,
   ],
   providers: [ContractInterceptor],
 })
