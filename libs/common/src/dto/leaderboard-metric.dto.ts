@@ -9,6 +9,6 @@ export class LeaderboardMetric {
   @ApiProperty()
   activity: TotalMetric;
 
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   overview: Metric[];
 }

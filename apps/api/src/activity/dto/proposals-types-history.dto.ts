@@ -2,15 +2,15 @@ import { Metric } from '@dao-stats/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProposalsTypesHistory {
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   payout: Metric[];
 
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   councilMember: Metric[];
 
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   policyChange: Metric[];
 
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   expired: Metric[];
 }

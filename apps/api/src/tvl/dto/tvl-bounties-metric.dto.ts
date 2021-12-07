@@ -8,6 +8,6 @@ export class TvlBountiesMetric {
   @ApiProperty()
   growth: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: [Metric] })
   overview: Metric[];
 }
