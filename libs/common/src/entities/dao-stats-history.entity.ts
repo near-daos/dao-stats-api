@@ -23,6 +23,6 @@ export class DaoStatsHistory implements HasContract {
   @PrimaryColumn({ type: 'enum', enum: DaoStatsMetric })
   metric: DaoStatsMetric;
 
-  @Column()
+  @Column({ type: 'bigint', nullable: false, default: 0 })
   value: number;
 }

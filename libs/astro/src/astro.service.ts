@@ -11,10 +11,12 @@ import {
   TransactionDto,
   TransactionType,
   millisToNanos,
+  yoctoToPico,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
 import {
+  BountyResponse,
   ProposalKind,
   ProposalsResponse,
   ProposalStatus,
@@ -129,13 +131,26 @@ export class AggregationService implements Aggregator {
           return (await Promise.all(promises)).flat();
         };
 
-        const policy = await contract.get_policy();
+        const getBounties = async () => {
+          const lastBountyId = await contract.get_last_bounty_id();
+          const promises: Promise<BountyResponse>[] = [];
+          for (let i = 0; i < lastBountyId; i += 200) {
+            promises.push(contract.get_bounties({ from_index: i, limit: 200 }));
+          }
+          return (await Promise.all(promises)).flat();
+        };
+
+        const [policy, proposals, bounties] = await Promise.all([
+          contract.get_policy(),
+          getProposals(),
+          getBounties(),
+        ]);
+
         const council = policy.roles.find(isRoleGroupCouncil);
         const councilSize = council
           ? (council.kind as RoleGroup).Group.length
           : 0;
         const groups = policy.roles.filter(isRoleGroup);
-        const proposals = await getProposals();
         const payouts = proposals.filter(
           ({ kind }) => kind[ProposalKind.Transfer] !== undefined,
         );
@@ -192,6 +207,21 @@ export class AggregationService implements Aggregator {
             ...common,
             metric: DaoStatsMetric.ProposalsExpiredCount,
             value: expiredProposals.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.BountiesCount,
+            value: bounties.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.BountiesValueLocked,
+            value: bounties.reduce(
+              (acc, bounty) =>
+                // TODO confirm bounty VL formula
+                acc + yoctoToPico(parseInt(bounty.amount) * bounty.times),
+              0,
+            ),
           },
         ];
       });
