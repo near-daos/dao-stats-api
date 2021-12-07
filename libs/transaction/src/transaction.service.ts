@@ -294,7 +294,7 @@ export class TransactionService {
   ): SelectQueryBuilder<Transaction> {
     const { from, to } = metricQuery || {};
 
-    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+    const queryBuilder = this.getTransactionIntervalQueryBuilder(
       context,
       from,
       to,
@@ -313,7 +313,7 @@ export class TransactionService {
     const { dao } = context as DaoContractContext;
     const { from, to } = metricQuery || {};
 
-    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+    const queryBuilder = this.getTransactionIntervalQueryBuilder(
       context,
       from,
       to,
