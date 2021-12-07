@@ -11,6 +11,7 @@ import {
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
+  MetricQuery,
   picoToNear,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
@@ -25,7 +26,6 @@ export class TvlService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
   ) {}
@@ -95,6 +95,50 @@ export class TvlService {
         count: 0,
         growth: 0,
       },
+    };
+  }
+
+  async bountiesCountHistory(
+    context: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contract } = context;
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      metric: DaoStatsMetric.BountiesCount,
+      from,
+      to,
+    });
+
+    return {
+      metrics: history.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: row.value,
+      })),
+    };
+  }
+
+  async bountiesValueLockedHistory(
+    context: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contract } = context;
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      metric: DaoStatsMetric.BountiesValueLocked,
+      from,
+      to,
+    });
+
+    return {
+      metrics: history.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: picoToNear(row.value),
+      })),
     };
   }
 

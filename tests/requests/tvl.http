@@ -1,6 +1,12 @@
 GET http://127.0.0.1:3000/api/v1/astro/tvl
 Accept: application/json
 ###
+GET http://127.0.0.1:3000/api/v1/astro/tvl/bounties/number
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tvl/bounties/vl
+Accept: application/json
+###
 GET http://127.0.0.1:3000/api/v1/astro/tvl/bounties/leaderboard
 Accept: application/json
 ###
