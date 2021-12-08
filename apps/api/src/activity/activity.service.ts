@@ -79,16 +79,16 @@ export class ActivityService {
     };
   }
 
-  async proposalsHistory(
+  async proposals(
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contract } = context;
+    const { contract, dao } = context as DaoContractContext;
 
     const [proposalCountHistory, metrics] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
         contract,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
       this.transactionService.getTotalCountDaily(
@@ -158,7 +158,7 @@ export class ActivityService {
     return { metrics };
   }
 
-  async proposalsTypesHistory(
+  async proposalsTypes(
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {

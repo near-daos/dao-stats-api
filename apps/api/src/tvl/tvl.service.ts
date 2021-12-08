@@ -98,15 +98,16 @@ export class TvlService {
     };
   }
 
-  async bountiesCountHistory(
-    context: ContractContext,
+  async bountiesNumber(
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
-    const { contract } = context;
+    const { contract, dao } = context as DaoContractContext;
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
       contract,
+      dao,
       metric: DaoStatsMetric.BountiesCount,
       from,
       to,
@@ -120,15 +121,16 @@ export class TvlService {
     };
   }
 
-  async bountiesValueLockedHistory(
-    context: ContractContext,
+  async bountiesValueLocked(
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
-    const { contract } = context;
+    const { contract, dao } = context as DaoContractContext;
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
       contract,
+      dao,
       metric: DaoStatsMetric.BountiesValueLocked,
       from,
       to,

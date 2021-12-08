@@ -20,7 +20,7 @@ export class FlowController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(@Param() context: ContractContext): Promise<FlowTotalResponse> {
+  async totals(@Param() context: ContractContext): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);
   }
 
@@ -33,7 +33,7 @@ export class FlowController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);

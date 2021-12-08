@@ -27,7 +27,7 @@ export class GeneralController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(
+  async totals(
     @Param() context: ContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
@@ -120,9 +120,25 @@ export class GeneralController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/groups')
+  async daoGroups(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.generalService.groups(context, metricQuery);
   }
 }

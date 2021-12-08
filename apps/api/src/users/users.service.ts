@@ -183,14 +183,15 @@ export class UsersService {
   }
 
   async council(
-    contractContext: ContractContext,
+    contractContext: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contract } = contractContext;
+    const { contract, dao } = contractContext as DaoContractContext;
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
       contract,
+      dao,
       metric: DaoStatsMetric.CouncilSize,
       func: 'AVG',
       from,
