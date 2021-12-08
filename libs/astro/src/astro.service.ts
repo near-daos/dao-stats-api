@@ -112,7 +112,16 @@ export class AggregationService implements Aggregator {
   }
 
   private async aggregateMetrics(contractId): Promise<DaoStatsDto[]> {
+    const { contractName } = this.configService.get('dao');
+
     const contracts = await this.astroDaoService.getContracts();
+
+    const domainContractMetric = {
+      contractId,
+      dao: contractName,
+      metric: DaoStatsMetric.DaoCount,
+      value: contracts.length,
+    };
 
     const { results } = await PromisePool.for(contracts)
       .withConcurrency(2)
@@ -226,6 +235,6 @@ export class AggregationService implements Aggregator {
         ];
       });
 
-    return results.flat();
+    return [domainContractMetric, ...results.flat()];
   }
 }

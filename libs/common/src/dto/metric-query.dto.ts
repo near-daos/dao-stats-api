@@ -6,7 +6,7 @@ export class MetricQuery {
   @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
-  from: number;
+  from?: number;
 
   @ApiProperty({ required: false })
   @IsNumber()

@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import PromisePool from '@supercharge/promise-pool';
 
 import {
   Contract,
@@ -19,7 +18,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
-import { getDailyIntervals, getGrowth } from '../utils';
+import { getGrowth } from '../utils';
 import { ProposalsTypes } from './dto/proposals-types.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
@@ -42,20 +41,21 @@ export class ActivityService {
   ): Promise<ActivityTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
 
+    const dayAgo = moment().subtract(1, 'days');
+
     const [proposalsCount, dayAgoProposalsCount, ...proposalsByType] =
       await Promise.all([
-        this.transactionService.getTotalCount(
-          context,
-          TransactionType.AddProposal,
-        ),
-        this.transactionService.getTotalCount(
-          context,
-          TransactionType.AddProposal,
-          {
-            from: null,
-            to: moment().subtract(1, 'days').valueOf(),
-          },
-        ),
+        this.daoStatsService.getValue({
+          contract,
+          dao: null,
+          metric: DaoStatsMetric.ProposalsCount,
+        }),
+        this.daoStatsHistoryService.getValue({
+          contract,
+          dao: null,
+          metric: DaoStatsMetric.ProposalsCount,
+          to: dayAgo.valueOf(),
+        }),
         ...Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
           const value = await this.daoStatsService.getValue({
             contract,
@@ -83,22 +83,30 @@ export class ActivityService {
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { from, to } = metricQuery;
-    const days = getDailyIntervals(from, to || moment().valueOf());
+    const { contract } = context;
 
-    const metrics = await this.transactionService.getTotalCountDaily(
-      context,
-      TransactionType.AddProposal,
-      {
-        from: null,
-        to: metricQuery.to,
-      },
-    );
+    const [proposalCountHistory, metrics] = await Promise.all([
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao: null,
+        metric: DaoStatsMetric.ProposalsCount,
+      }),
+      this.transactionService.getTotalCountDaily(
+        context,
+        TransactionType.AddProposal,
+        {
+          to: metricQuery.to,
+        },
+      ),
+    ]);
 
     return {
       metrics: metrics.map(({ day, count }) => ({
         timestamp: moment(day).valueOf(),
-        count,
+        count:
+          proposalCountHistory.find(({ date }) =>
+            moment(date).isSame(moment(day), 'day'),
+          )?.value || count,
       })),
     };
   }
@@ -108,68 +116,43 @@ export class ActivityService {
   ): Promise<LeaderboardMetricResponse> {
     const { contract } = contractContext;
 
-    const today = moment();
     const weekAgo = moment().subtract(7, 'days');
-    const days = getDailyIntervals(weekAgo.valueOf(), today.valueOf());
-
-    // TODO: optimize day-by-day querying
-    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
-      .for(days)
-      .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getProposalsLeaderboard(
-          contract,
-          null,
-          end,
-        );
-
-        return { proposalsCount: [...qr], start, end };
-      });
-
-    if (errors && errors.length) {
-      errors.map((error) => this.logger.error(error));
-    }
-
     const dayAgo = moment().subtract(1, 'days');
-    const dayAgoProposalsCount =
-      await this.transactionService.getProposalsLeaderboard(
-        contract,
-        null,
-        dayAgo.valueOf(),
-      );
 
-    const totalProposalsCount =
-      await this.transactionService.getProposalsLeaderboard(
-        contract,
-        null,
-        today.valueOf(),
-      );
+    const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
+      metric: DaoStatsMetric.ProposalsCount,
+    });
 
-    const metrics = totalProposalsCount.map(
-      ({ receiver_account_id: dao, count }) => {
-        const dayAgoCount =
-          dayAgoProposalsCount.find(
-            ({ receiver_account_id }) => receiver_account_id === dao,
-          )?.count || 0;
+    const metrics = await Promise.all(
+      leaderboard.map(async ({ dao, value }) => {
+        const [prevValue, history] = await Promise.all([
+          this.daoStatsHistoryService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.GroupsCount,
+            to: dayAgo.valueOf(),
+          }),
+          this.daoStatsHistoryService.getHistory({
+            contract,
+            dao,
+            metric: DaoStatsMetric.GroupsCount,
+            from: weekAgo.valueOf(),
+          }),
+        ]);
 
         return {
           dao,
           activity: {
-            count,
-            growth: Math.floor(
-              ((count - dayAgoCount) / (dayAgoCount || 1)) * 100,
-            ),
+            count: value,
+            growth: getGrowth(value, prevValue),
           },
-          overview: days.map(({ end: timestamp }) => ({
-            timestamp,
-            count:
-              byDays
-                .find(({ end }) => end === timestamp)
-                ?.proposalsCount?.find(
-                  ({ receiver_account_id }) => receiver_account_id === dao,
-                )?.count || 0,
+          overview: history.map((row) => ({
+            timestamp: row.date.valueOf(),
+            count: row.value,
           })),
         };
-      },
+      }),
     );
 
     return { metrics };

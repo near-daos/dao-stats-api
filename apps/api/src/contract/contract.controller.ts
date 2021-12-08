@@ -10,7 +10,7 @@ export class ContractController {
 
   @ApiResponse({
     status: 200,
-    type: ContractResponse,
+    type: [ContractResponse],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
