@@ -1,8 +1,5 @@
 import moment from 'moment';
-import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
@@ -26,12 +23,9 @@ export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-    @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>,
   ) {}
 
   async totals(

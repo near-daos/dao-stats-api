@@ -33,6 +33,7 @@ export class ReceiptAction implements HasContract {
   @Column()
   actionKind: string;
 
+  // migrate to 'json' format
   @Column({ type: 'simple-json' })
   args: Record<string, unknown>;
 }

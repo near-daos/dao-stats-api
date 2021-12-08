@@ -18,4 +18,8 @@ export class ContractService {
   async find(): Promise<ContractResponse[]> {
     return this.contractRepository.find();
   }
+
+  async findById(contractId: string): Promise<ContractResponse> {
+    return this.contractRepository.findOne({ contractId });
+  }
 }

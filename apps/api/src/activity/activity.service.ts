@@ -1,11 +1,8 @@
 import moment from 'moment';
-import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import {
-  Contract,
   ContractContext,
   DaoContractContext,
   DaoStatsMetric,
@@ -32,8 +29,6 @@ export class ActivityService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-    @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>,
   ) {}
 
   async totals(

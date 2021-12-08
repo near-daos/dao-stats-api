@@ -1,11 +1,7 @@
 import moment from 'moment';
-import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import {
-  Contract,
   ContractContext,
   DaoContractContext,
   DaoStatsHistoryService,
@@ -14,7 +10,6 @@ import {
   MetricQuery,
   picoToNear,
 } from '@dao-stats/common';
-import { TransactionService } from '@dao-stats/transaction';
 import { TvlTotalResponse } from './dto/tvl-total.dto';
 import { getGrowth } from '../utils';
 import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-response.dto';
@@ -22,12 +17,8 @@ import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-r
 @Injectable()
 export class TvlService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-    @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>,
   ) {}
 
   async totals(
