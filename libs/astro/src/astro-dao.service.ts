@@ -1,6 +1,7 @@
 import { Near, Contract } from 'near-api-js';
 import { ConfigService } from '@nestjs/config';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import PromisePool from '@supercharge/promise-pool';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
 import { Dao } from '@dao-stats/common';
@@ -12,6 +13,8 @@ import {
 
 @Injectable()
 export class AstroDaoService implements Dao {
+  private readonly logger = new Logger(AstroDaoService.name);
+
   constructor(
     private readonly config: ConfigService,
     @Inject(NEAR_PROVIDER)
@@ -23,7 +26,7 @@ export class AstroDaoService implements Dao {
     const account = await this.near.account(contractName);
 
     return new Contract(account, contractName, {
-      viewMethods: ['get_dao_list'],
+      viewMethods: ['get_dao_list', 'get_number_daos', 'get_daos'],
       changeMethods: [],
     }) as FactoryContractInterface;
   }
@@ -67,7 +70,34 @@ export class AstroDaoService implements Dao {
 
   public async getContracts(): Promise<ContractInterface[]> {
     const factoryContract = await this.getFactoryContract();
-    const daos = await factoryContract.get_dao_list();
+
+    let daos = [];
+    try {
+      daos = await factoryContract.get_dao_list();
+    } catch (e) {
+      // Considering 'UntypedError' as a blockchain FunctionCall error
+      if (e.type !== 'UntypedError') {
+        throw new Error(e);
+      }
+
+      const daoCount = await factoryContract.get_number_daos();
+
+      const chunkSize = 100;
+      const chunkCount = (daoCount - (daoCount % chunkSize)) / chunkSize + 1;
+      const { results } = await PromisePool.withConcurrency(1)
+        .for([...Array(chunkCount).keys()])
+        .handleError((e) => this.logger.error(e))
+        .process(
+          async (offset) =>
+            await factoryContract.get_daos({
+              from_index: offset * chunkSize,
+              limit: chunkSize,
+            }),
+        );
+
+      daos = results.flat();
+    }
+
     return Promise.all(daos.map((dao) => this.getContract(dao)));
   }
 }
