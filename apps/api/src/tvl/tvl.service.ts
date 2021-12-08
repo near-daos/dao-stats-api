@@ -28,8 +28,7 @@ export class TvlService {
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
-  ) {
-  }
+  ) {}
 
   async totals(
     context: DaoContractContext | ContractContext,
