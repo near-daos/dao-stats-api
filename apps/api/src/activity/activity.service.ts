@@ -95,7 +95,6 @@ export class ActivityService {
         context,
         TransactionType.AddProposal,
         {
-          from: null,
           to: metricQuery.to,
         },
       ),

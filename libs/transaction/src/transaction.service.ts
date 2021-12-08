@@ -98,24 +98,13 @@ export class TransactionService {
     daily?: boolean,
   ): Promise<any[]> {
     const { CreateDao } = TransactionType;
-    const { from, to } = metricQuery || {};
 
-    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+    return this.getTransactionLeaderboardQueryBuilder(
       context,
-      from,
-      to,
+      metricQuery,
+      daily,
     )
-      .select(`count(receiver_account_id)::int as count`)
       .andWhere('type != :type', { type: CreateDao })
-      .addSelect('receiver_account_id');
-
-    if (daily) {
-      queryBuilder = this.addDailySelection(queryBuilder);
-    }
-
-    return queryBuilder
-      .addGroupBy('receiver_account_id')
-      .addOrderBy('count', 'DESC')
       .execute();
   }
 
@@ -123,7 +112,6 @@ export class TransactionService {
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): Promise<number> {
-    const { contract, dao } = context as DaoContractContext;
     const { from, to } = metricQuery || {};
 
     return (
@@ -176,7 +164,7 @@ export class TransactionService {
   ): Promise<any[]> {
     const { CreateDao } = TransactionType;
     const { contract } = context;
-    const { from, to } = metricQuery;
+    const { from, to } = metricQuery || {};
 
     return this.connection.query(
       `
@@ -189,6 +177,41 @@ export class TransactionService {
         limit 10
     `,
     );
+  }
+
+  async getUsersInteractionsCount(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<number> {
+    return this.getUserInteractionsCountQueryBuilder(
+      context,
+      metricQuery,
+    ).getCount();
+  }
+
+  async getUsersInteractionsCountDaily(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<DailyCountDto[]> {
+    let queryBuilder = this.getUserInteractionsCountQueryBuilder(
+      context,
+      metricQuery,
+    );
+    queryBuilder = this.addDailySelection(queryBuilder);
+
+    return queryBuilder.execute();
+  }
+
+  async getUsersInteractionsCountLeaderboard(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    daily?: boolean,
+  ): Promise<any[]> {
+    return this.getTransactionLeaderboardQueryBuilder(
+      context,
+      metricQuery,
+      daily,
+    ).execute();
   }
 
   async getProposalsTotalCount(
@@ -319,6 +342,45 @@ export class TransactionService {
         `count(${dao ? '' : 'distinct'} receiver_account_id)::int as count`,
       )
       .andWhere('type != :type', { type: CreateDao });
+  }
+
+  private getUserInteractionsCountQueryBuilder(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): SelectQueryBuilder<Transaction> {
+    const { from, to } = metricQuery || {};
+
+    const queryBuilder = this.getTransactionIntervalQueryBuilder(
+      context,
+      from,
+      to,
+    );
+
+    return queryBuilder.select('count(receiver_account_id)::int');
+  }
+
+  private getTransactionLeaderboardQueryBuilder(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    daily?: boolean,
+  ): SelectQueryBuilder<Transaction> {
+    const { from, to } = metricQuery || {};
+
+    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+      context,
+      from,
+      to,
+    )
+      .select(`count(receiver_account_id)::int as count`)
+      .addSelect('receiver_account_id');
+
+    if (daily) {
+      queryBuilder = this.addDailySelection(queryBuilder);
+    }
+
+    return queryBuilder
+      .addGroupBy('receiver_account_id')
+      .addOrderBy('count', 'DESC');
   }
 
   private getTransactionIntervalQueryBuilder(

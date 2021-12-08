@@ -41,27 +41,36 @@ export class UsersService {
 
     const dayAgo = moment().subtract(1, 'days');
 
-    const [usersCount, dayAgoUsersCount, avgCouncilSize, dayAgoAvgCouncilSize] =
-      await Promise.all([
-        this.transactionService.getUsersTotalCount(context),
-        this.transactionService.getUsersTotalCount(context, {
-          from: null,
-          to: millisToNanos(dayAgo.valueOf()),
-        }),
-        this.daoStatsService.getValue({
-          contract,
-          dao,
-          metric: DaoStatsMetric.CouncilSize,
-          func: 'AVG',
-        }),
-        this.daoStatsHistoryService.getValue({
-          contract,
-          dao,
-          metric: DaoStatsMetric.CouncilSize,
-          func: 'AVG',
-          to: dayAgo.valueOf(),
-        }),
-      ]);
+    const [
+      usersCount,
+      dayAgoUsersCount,
+      avgCouncilSize,
+      dayAgoAvgCouncilSize,
+      interactions,
+      dayAgoInteractions,
+    ] = await Promise.all([
+      this.transactionService.getUsersTotalCount(context),
+      this.transactionService.getUsersTotalCount(context, {
+        to: millisToNanos(dayAgo.valueOf()),
+      }),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.CouncilSize,
+        func: 'AVG',
+      }),
+      this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.CouncilSize,
+        func: 'AVG',
+        to: dayAgo.valueOf(),
+      }),
+      this.transactionService.getUsersInteractionsCount(context),
+      this.transactionService.getUsersInteractionsCount(context, {
+        to: dayAgo.valueOf(),
+      }),
+    ]);
 
     return {
       users: {
@@ -74,8 +83,8 @@ export class UsersService {
       },
       // TODO
       interactions: {
-        count: 0,
-        growth: 0,
+        count: interactions,
+        growth: getGrowth(interactions, dayAgoInteractions),
       },
     };
   }
@@ -94,7 +103,6 @@ export class UsersService {
         const qr = await this.transactionService.getUsersTotalCountDaily(
           context,
           {
-            from: null,
             to: end,
           },
         );
@@ -127,7 +135,6 @@ export class UsersService {
       .for(days)
       .process(async ({ start, end }) => {
         const qr = await this.transactionService.getUsersLeaderboard(context, {
-          from: null,
           to: end,
         });
 
@@ -139,18 +146,14 @@ export class UsersService {
     }
 
     const dayAgo = moment().subtract(1, 'days');
-    const dayAgoActivity = await this.transactionService.getUsersActivityQuery(
-      context,
-      {
-        from: null,
+    const [dayAgoActivity, totalActivity] = await Promise.all([
+      this.transactionService.getUsersActivityQuery(context, {
         to: dayAgo.valueOf(),
-      },
-    );
-
-    const totalActivity = await this.transactionService.getUsersActivityQuery(
-      context,
-      { from: null, to: moment().valueOf() },
-    );
+      }),
+      this.transactionService.getUsersActivityQuery(context, {
+        to: moment().valueOf(),
+      }),
+    ]);
 
     const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
       const dayAgoCount =
@@ -248,6 +251,75 @@ export class UsersService {
         };
       }),
     );
+
+    return { metrics };
+  }
+
+  async interactions(
+    context: DaoContractContext | ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const metrics =
+      await this.transactionService.getUsersInteractionsCountDaily(
+        context,
+        metricQuery,
+      );
+
+    return {
+      metrics: metrics.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
+    };
+  }
+
+  async interactionsLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const dayAgo = moment().subtract(1, 'days');
+
+    const [byDays, dayAgoActivity, totalActivity] = await Promise.all([
+      this.transactionService.getUsersInteractionsCountLeaderboard(
+        context,
+        {
+          from: weekAgo.valueOf(),
+          to: moment().valueOf(),
+        },
+        true,
+      ),
+      this.transactionService.getUsersInteractionsCountLeaderboard(context, {
+        to: dayAgo.valueOf(),
+      }),
+      this.transactionService.getUsersInteractionsCountLeaderboard(context, {
+        to: moment().valueOf(),
+      }),
+    ]);
+
+    const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
+      const dayAgoCount =
+        dayAgoActivity.find(
+          ({ receiver_account_id }) => receiver_account_id === dao,
+        )?.count || 0;
+
+      return {
+        dao,
+        activity: {
+          count,
+          growth: getGrowth(count, dayAgoCount),
+        },
+        overview: days.map(({ end: timestamp }) => ({
+          timestamp,
+          count:
+            byDays.find(
+              ({ receiver_account_id, day }) =>
+                receiver_account_id === dao &&
+                moment(day).isSame(moment(timestamp), 'day'),
+            )?.count || 0,
+        })),
+      };
+    });
 
     return { metrics };
   }

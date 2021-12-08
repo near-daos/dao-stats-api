@@ -14,7 +14,7 @@ export const getDailyIntervals = (
     const dayStart = timestamp;
     const dayEnd = moment(timestamp).add(1, 'days').valueOf();
 
-    if (timestamp >= to) {
+    if (moment(dayEnd).isAfter(moment(to), 'day')) {
       break;
     }
 

@@ -53,7 +53,6 @@ export class GeneralService {
         to: dayAgo.valueOf(),
       }),
       this.transactionService.getContractActivityCount(context, {
-        from: null,
         to: dayAgo.valueOf(),
       }),
       this.transactionService.getContractActivityCount(context),
@@ -102,7 +101,6 @@ export class GeneralService {
         context,
         TransactionType.CreateDao,
         {
-          from: null,
           to: metricQuery.to,
         },
       ),
@@ -139,7 +137,6 @@ export class GeneralService {
   async activityLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contract } = context;
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
@@ -155,13 +152,11 @@ export class GeneralService {
     const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity =
       await this.transactionService.getContractActivityLeaderboard(context, {
-        from: null,
         to: dayAgo.valueOf(),
       });
 
     const totalActivity =
       await this.transactionService.getContractActivityLeaderboard(context, {
-        from: null,
         to: moment().valueOf(),
       });
 
