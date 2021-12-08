@@ -40,13 +40,7 @@ export class TransactionService {
     txType: TransactionType,
     metricQuery?: MetricQuery,
   ): Promise<number> {
-    const qr = await this.getTotalCountQuery(
-      context,
-      metricQuery,
-      txType,
-    ).execute();
-
-    return qr?.[0].count;
+    return this.getTotalCountQuery(context, metricQuery, txType).getCount();
   }
 
   async getTotalCountDaily(

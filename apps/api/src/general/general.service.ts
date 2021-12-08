@@ -1,11 +1,8 @@
 import moment from 'moment';
-import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import {
-  Contract,
   ContractContext,
   DaoContractContext,
   DaoStatsHistoryService,
@@ -29,8 +26,6 @@ export class GeneralService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-    @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>,
   ) {}
 
   async totals(
@@ -48,15 +43,15 @@ export class GeneralService {
       groupsCount,
       dayAgoGroupsCount,
     ] = await Promise.all([
-      this.transactionService.getTotalCount(context, TransactionType.CreateDao),
-      this.transactionService.getTotalCount(
-        context,
-        TransactionType.CreateDao,
-        {
-          from: null,
-          to: dayAgo.valueOf(),
-        },
-      ),
+      this.daoStatsService.getValue({
+        contract,
+        metric: DaoStatsMetric.DaoCount,
+      }),
+      this.daoStatsHistoryService.getValue({
+        contract,
+        metric: DaoStatsMetric.DaoCount,
+        to: dayAgo.valueOf(),
+      }),
       this.transactionService.getContractActivityCount(context, {
         from: null,
         to: dayAgo.valueOf(),
@@ -95,19 +90,31 @@ export class GeneralService {
     context: ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const metrics = await this.transactionService.getTotalCountDaily(
-      context,
-      TransactionType.CreateDao,
-      {
-        from: null,
-        to: metricQuery.to,
-      },
-    );
+    const { contract } = context;
+
+    const [daoCountHistory, metrics] = await Promise.all([
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao: null,
+        metric: DaoStatsMetric.DaoCount,
+      }),
+      this.transactionService.getTotalCountDaily(
+        context,
+        TransactionType.CreateDao,
+        {
+          from: null,
+          to: metricQuery.to,
+        },
+      ),
+    ]);
 
     return {
       metrics: metrics.map(({ day, count }) => ({
         timestamp: moment(day).valueOf(),
-        count,
+        count:
+          daoCountHistory.find(({ date }) =>
+            moment(date).isSame(moment(day), 'day'),
+          )?.value || count,
       })),
     };
   }
