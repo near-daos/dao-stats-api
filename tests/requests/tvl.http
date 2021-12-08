@@ -12,3 +12,9 @@ Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/tvl/genesis.sputnik-dao.near
 Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tvl/genesis.sputnik-dao.near/bounties/number
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tvl/genesis.sputnik-dao.near/bounties/vl
+Accept: application/json

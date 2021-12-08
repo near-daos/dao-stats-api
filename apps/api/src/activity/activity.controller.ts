@@ -121,11 +121,27 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/:dao/history')
+  @Get('/:dao/proposals')
   async daosTotalHistory(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.activityService.proposalsHistory(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: ProposalsTypesHistoryResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/proposals-types')
+  async daoProposalsTypes(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<ProposalsTypesHistoryResponse> {
+    return this.activityService.proposalsTypesHistory(context, metricQuery);
   }
 }

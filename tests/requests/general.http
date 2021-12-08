@@ -21,3 +21,6 @@ Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/general/community.sputnik-dao.near
 Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/general/community.sputnik-dao.near/groups
+Accept: application/json

@@ -157,6 +157,22 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/council')
+  async daoCouncil(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.council(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: LeaderboardMetricResponse,
   })
   @ApiBadRequestResponse({

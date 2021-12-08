@@ -10,5 +10,11 @@ Accept: application/json
 GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near
 Accept: application/json
 ###
-GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/history
+GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/users
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/council
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/interactions
 Accept: application/json

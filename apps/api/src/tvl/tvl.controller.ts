@@ -93,4 +93,36 @@ export class TvlController {
   ): Promise<TvlTotalResponse> {
     return this.tvlService.totals(context);
   }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/bounties/number')
+  async daoBountiesNumber(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tvlService.bountiesCountHistory(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/bounties/vl')
+  async daoBountiesVl(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tvlService.bountiesValueLockedHistory(context, metricQuery);
+  }
 }
