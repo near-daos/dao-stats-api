@@ -27,7 +27,7 @@ export class GeneralController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(
+  async totals(
     @Param() context: ContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
@@ -120,7 +120,7 @@ export class GeneralController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);

@@ -30,7 +30,7 @@ export class ActivityController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(
+  async totals(
     @Param() context: ContractContext,
   ): Promise<ActivityTotalResponse> {
     return this.activityService.totals(context);
@@ -44,12 +44,12 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/proposals/history')
-  async totalHistory(
+  @Get('/proposals')
+  async proposals(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.proposalsHistory(context, metricQuery);
+    return this.activityService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -61,7 +61,7 @@ export class ActivityController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/proposals/leaderboard')
-  async proposalsTypes(
+  async proposalsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.activityService.proposalsLeaderboard(context);
@@ -75,12 +75,12 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/proposals-types/history')
-  async proposalsTypesHistory(
+  @Get('/proposals-types')
+  async proposalsTypes(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.activityService.proposalsTypesHistory(context, metricQuery);
+    return this.activityService.proposalsTypes(context, metricQuery);
   }
 
   @ApiResponse({
@@ -107,7 +107,7 @@ export class ActivityController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<ActivityTotalResponse> {
     return this.activityService.totals(context);
@@ -122,11 +122,11 @@ export class ActivityController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao/proposals')
-  async daosTotalHistory(
+  async daoProposals(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.proposalsHistory(context, metricQuery);
+    return this.activityService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -142,6 +142,6 @@ export class ActivityController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.activityService.proposalsTypesHistory(context, metricQuery);
+    return this.activityService.proposalsTypes(context, metricQuery);
   }
 }

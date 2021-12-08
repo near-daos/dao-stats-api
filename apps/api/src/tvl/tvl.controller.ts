@@ -28,7 +28,7 @@ export class TvlController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(@Param() context: ContractContext): Promise<TvlTotalResponse> {
+  async totals(@Param() context: ContractContext): Promise<TvlTotalResponse> {
     return this.tvlService.totals(context);
   }
 
@@ -45,7 +45,7 @@ export class TvlController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesCountHistory(context, metricQuery);
+    return this.tvlService.bountiesNumber(context, metricQuery);
   }
 
   @ApiResponse({
@@ -57,11 +57,11 @@ export class TvlController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/bounties/vl')
-  async bountiesVl(
+  async bountiesValueLocked(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesValueLockedHistory(context, metricQuery);
+    return this.tvlService.bountiesValueLocked(context, metricQuery);
   }
 
   @ApiResponse({
@@ -88,7 +88,7 @@ export class TvlController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<TvlTotalResponse> {
     return this.tvlService.totals(context);
@@ -107,7 +107,7 @@ export class TvlController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesCountHistory(context, metricQuery);
+    return this.tvlService.bountiesNumber(context, metricQuery);
   }
 
   @ApiResponse({
@@ -119,10 +119,10 @@ export class TvlController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao/bounties/vl')
-  async daoBountiesVl(
+  async daoBountiesValueLocked(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesValueLockedHistory(context, metricQuery);
+    return this.tvlService.bountiesValueLocked(context, metricQuery);
   }
 }

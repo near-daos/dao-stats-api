@@ -27,7 +27,7 @@ export class UsersController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async total(@Param() context: ContractContext): Promise<UsersTotalResponse> {
+  async totals(@Param() context: ContractContext): Promise<UsersTotalResponse> {
     return this.usersService.totals(context);
   }
 
@@ -133,7 +133,7 @@ export class UsersController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao')
-  async daoTotal(
+  async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<UsersTotalResponse> {
     return this.usersService.totals(context);
@@ -148,7 +148,7 @@ export class UsersController {
   })
   @UseInterceptors(ContractInterceptor)
   @Get('/:dao/users')
-  async daoUsersHistory(
+  async daoUsers(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {

@@ -79,7 +79,7 @@ export class ActivityService {
     };
   }
 
-  async proposalsHistory(
+  async proposals(
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -158,7 +158,7 @@ export class ActivityService {
     return { metrics };
   }
 
-  async proposalsTypesHistory(
+  async proposalsTypes(
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {

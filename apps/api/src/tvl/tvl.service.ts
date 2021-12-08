@@ -99,7 +99,7 @@ export class TvlService {
     };
   }
 
-  async bountiesCountHistory(
+  async bountiesNumber(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
@@ -122,7 +122,7 @@ export class TvlService {
     };
   }
 
-  async bountiesValueLockedHistory(
+  async bountiesValueLocked(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
