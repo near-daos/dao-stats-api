@@ -137,3 +137,14 @@ export interface Proposal {
 }
 
 export type ProposalsResponse = Proposal[];
+
+export interface Bounty {
+  id: number;
+  description: string;
+  token: string;
+  amount: NearAmount;
+  times: number;
+  max_deadline: NearTime;
+}
+
+export type BountyResponse = Bounty[];
