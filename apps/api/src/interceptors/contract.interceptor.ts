@@ -1,4 +1,3 @@
-import { Repository } from 'typeorm';
 import { Observable, throwError } from 'rxjs';
 import {
   BadRequestException,
@@ -7,16 +6,12 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 
-import { Contract } from '@dao-stats/common';
+import { ContractService } from '../contract/contract.service';
 
 @Injectable()
 export class ContractInterceptor implements NestInterceptor {
-  constructor(
-    @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>,
-  ) {}
+  constructor(private readonly contractService: ContractService) {}
 
   async intercept(
     context: ExecutionContext,
@@ -30,9 +25,7 @@ export class ContractInterceptor implements NestInterceptor {
       );
     }
 
-    const entity = await this.contractRepository.findOne({
-      contractId: contract,
-    });
+    const entity = await this.contractService.findById(contract);
 
     if (!entity) {
       return throwError(
