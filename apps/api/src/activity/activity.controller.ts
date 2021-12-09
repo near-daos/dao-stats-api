@@ -175,4 +175,20 @@ export class ActivityController {
   ): Promise<ProposalsTypesHistoryResponse> {
     return this.activityService.proposalsTypes(context, metricQuery);
   }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/rate')
+  async daoRate(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.activityService.rate(context, metricQuery);
+  }
 }
