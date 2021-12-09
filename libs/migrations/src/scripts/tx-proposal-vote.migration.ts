@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { Migration } from '..';
-import { findAllByKey } from '@dao-stats/common';
+import { findAllByKey, TransactionType } from '@dao-stats/common';
 import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
@@ -23,6 +23,8 @@ export class TransactionProposalVoteMigration implements Migration {
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.receipts', 'receipts')
       .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
+      .where('type = :type', { type: TransactionType.ActProposal })
+      .andWhere('vote_type is null')
       .getMany();
 
     const updated = transactions.map((tx) => ({
