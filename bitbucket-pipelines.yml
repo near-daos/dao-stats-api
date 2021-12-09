@@ -164,7 +164,11 @@ pipelines:
 
       - step:
           <<: *helm-build-deploy
-          deployment: Development
+          deployment: Development Mainnet
+
+      - step:
+          <<: *helm-build-deploy
+          deployment: Development Testnet
 
     staging:
       - step:
