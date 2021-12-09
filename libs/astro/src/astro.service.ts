@@ -12,9 +12,10 @@ import {
   TransactionType,
   millisToNanos,
   yoctoToPico,
+  findAllByKey,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
-import { findAllByKey, isRoleGroup, isRoleGroupCouncil } from './utils';
+import { isRoleGroup, isRoleGroupCouncil } from './utils';
 import {
   BountyResponse,
   ProposalKind,
@@ -23,6 +24,7 @@ import {
   RoleGroup,
 } from './types';
 import { AstroDaoService } from './astro-dao.service';
+import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -95,6 +97,7 @@ export class AggregationService implements Aggregator {
     return transactions.flat().map((tx) => ({
       ...tx,
       type: this.getTransactionType(tx),
+      voteType: this.getVoteType(tx),
     }));
   }
 
@@ -108,6 +111,16 @@ export class AggregationService implements Aggregator {
       ? TransactionType.AddProposal
       : methods.includes('act_proposal')
       ? TransactionType.ActProposal
+      : null;
+  }
+
+  private getVoteType(tx: Transaction): VoteType {
+    const actions = findAllByKey(tx, 'action');
+
+    return actions.includes('VoteApprove')
+      ? VoteType.VoteApprove
+      : actions.includes('VoteReject')
+      ? VoteType.VoteReject
       : null;
   }
 
