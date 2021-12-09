@@ -116,7 +116,7 @@ definitions:
         script:
           - source environment.sh
           - |
-            if [ -d manifests ]
+            if [ ! -d manifests ]
             then
               mkdir manifests
             fi
