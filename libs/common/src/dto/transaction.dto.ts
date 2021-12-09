@@ -1,4 +1,5 @@
 import { TransactionType } from '../types/transaction-type';
+import { VoteType } from '../types/vote-type';
 import { ReceiptDto } from './receipt.dto';
 
 export class TransactionDto {
@@ -12,4 +13,5 @@ export class TransactionDto {
   receiptConversionTokensBurnt: string;
   blockTimestamp: number;
   type: TransactionType;
+  voteType?: VoteType;
 }

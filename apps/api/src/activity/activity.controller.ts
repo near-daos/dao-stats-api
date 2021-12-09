@@ -100,6 +100,37 @@ export class ActivityController {
 
   @ApiResponse({
     status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/rate')
+  async rate(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.activityService.rate(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/rate/leaderboard')
+  async rateLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.activityService.rateLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: ActivityTotalResponse,
   })
   @ApiBadRequestResponse({
@@ -143,5 +174,21 @@ export class ActivityController {
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
     return this.activityService.proposalsTypes(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/rate')
+  async daoRate(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.activityService.rate(context, metricQuery);
   }
 }

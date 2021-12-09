@@ -46,11 +46,10 @@ export class FlowService {
 
     const [txCount, dayAgoTxCount, incoming, outgoing] = await Promise.all([
       this.transactionService.getTransactionTotalCount(contractContext),
-      this.transactionService.getTransactionTotalCount(
-        contractContext,
-        null,
-        millisToNanos(dayAgo.valueOf()),
-      ),
+      this.transactionService.getTransactionTotalCount(contractContext, {
+        from: null,
+        to: millisToNanos(dayAgo.valueOf()),
+      }),
       this.receiptService.findIncomingReceipts(contractContext),
       this.receiptService.findOutgoingReceipts(contractContext),
     ]);

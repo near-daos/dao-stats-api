@@ -87,6 +87,7 @@ export class AggregatorService {
                     (receiptAction) => ({
                       ...receiptAction,
                       contractId,
+                      argsJson: receiptAction.args,
                     }),
                   ),
                 })),

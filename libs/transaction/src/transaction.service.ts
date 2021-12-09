@@ -11,6 +11,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionLeaderboardDto } from './dto/transaction-leaderboard.dto';
 import { DailyCountDto } from '@dao-stats/common/dto/daily-count.dto';
+import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
 export class TransactionService {
@@ -242,22 +243,13 @@ export class TransactionService {
 
   async getTransactionTotalCount(
     context: DaoContractContext | ContractContext,
-    from?: number,
-    to?: number,
+    metricQuery?: MetricQuery,
   ): Promise<number> {
-    const { contract, dao } = context as DaoContractContext;
+    const { from, to } = metricQuery || {};
 
-    const qr = await this.connection.query(
-      `
-        select count(transaction_hash)::int from transactions 
-        where contract_id = '${contract}'
-        ${dao ? `and receiver_account_id = '${dao}'` : ''}
-        ${from ? `and block_timestamp > ${from}` : ''}
-        ${to ? `and block_timestamp < ${to}` : ''}
-      `,
-    );
-
-    return qr?.[0]?.count;
+    return this.getTransactionIntervalQueryBuilder(context, from, to)
+      .select('count(transaction_hash)::int')
+      .getCount();
   }
 
   async getProposalsLeaderboard(
@@ -278,19 +270,22 @@ export class TransactionService {
   }
 
   async findTransactions(
-    contractId: string,
-    from?: number,
-    to?: number,
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    eager?: boolean, // eagerly pulling all related data
   ): Promise<Transaction[]> {
+    const { from, to } = metricQuery || {};
     let queryBuilder = this.getTransactionIntervalQueryBuilder(
-      { contract: contractId },
+      context,
       from,
       to,
-    );
+    ).orderBy('block_timestamp', 'ASC');
 
-    queryBuilder = queryBuilder
-      .where('transaction.contractId = :contractId', { contractId })
-      .orderBy('transaction.block_timestamp', 'ASC');
+    if (eager) {
+      queryBuilder
+        .leftJoinAndSelect('transaction.receipts', 'receipts')
+        .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions');
+    }
 
     return queryBuilder.getMany();
   }
@@ -302,6 +297,77 @@ export class TransactionService {
       },
       order: { blockTimestamp: 'ASC' },
     });
+  }
+
+  async getVoteTotalCount(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    voteType?: VoteType,
+  ): Promise<number> {
+    const queryBuilder = this.getVoteTotalCountQuery(
+      context,
+      metricQuery,
+      voteType,
+    );
+
+    return queryBuilder.getCount();
+  }
+
+  async getVoteTotalCountDaily(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    voteType?: VoteType,
+  ): Promise<DailyCountDto[]> {
+    let queryBuilder = this.getVoteTotalCountQuery(
+      context,
+      metricQuery,
+      voteType,
+    );
+    queryBuilder = this.addDailySelection(queryBuilder);
+
+    return queryBuilder.execute();
+  }
+
+  async getVoteTotalCountLeaderboard(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    voteType?: VoteType,
+    daily?: boolean,
+  ): Promise<any[]> {
+    let queryBuilder = this.getVoteTotalCountQuery(
+      context,
+      metricQuery,
+      voteType,
+    )
+      .select(`count(receiver_account_id)::int as count`)
+      .addSelect('receiver_account_id');
+
+    if (daily) {
+      queryBuilder = this.addDailySelection(queryBuilder);
+    }
+
+    return queryBuilder
+      .addGroupBy('receiver_account_id')
+      .addOrderBy('count', 'DESC')
+      .execute();
+  }
+
+  private getVoteTotalCountQuery(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+    voteType?: VoteType,
+  ): SelectQueryBuilder<Transaction> {
+    const queryBuilder = this.getTotalCountQuery(
+      context,
+      metricQuery,
+      TransactionType.ActProposal,
+    ).andWhere('vote_type is not null');
+
+    if (voteType) {
+      queryBuilder.andWhere('vote_type = :voteType', { voteType });
+    }
+
+    return queryBuilder;
   }
 
   private getTotalCountQuery(

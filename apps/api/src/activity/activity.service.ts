@@ -15,10 +15,11 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
-import { getGrowth } from '../utils';
+import { getDailyIntervals, getGrowth } from '../utils';
 import { ProposalsTypes } from './dto/proposals-types.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
+import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
 export class ActivityService {
@@ -38,28 +39,47 @@ export class ActivityService {
 
     const dayAgo = moment().subtract(1, 'days');
 
-    const [proposalsCount, dayAgoProposalsCount, ...proposalsByType] =
-      await Promise.all([
-        this.daoStatsService.getValue({
-          contract,
-          dao: null,
-          metric: DaoStatsMetric.ProposalsCount,
-        }),
-        this.daoStatsHistoryService.getValue({
-          contract,
-          dao: null,
-          metric: DaoStatsMetric.ProposalsCount,
+    console.log(dao);
+
+    const [
+      proposalsCount,
+      dayAgoProposalsCount,
+      voteRate,
+      dayAgoVoteRate,
+      ...proposalsByType
+    ] = await Promise.all([
+      this.daoStatsService.getValue({
+        contract,
+        dao: null,
+        metric: DaoStatsMetric.ProposalsCount,
+      }),
+      this.daoStatsHistoryService.getValue({
+        contract,
+        dao: null,
+        metric: DaoStatsMetric.ProposalsCount,
+        to: dayAgo.valueOf(),
+      }),
+      this.transactionService.getVoteTotalCount(
+        context,
+        null,
+        VoteType.VoteApprove,
+      ),
+      this.transactionService.getVoteTotalCount(
+        context,
+        {
           to: dayAgo.valueOf(),
-        }),
-        ...Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
-          const value = await this.daoStatsService.getValue({
-            contract,
-            dao,
-            metric,
-          });
-          return [key, value];
-        }),
-      ]);
+        },
+        VoteType.VoteApprove,
+      ),
+      ...Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
+        const value = await this.daoStatsService.getValue({
+          contract,
+          dao,
+          metric,
+        });
+        return [key, value];
+      }),
+    ]);
 
     return {
       proposals: {
@@ -68,8 +88,8 @@ export class ActivityService {
       },
       proposalsByType: Object.fromEntries(proposalsByType),
       voteRate: {
-        count: 0,
-        growth: 0,
+        count: voteRate,
+        growth: getGrowth(voteRate, dayAgoVoteRate),
       },
     };
   }
@@ -213,6 +233,76 @@ export class ActivityService {
     );
 
     return { leaderboard };
+  }
+
+  async rate(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<MetricResponse> {
+    const metrics = await this.transactionService.getVoteTotalCountDaily(
+      context,
+      metricQuery,
+      VoteType.VoteApprove,
+    );
+
+    return {
+      metrics: metrics.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
+    };
+  }
+
+  async rateLeaderboard(
+    context: DaoContractContext | ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const weekAgo = moment().subtract(7, 'days');
+    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const dayAgo = moment().subtract(1, 'days');
+
+    const [byDays, dayAgoActivity, totalActivity] = await Promise.all([
+      this.transactionService.getVoteTotalCountLeaderboard(
+        context,
+        {
+          from: weekAgo.valueOf(),
+          to: moment().valueOf(),
+        },
+        VoteType.VoteApprove,
+        true,
+      ),
+      this.transactionService.getVoteTotalCountLeaderboard(context, {
+        to: dayAgo.valueOf(),
+      }),
+      this.transactionService.getVoteTotalCountLeaderboard(context, {
+        to: moment().valueOf(),
+      }),
+    ]);
+
+    const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
+      const dayAgoCount =
+        dayAgoActivity.find(
+          ({ receiver_account_id }) => receiver_account_id === dao,
+        )?.count || 0;
+
+      return {
+        dao,
+        activity: {
+          count,
+          growth: getGrowth(count, dayAgoCount),
+        },
+        overview: days.map(({ end: timestamp }) => ({
+          timestamp,
+          count:
+            byDays.find(
+              ({ receiver_account_id, day }) =>
+                receiver_account_id === dao &&
+                moment(day).isSame(moment(timestamp), 'day'),
+            )?.count || 0,
+        })),
+      };
+    });
+
+    return { metrics };
   }
 
   get PROPOSALS_TYPES(): Record<keyof ProposalsTypes, DaoStatsMetric> {

@@ -173,7 +173,7 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
-    type: LeaderboardMetricResponse,
+    type: MetricResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',

@@ -10,6 +10,7 @@ import { Contract, Receipt } from '.';
 import { BaseEntity } from './base.entity';
 import { HasContract } from '../interfaces';
 import { TransactionType } from '../types';
+import { VoteType } from '../types/vote-type';
 
 @Entity({ name: 'transactions' })
 export class Transaction extends BaseEntity implements HasContract {
@@ -50,4 +51,7 @@ export class Transaction extends BaseEntity implements HasContract {
 
   @Column({ nullable: true, type: 'enum', enum: TransactionType })
   type: TransactionType;
+
+  @Column({ type: 'enum', enum: VoteType, nullable: true })
+  voteType?: VoteType;
 }
