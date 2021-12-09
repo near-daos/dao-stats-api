@@ -115,7 +115,11 @@ definitions:
         image: alpine/helm:3.6.3
         script:
           - source environment.sh
-          - mkdir manifests
+          - |
+            if [ -d manifests ]
+            then
+              mkdir manifests
+            fi
           - |
               for APP_NAME in $UPDATED_APPS
               do
@@ -162,13 +166,14 @@ pipelines:
 
       - parallel: *docker-build-publish
 
-      - step:
-          <<: *helm-build-deploy
-          deployment: Development Mainnet
+      - parallel:
+        - step:
+            <<: *helm-build-deploy
+            deployment: Development Mainnet
 
-      - step:
-          <<: *helm-build-deploy
-          deployment: Development Testnet
+        - step:
+            <<: *helm-build-deploy
+            deployment: Development Testnet
 
     staging:
       - step:
