@@ -28,7 +28,4 @@ export class ReceiptAction {
 
   @Column({ type: 'simple-json' })
   args: Record<string, unknown>;
-
-  @Column({ type: 'json' })
-  argsJson: Record<string, unknown>;
 }

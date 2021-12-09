@@ -23,8 +23,6 @@ export class ReceiptActionArgsMigration implements Migration {
       },
     });
 
-    console.log(receiptActions.length);
-
     await PromisePool.withConcurrency(500)
       .for(
         receiptActions.map((action) => ({
