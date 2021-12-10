@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import migrationScripts from './scripts';
 import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
@@ -10,7 +9,8 @@ import {
   Transaction,
   Receipt,
   ReceiptAction,
-} from '@dao-stats/common/entities';
+} from '@dao-stats/common';
+import migrationScripts from './scripts';
 
 @Module({
   imports: [

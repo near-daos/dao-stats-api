@@ -1,5 +1,4 @@
-import { TransactionType } from '../types/transaction-type';
-import { VoteType } from '../types/vote-type';
+import { TransactionType, VoteType } from '../types';
 import { ReceiptDto } from './receipt.dto';
 
 export class TransactionDto {
