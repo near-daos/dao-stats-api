@@ -223,6 +223,10 @@ pipelines:
 
       - parallel: *docker-build-publish
           
-      - step:
-          <<: *helm-build-deploy
-          deployment: Production
+      - parallel:
+        - step:
+            <<: *helm-build-deploy
+            deployment: Production Mainnet
+        - step:
+            <<: *helm-build-deploy
+            deployment: Production Testnet
