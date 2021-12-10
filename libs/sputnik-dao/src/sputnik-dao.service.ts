@@ -1,13 +1,18 @@
-import { AggregationOutput, Aggregator } from '@dao-stats/common/interfaces';
 import { Injectable, Logger } from '@nestjs/common';
+import { Aggregator, DaoStatsDto, TransactionDto } from '@dao-stats/common';
 
 @Injectable()
 export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
 
-  public async aggregate(): Promise<AggregationOutput> {
-    this.logger.log('Aggregating Sputnik DAO...');
+  aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto[]> {
+    return undefined;
+  }
 
-    return new AggregationOutput();
+  aggregateTransactions(
+    from?: number,
+    to?: number,
+  ): AsyncGenerator<TransactionDto[]> {
+    return undefined;
   }
 }
