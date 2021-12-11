@@ -3,14 +3,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ProposalsTypesHistory {
   @ApiProperty({ type: [Metric] })
-  payout: Metric[];
+  governance: Metric[];
 
   @ApiProperty({ type: [Metric] })
-  councilMember: Metric[];
+  financial: Metric[];
 
   @ApiProperty({ type: [Metric] })
-  policyChange: Metric[];
+  bounties: Metric[];
 
   @ApiProperty({ type: [Metric] })
-  expired: Metric[];
+  members: Metric[];
 }

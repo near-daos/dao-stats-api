@@ -159,19 +159,29 @@ export class AggregationService implements Aggregator {
         ? (council.kind as RoleGroup).Group.length
         : 0;
       const groups = policy.roles.filter(isRoleGroup);
-      const payouts = proposals.filter(
-        ({ kind }) => kind[ProposalKind.Transfer] !== undefined,
+      const proposalsPayouts = proposals.filter(
+        (prop) => prop.kind[ProposalKind.Transfer],
       );
-      const councilMembers = proposals.filter((prop) => {
+      const proposalsBounties = proposals.filter(
+        (prop) =>
+          prop.kind[ProposalKind.AddBounty] ||
+          prop.kind[ProposalKind.BountyDone],
+      );
+      const proposalsMembers = proposals.filter(
+        (prop) =>
+          prop.kind[ProposalKind.AddMemberToRole] ||
+          prop.kind[ProposalKind.RemoveMemberFromRole],
+      );
+      const proposalsCouncilMembers = proposals.filter((prop) => {
         const kind =
           prop.kind[ProposalKind.AddMemberToRole] ||
           prop.kind[ProposalKind.RemoveMemberFromRole];
         return kind ? kind.role.toLowerCase() === 'council' : false;
       });
-      const policyChanges = proposals.filter(
-        ({ kind }) => kind[ProposalKind.ChangePolicy] !== undefined,
+      const proposalsPolicyChanges = proposals.filter(
+        ({ kind }) => kind[ProposalKind.ChangePolicy],
       );
-      const expiredProposals = proposals.filter(
+      const proposalsExpired = proposals.filter(
         ({ status }) => status === ProposalStatus.Expired,
       );
 
@@ -199,22 +209,32 @@ export class AggregationService implements Aggregator {
         {
           ...common,
           metric: DaoStatsMetric.ProposalsPayoutCount,
-          value: payouts.length,
+          value: proposalsPayouts.length,
         },
         {
           ...common,
           metric: DaoStatsMetric.ProposalsCouncilMemberCount,
-          value: councilMembers.length,
+          value: proposalsCouncilMembers.length,
         },
         {
           ...common,
           metric: DaoStatsMetric.ProposalsPolicyChangeCount,
-          value: policyChanges.length,
+          value: proposalsPolicyChanges.length,
         },
         {
           ...common,
           metric: DaoStatsMetric.ProposalsExpiredCount,
-          value: expiredProposals.length,
+          value: proposalsExpired.length,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.ProposalsBountyCount,
+          value: proposalsBounties.length,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.ProposalsMemberCount,
+          value: proposalsMembers.length,
         },
         {
           ...common,

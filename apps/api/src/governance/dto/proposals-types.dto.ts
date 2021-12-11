@@ -2,14 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ProposalsTypes {
   @ApiProperty()
-  payout: number;
+  governance: number;
 
   @ApiProperty()
-  councilMember: number;
+  financial: number;
 
   @ApiProperty()
-  policyChange: number;
+  bounties: number;
 
   @ApiProperty()
-  expired: number;
+  members: number;
 }

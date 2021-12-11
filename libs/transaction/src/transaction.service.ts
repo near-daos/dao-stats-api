@@ -275,7 +275,7 @@ export class TransactionService {
     eager?: boolean, // eagerly pulling all related data
   ): Promise<Transaction[]> {
     const { from, to } = metricQuery || {};
-    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+    const queryBuilder = this.getTransactionIntervalQueryBuilder(
       context,
       from,
       to,
