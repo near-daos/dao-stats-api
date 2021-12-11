@@ -13,6 +13,8 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 
+const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
+
 @Injectable()
 export class AggregatorService {
   private readonly logger = new Logger(AggregatorService.name);
@@ -34,7 +36,7 @@ export class AggregatorService {
     schedulerRegistry.addInterval('polling', interval);
   }
 
-  public async scheduleAggregation(): Promise<void> {
+  public async scheduleAggregation(from?: number, to?: number): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {
@@ -49,19 +51,25 @@ export class AggregatorService {
         AggregationService,
       ) as Aggregator;
 
-      const lastTx = await this.transactionService.lastTransaction(contractId);
-
-      if (lastTx) {
-        this.logger.log(
-          `Found last transaction: ${moment(
-            nanosToMillis(lastTx.blockTimestamp),
-          )}`,
+      if (!from) {
+        const lastTx = await this.transactionService.lastTransaction(
+          contractId,
         );
+
+        if (lastTx) {
+          this.logger.log(
+            `Found last transaction: ${moment(
+              nanosToMillis(lastTx.blockTimestamp),
+            )}`,
+          );
+        }
+
+        from = lastTx?.blockTimestamp || FIRST_BLOCK_TIMESTAMP;
       }
 
-      const from =
-        lastTx?.blockTimestamp || millisToNanos(moment('2020-04-22').valueOf());
-      const to = millisToNanos(moment().valueOf());
+      if (!to) {
+        to = millisToNanos(moment().valueOf());
+      }
 
       for await (const transactions of aggregationService.aggregateTransactions(
         from,
