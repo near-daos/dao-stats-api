@@ -4,14 +4,14 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import {
   ContractContext,
+  DailyCountDto,
   DaoContractContext,
   MetricQuery,
   Transaction,
   TransactionType,
+  VoteType,
 } from '@dao-stats/common';
 import { TransactionLeaderboardDto } from './dto/transaction-leaderboard.dto';
-import { DailyCountDto } from '@dao-stats/common/dto/daily-count.dto';
-import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
 export class TransactionService {

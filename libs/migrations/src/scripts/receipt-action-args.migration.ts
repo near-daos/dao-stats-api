@@ -1,8 +1,8 @@
-import { ReceiptAction } from '@dao-stats/common/entities';
+import { IsNull, Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
+import { ReceiptAction } from '@dao-stats/common';
 import { Migration } from '..';
 
 @Injectable()

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats } from './entities';
-import { DaoStatsMetric } from '@dao-stats/common/types';
+import { DaoStatsMetric } from './types';
 
 interface DaoStatsValueParams {
   contract: string;

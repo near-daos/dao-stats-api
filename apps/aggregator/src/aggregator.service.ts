@@ -6,13 +6,14 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 import {
   Aggregator,
-  Transaction,
   DaoStatsService,
   DaoStatsHistoryService,
   millisToNanos,
+  nanosToMillis,
 } from '@dao-stats/common';
-import { RedisService } from '@dao-stats/redis';
 import { TransactionService } from '@dao-stats/transaction';
+
+const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
 
 @Injectable()
 export class AggregatorService {
@@ -25,7 +26,6 @@ export class AggregatorService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-    private readonly redisService: RedisService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -36,7 +36,7 @@ export class AggregatorService {
     schedulerRegistry.addInterval('polling', interval);
   }
 
-  public async scheduleAggregation(): Promise<void> {
+  public async scheduleAggregation(from?: number, to?: number): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {
@@ -51,62 +51,64 @@ export class AggregatorService {
         AggregationService,
       ) as Aggregator;
 
-      const lastTx: Transaction = await this.transactionService.lastTransaction(
-        contractId,
-      );
+      if (!from) {
+        const lastTx = await this.transactionService.lastTransaction(
+          contractId,
+        );
 
-      const yearAgo = moment().subtract(1, 'year');
+        if (lastTx) {
+          this.logger.log(
+            `Found last transaction: ${moment(
+              nanosToMillis(lastTx.blockTimestamp),
+            )}`,
+          );
+        }
 
-      const from = lastTx?.blockTimestamp || millisToNanos(yearAgo.valueOf());
-      const to = millisToNanos(moment().valueOf());
+        from = lastTx?.blockTimestamp || FIRST_BLOCK_TIMESTAMP;
+      }
 
-      const { transactions, metrics } = await aggregationService.aggregate(
-        contractId,
+      if (!to) {
+        to = millisToNanos(moment().valueOf());
+      }
+
+      for await (const transactions of aggregationService.aggregateTransactions(
         from,
         to,
-      );
-
-      this.logger.log(
-        `Persisting aggregated Transactions: ${transactions.length}`,
-      );
-      await PromisePool.withConcurrency(500)
-        .for(transactions)
-        .handleError((error) => {
-          this.logger.error(error);
-        })
-        .process(
-          async (tx) =>
-            await this.transactionService.create([
-              {
-                ...tx,
+      )) {
+        await this.transactionService.create(
+          transactions.map((tx) => ({
+            ...tx,
+            contractId,
+            receipts: tx.receipts.map((receipt) => ({
+              ...receipt,
+              contractId,
+              receiptActions: receipt.receiptActions.map((receiptAction) => ({
+                ...receiptAction,
                 contractId,
-                receipts: tx.receipts.map((receipt) => ({
-                  ...receipt,
-                  contractId,
-                  receiptActions: receipt.receiptActions.map(
-                    (receiptAction) => ({
-                      ...receiptAction,
-                      contractId,
-                      argsJson: receiptAction.args,
-                    }),
-                  ),
-                })),
-              },
-            ]),
+                argsJson: receiptAction.args,
+              })),
+            })),
+          })),
         );
-      this.logger.log(`Successfully stored aggregated Transactions`);
 
-      await PromisePool.withConcurrency(500)
-        .for(metrics)
-        .handleError((error) => {
-          this.logger.error(error);
-        })
-        .process(async (metric) => {
-          await this.daoStatsService.createOrUpdate(metric);
-          await this.daoStatsHistoryService.createOrUpdate(metric);
-        });
+        this.logger.log(`Stored ${transactions.length} transaction(s)`);
+      }
 
-      this.logger.log(`Successfully stored aggregated metrics`);
+      for await (const metrics of aggregationService.aggregateMetrics(
+        contractId,
+      )) {
+        await PromisePool.withConcurrency(500)
+          .for(metrics)
+          .handleError((error) => {
+            throw error;
+          })
+          .process(async (metric) => {
+            await this.daoStatsService.createOrUpdate(metric);
+            await this.daoStatsHistoryService.createOrUpdate(metric);
+          });
+
+        this.logger.log(`Stored ${metrics.length} metric(s)`);
+      }
     }
   }
 }

@@ -12,14 +12,14 @@ import {
   MetricQuery,
   MetricResponse,
   TransactionType,
+  VoteType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { ActivityTotalResponse } from './dto/activity-total.dto';
-import { getDailyIntervals, getGrowth } from '../utils';
 import { ProposalsTypes } from './dto/proposals-types.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteType } from '@dao-stats/common/types/vote-type';
+import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class ActivityService {

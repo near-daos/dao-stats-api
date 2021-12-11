@@ -9,8 +9,7 @@ import {
 import { Contract, Receipt } from '.';
 import { BaseEntity } from './base.entity';
 import { HasContract } from '../interfaces';
-import { TransactionType } from '../types';
-import { VoteType } from '../types/vote-type';
+import { TransactionType, VoteType } from '../types';
 
 @Entity({ name: 'transactions' })
 export class Transaction extends BaseEntity implements HasContract {

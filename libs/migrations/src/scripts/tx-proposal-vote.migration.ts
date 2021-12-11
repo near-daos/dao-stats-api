@@ -1,11 +1,14 @@
-import { Transaction } from '@dao-stats/common/entities';
+import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
+import {
+  findAllByKey,
+  Transaction,
+  TransactionType,
+  VoteType,
+} from '@dao-stats/common';
 import { Migration } from '..';
-import { findAllByKey, TransactionType } from '@dao-stats/common';
-import { VoteType } from '@dao-stats/common/types/vote-type';
 
 @Injectable()
 export class TransactionProposalVoteMigration implements Migration {
@@ -54,7 +57,7 @@ export class TransactionProposalVoteMigration implements Migration {
     return actions.includes('VoteApprove')
       ? VoteType.VoteApprove
       : actions.includes('VoteReject')
-      ? VoteType.VoteReject
-      : null;
+        ? VoteType.VoteReject
+        : null;
   }
 }
