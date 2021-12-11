@@ -24,6 +24,7 @@ import { UsersModule } from './users/users.module';
 import { ActivityModule } from './activity/activity.module';
 import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
+import { ApiDaoModule } from './dao/dao.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { TvlModule } from './tvl/tvl.module';
     HttpCacheModule,
     RedisModule,
     ContractModule,
+    ApiDaoModule,
     GeneralModule,
     UsersModule,
     ActivityModule,

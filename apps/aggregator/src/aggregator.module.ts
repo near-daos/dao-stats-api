@@ -11,7 +11,11 @@ import configuration, {
 import { AggregatorValidationSchema } from '@dao-stats/config/validation';
 import { RedisModule } from '@dao-stats/redis';
 import { TransactionModule } from '@dao-stats/transaction';
-import { DaoStatsModule, DaoStatsHistoryModule } from '@dao-stats/common';
+import {
+  DaoStatsModule,
+  DaoStatsHistoryModule,
+  DaoModule,
+} from '@dao-stats/common';
 import { AggregatorService } from './aggregator.service';
 
 @Module({
@@ -28,6 +32,7 @@ import { AggregatorService } from './aggregator.service';
     ScheduleModule.forRoot(),
     RedisModule,
     TransactionModule,
+    DaoModule,
     DaoStatsModule,
     DaoStatsHistoryModule,
   ],
