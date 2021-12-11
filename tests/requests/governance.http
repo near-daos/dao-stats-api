@@ -1,0 +1,32 @@
+GET http://127.0.0.1:3000/api/v1/astro/governance
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/proposals
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/proposals/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/proposals-types
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/proposals-types/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/vote-rate
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/vote-rate/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/genesis.sputnik-dao.near
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/genesis.sputnik-dao.near/proposals
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/genesis.sputnik-dao.near/proposals-types
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/governance/genesis.sputnik-dao.near/vote-rate
+Accept: application/json

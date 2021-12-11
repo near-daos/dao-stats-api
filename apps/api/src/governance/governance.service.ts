@@ -15,15 +15,15 @@ import {
   VoteType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { ActivityTotalResponse } from './dto/activity-total.dto';
+import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypes } from './dto/proposals-types.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
 import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
-export class ActivityService {
-  private readonly logger = new Logger(ActivityService.name);
+export class GovernanceService {
+  private readonly logger = new Logger(GovernanceService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -34,7 +34,7 @@ export class ActivityService {
 
   async totals(
     context: DaoContractContext | ContractContext,
-  ): Promise<ActivityTotalResponse> {
+  ): Promise<GovernanceTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
