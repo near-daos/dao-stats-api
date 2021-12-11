@@ -16,11 +16,22 @@ export class DaoService {
     return this.daoRepository.find({ where: { contractId } });
   }
 
-  async findById(dao: string): Promise<DaoResponse> {
-    return this.daoRepository.findOne({ dao });
+  async findById(contractId: string, dao: string): Promise<DaoResponse> {
+    return this.daoRepository.findOne({ contractId, dao });
   }
 
   async create(dao: Partial<Dao>[]): Promise<Dao[]> {
     return this.daoRepository.save(dao);
+  }
+
+  async autocomplete(
+    contractId: string,
+    input: string,
+  ): Promise<DaoResponse[]> {
+    return this.daoRepository
+      .createQueryBuilder('dao')
+      .where('contract_id = :contractId', { contractId })
+      .andWhere('dao LIKE :input', { input: `${input}%` })
+      .getMany();
   }
 }

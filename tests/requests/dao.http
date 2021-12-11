@@ -3,3 +3,6 @@ Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/daos/genesis.sputnik-dao.near
 Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/daos/autocomplete/gen
+Accept: application/json
