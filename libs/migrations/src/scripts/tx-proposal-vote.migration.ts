@@ -57,7 +57,7 @@ export class TransactionProposalVoteMigration implements Migration {
     return actions.includes('VoteApprove')
       ? VoteType.VoteApprove
       : actions.includes('VoteReject')
-        ? VoteType.VoteReject
-        : null;
+      ? VoteType.VoteReject
+      : null;
   }
 }

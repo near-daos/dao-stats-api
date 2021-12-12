@@ -11,19 +11,19 @@ import {
 } from '@dao-stats/common';
 
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
-import { ActivityTotalResponse } from './dto/activity-total.dto';
+import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { ActivityService } from './activity.service';
+import { GovernanceService } from './governance.service';
 
-@ApiTags('Activity')
-@Controller('activity')
-export class ActivityController {
-  constructor(private readonly activityService: ActivityService) {}
+@ApiTags('Governance')
+@Controller('governance')
+export class GovernanceController {
+  constructor(private readonly governanceService: GovernanceService) {}
 
   @ApiResponse({
     status: 200,
-    type: ActivityTotalResponse,
+    type: GovernanceTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -32,8 +32,8 @@ export class ActivityController {
   @Get('/')
   async totals(
     @Param() context: ContractContext,
-  ): Promise<ActivityTotalResponse> {
-    return this.activityService.totals(context);
+  ): Promise<GovernanceTotalResponse> {
+    return this.governanceService.totals(context);
   }
 
   @ApiResponse({
@@ -49,7 +49,7 @@ export class ActivityController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.proposals(context, metricQuery);
+    return this.governanceService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -64,7 +64,7 @@ export class ActivityController {
   async proposalsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.activityService.proposalsLeaderboard(context);
+    return this.governanceService.proposalsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -80,7 +80,7 @@ export class ActivityController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.activityService.proposalsTypes(context, metricQuery);
+    return this.governanceService.proposalsTypes(context, metricQuery);
   }
 
   @ApiResponse({
@@ -95,7 +95,7 @@ export class ActivityController {
   async proposalsTypesLeaderboard(
     @Param() context: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
-    return this.activityService.proposalsTypesLeaderboard(context);
+    return this.governanceService.proposalsTypesLeaderboard(context);
   }
 
   @ApiResponse({
@@ -106,12 +106,12 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/rate')
+  @Get('/vote-rate')
   async rate(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.rate(context, metricQuery);
+    return this.governanceService.rate(context, metricQuery);
   }
 
   @ApiResponse({
@@ -122,16 +122,16 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/rate/leaderboard')
+  @Get('/vote-rate/leaderboard')
   async rateLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.activityService.rateLeaderboard(context);
+    return this.governanceService.rateLeaderboard(context);
   }
 
   @ApiResponse({
     status: 200,
-    type: ActivityTotalResponse,
+    type: GovernanceTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -140,8 +140,8 @@ export class ActivityController {
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
-  ): Promise<ActivityTotalResponse> {
-    return this.activityService.totals(context);
+  ): Promise<GovernanceTotalResponse> {
+    return this.governanceService.totals(context);
   }
 
   @ApiResponse({
@@ -157,7 +157,7 @@ export class ActivityController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.proposals(context, metricQuery);
+    return this.governanceService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -173,7 +173,7 @@ export class ActivityController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.activityService.proposalsTypes(context, metricQuery);
+    return this.governanceService.proposalsTypes(context, metricQuery);
   }
 
   @ApiResponse({
@@ -184,11 +184,11 @@ export class ActivityController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/:dao/rate')
+  @Get('/:dao/vote-rate')
   async daoRate(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.activityService.rate(context, metricQuery);
+    return this.governanceService.rate(context, metricQuery);
   }
 }

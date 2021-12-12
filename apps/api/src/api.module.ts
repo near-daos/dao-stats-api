@@ -21,7 +21,7 @@ import { ContractInterceptor } from './interceptors/contract.interceptor';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
-import { ActivityModule } from './activity/activity.module';
+import { GovernanceModule } from './governance/governance.module';
 import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
@@ -47,7 +47,7 @@ import { ApiDaoModule } from './dao/dao.module';
     ApiDaoModule,
     GeneralModule,
     UsersModule,
-    ActivityModule,
+    GovernanceModule,
     FlowModule,
     TvlModule,
   ],

@@ -4,8 +4,8 @@ import { CacheConfigService } from '@dao-stats/config/cache';
 import { DaoStatsModule, DaoStatsHistoryModule } from '@dao-stats/common';
 import { TransactionModule } from '@dao-stats/transaction';
 
-import { ActivityController } from './activity.controller';
-import { ActivityService } from './activity.service';
+import { GovernanceController } from './governance.controller';
+import { GovernanceService } from './governance.service';
 import { ContractModule } from '../contract/contract.module';
 
 @Module({
@@ -18,7 +18,7 @@ import { ContractModule } from '../contract/contract.module';
     TransactionModule,
     ContractModule,
   ],
-  providers: [ActivityService],
-  controllers: [ActivityController],
+  providers: [GovernanceService],
+  controllers: [GovernanceController],
 })
-export class ActivityModule {}
+export class GovernanceModule {}

@@ -57,12 +57,12 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/activity')
-  async activity(
+  @Get('/active')
+  async active(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.activity(context, metricQuery);
+    return this.generalService.active(context, metricQuery);
   }
 
   @ApiResponse({
@@ -73,11 +73,11 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/activity/leaderboard')
-  async activityLeaderboard(
+  @Get('/active/leaderboard')
+  async activeLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.activityLeaderboard(context);
+    return this.generalService.activeLeaderboard(context);
   }
 
   @ApiResponse({

@@ -5,9 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import {
   ContractContext,
   DaoContractContext,
+  DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
-  DaoStatsHistoryService,
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
@@ -15,15 +15,14 @@ import {
   VoteType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { ActivityTotalResponse } from './dto/activity-total.dto';
-import { ProposalsTypes } from './dto/proposals-types.dto';
+import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
 import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
-export class ActivityService {
-  private readonly logger = new Logger(ActivityService.name);
+export class GovernanceService {
+  private readonly logger = new Logger(GovernanceService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -34,19 +33,19 @@ export class ActivityService {
 
   async totals(
     context: DaoContractContext | ContractContext,
-  ): Promise<ActivityTotalResponse> {
+  ): Promise<GovernanceTotalResponse> {
     const { contract, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
-
-    console.log(dao);
 
     const [
       proposalsCount,
       dayAgoProposalsCount,
       voteRate,
       dayAgoVoteRate,
-      ...proposalsByType
+      proposalsPayoutCount,
+      proposalsBountyCount,
+      proposalsMemberCount,
     ] = await Promise.all([
       this.daoStatsService.getValue({
         contract,
@@ -71,13 +70,20 @@ export class ActivityService {
         },
         VoteType.VoteApprove,
       ),
-      ...Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
-        const value = await this.daoStatsService.getValue({
-          contract,
-          dao,
-          metric,
-        });
-        return [key, value];
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsPayoutCount,
+      }),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsBountyCount,
+      }),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsMemberCount,
       }),
     ]);
 
@@ -86,7 +92,14 @@ export class ActivityService {
         count: proposalsCount,
         growth: getGrowth(proposalsCount, dayAgoProposalsCount),
       },
-      proposalsByType: Object.fromEntries(proposalsByType),
+      proposalsByType: {
+        governance:
+          proposalsCount -
+          (proposalsPayoutCount + proposalsBountyCount + proposalsMemberCount),
+        financial: proposalsPayoutCount,
+        bounties: proposalsBountyCount,
+        members: proposalsMemberCount,
+      },
       voteRate: {
         count: voteRate,
         growth: getGrowth(voteRate, dayAgoVoteRate),
@@ -180,26 +193,71 @@ export class ActivityService {
     const { contract, dao } = context as DaoContractContext;
     const { from, to } = metricQuery;
 
-    const metrics = await Promise.all(
-      Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
-        const history = await this.daoStatsHistoryService.getHistory({
-          contract,
-          dao,
-          metric,
-          from,
-          to,
-        });
-        return [
-          key,
-          history.map((row) => ({
-            timestamp: row.date.valueOf(),
-            value: row.value,
-          })),
-        ];
+    const [totals, payouts, bounties, members] = await Promise.all([
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsCount,
+        from,
+        to,
       }),
-    );
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsPayoutCount,
+        from,
+        to,
+      }),
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsBountyCount,
+        from,
+        to,
+      }),
+      this.daoStatsHistoryService.getHistory({
+        contract,
+        dao,
+        metric: DaoStatsMetric.ProposalsMemberCount,
+        from,
+        to,
+      }),
+    ]);
 
-    return { metrics: Object.fromEntries(metrics) };
+    return {
+      metrics: {
+        governance: totals.map((row) => {
+          const payout = payouts.find(
+            ({ date }) => date.valueOf() === row.date.valueOf(),
+          );
+          const bounty = bounties.find(
+            ({ date }) => date.valueOf() === row.date.valueOf(),
+          );
+          const member = members.find(
+            ({ date }) => date.valueOf() === row.date.valueOf(),
+          );
+
+          return {
+            timestamp: row.date.valueOf(),
+            count:
+              row.value -
+              (payout?.value || 0 + bounty?.value || 0 + member?.value || 0),
+          };
+        }),
+        financial: payouts.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+        bounties: bounties.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+        members: members.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+      },
+    };
   }
 
   async proposalsTypesLeaderboard(
@@ -213,21 +271,33 @@ export class ActivityService {
     });
 
     const leaderboard = await Promise.all(
-      daos.map(async ({ dao }) => {
-        const proposalsByType = await Promise.all(
-          Object.entries(this.PROPOSALS_TYPES).map(async ([key, metric]) => {
-            const value = await this.daoStatsService.getValue({
-              contract,
-              dao,
-              metric,
-            });
-            return [key, value];
+      daos.map(async ({ dao, value }) => {
+        const [payouts, bounties, members] = await Promise.all([
+          this.daoStatsService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.ProposalsPayoutCount,
           }),
-        );
+          this.daoStatsService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.ProposalsBountyCount,
+          }),
+          this.daoStatsService.getValue({
+            contract,
+            dao,
+            metric: DaoStatsMetric.ProposalsMemberCount,
+          }),
+        ]);
 
         return {
           dao,
-          proposalsByType: Object.fromEntries(proposalsByType),
+          proposalsByType: {
+            governance: value - (payouts + bounties + members),
+            financial: payouts,
+            bounties,
+            members,
+          },
         };
       }),
     );
@@ -303,14 +373,5 @@ export class ActivityService {
     });
 
     return { metrics };
-  }
-
-  get PROPOSALS_TYPES(): Record<keyof ProposalsTypes, DaoStatsMetric> {
-    return {
-      payout: DaoStatsMetric.ProposalsPayoutCount,
-      councilMember: DaoStatsMetric.ProposalsCouncilMemberCount,
-      policyChange: DaoStatsMetric.ProposalsPolicyChangeCount,
-      expired: DaoStatsMetric.ProposalsExpiredCount,
-    };
   }
 }

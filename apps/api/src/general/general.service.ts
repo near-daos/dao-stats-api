@@ -117,7 +117,7 @@ export class GeneralService {
     };
   }
 
-  async activity(
+  async active(
     context: ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -134,7 +134,7 @@ export class GeneralService {
     };
   }
 
-  async activityLeaderboard(
+  async activeLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     const weekAgo = moment().subtract(7, 'days');
