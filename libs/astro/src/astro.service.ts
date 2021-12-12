@@ -181,6 +181,15 @@ export class AggregationService implements Aggregator {
       const proposalsPolicyChanges = proposals.filter(
         ({ kind }) => kind[ProposalKind.ChangePolicy],
       );
+      const proposalsInProgress = proposals.filter(
+        ({ status }) => status === ProposalStatus.InProgress,
+      );
+      const proposalsApproved = proposals.filter(
+        ({ status }) => status === ProposalStatus.Approved,
+      );
+      const proposalsRejected = proposals.filter(
+        ({ status }) => status === ProposalStatus.Rejected,
+      );
       const proposalsExpired = proposals.filter(
         ({ status }) => status === ProposalStatus.Expired,
       );
@@ -220,6 +229,21 @@ export class AggregationService implements Aggregator {
           ...common,
           metric: DaoStatsMetric.ProposalsPolicyChangeCount,
           value: proposalsPolicyChanges.length,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.ProposalsInProgressCount,
+          value: proposalsInProgress.length,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.ProposalsApprovedCount,
+          value: proposalsApproved.length,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.ProposalsRejectedCount,
+          value: proposalsRejected.length,
         },
         {
           ...common,
