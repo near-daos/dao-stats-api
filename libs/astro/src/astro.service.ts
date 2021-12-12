@@ -148,11 +148,18 @@ export class AggregationService implements Aggregator {
         return (await Promise.all(promises)).flat();
       };
 
-      const [policy, proposals, bounties] = await Promise.all([
-        contract.get_policy(),
-        getProposals(),
-        getBounties(),
-      ]);
+      let policy, proposals, bounties;
+
+      try {
+        [policy, proposals, bounties] = await Promise.all([
+          contract.get_policy(),
+          getProposals(),
+          getBounties(),
+        ]);
+      } catch (err) {
+        this.logger.error(err);
+        continue;
+      }
 
       const council = policy.roles.find(isRoleGroupCouncil);
       const councilSize = council
