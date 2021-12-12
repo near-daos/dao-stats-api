@@ -14,6 +14,7 @@ import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
+import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
 import { GovernanceService } from './governance.service';
 
 @ApiTags('Governance')
@@ -111,7 +112,7 @@ export class GovernanceController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.rate(context, metricQuery);
+    return this.governanceService.voteRate(context, metricQuery);
   }
 
   @ApiResponse({
@@ -125,8 +126,8 @@ export class GovernanceController {
   @Get('/vote-rate/leaderboard')
   async rateLeaderboard(
     @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.governanceService.rateLeaderboard(context);
+  ): Promise<VoteRateLeaderboardResponse> {
+    return this.governanceService.voteRateLeaderboard(context);
   }
 
   @ApiResponse({
@@ -189,6 +190,6 @@ export class GovernanceController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.rate(context, metricQuery);
+    return this.governanceService.voteRate(context, metricQuery);
   }
 }
