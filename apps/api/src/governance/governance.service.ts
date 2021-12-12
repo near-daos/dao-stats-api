@@ -6,6 +6,7 @@ import {
   ContractContext,
   DaoContractContext,
   DaoStatsHistoryService,
+  DaoStatsHistoryHistoryResponse,
   DaoStatsMetric,
   DaoStatsService,
   LeaderboardMetricResponse,
@@ -224,6 +225,12 @@ export class GovernanceService {
       }),
     ]);
 
+    const toResponse = (data: DaoStatsHistoryHistoryResponse[]) =>
+      data.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: row.value,
+      }));
+
     return {
       metrics: {
         governance: totals.map((row) => {
@@ -244,18 +251,9 @@ export class GovernanceService {
               (payout?.value || 0 + bounty?.value || 0 + member?.value || 0),
           };
         }),
-        financial: payouts.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
-        bounties: bounties.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
-        members: members.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
+        financial: toResponse(payouts),
+        bounties: toResponse(bounties),
+        members: toResponse(members),
       },
     };
   }

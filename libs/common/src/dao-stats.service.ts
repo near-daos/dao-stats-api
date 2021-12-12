@@ -5,18 +5,18 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { DaoStats } from './entities';
 import { DaoStatsMetric } from './types';
 
-interface DaoStatsValueParams {
+export interface DaoStatsValueParams {
   contract: string;
   dao?: string;
   metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
 }
 
-interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
+export interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
   limit?: number;
 }
 
-interface DaoStatsLeaderboardResponse {
+export interface DaoStatsLeaderboardResponse {
   dao: string;
   value: number;
 }
