@@ -53,7 +53,7 @@ export class DaoStatsHistoryService {
   }: DaoStatsHistoryValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value) as value`);
+      .select(`${func}(value)::int as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -84,7 +84,7 @@ export class DaoStatsHistoryService {
       return 0;
     }
 
-    return parseInt(result['value']);
+    return result['value'];
   }
 
   async getHistory({
@@ -97,7 +97,7 @@ export class DaoStatsHistoryService {
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`date, ${func}(value) as value`);
+      .select(`date, ${func}(value)::int as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -117,15 +117,10 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const result = await query
+    return query
       .andWhere('metric = :metric', { metric })
       .groupBy('date')
       .orderBy('date', 'DESC')
       .execute();
-
-    return result.map((row) => ({
-      ...row,
-      value: parseInt(row.value),
-    }));
   }
 }

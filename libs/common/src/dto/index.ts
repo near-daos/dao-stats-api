@@ -1,5 +1,6 @@
 export * from './contract-context.dto';
 export * from './daily-count.dto';
+export * from './dao.dto';
 export * from './dao-contract-context.dto';
 export * from './dao-stats.dto';
 export * from './leaderboard-metric.dto';

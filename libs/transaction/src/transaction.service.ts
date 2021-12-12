@@ -67,7 +67,7 @@ export class TransactionService {
         
         select
           day,
-          sum(count) over (order by day asc rows between unbounded preceding and current row) as count
+          sum(count) over (order by day asc rows between unbounded preceding and current row)::int as count
         from data
     `;
 
@@ -134,6 +134,7 @@ export class TransactionService {
         select count(distinct signer_account_id)::int from transactions 
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
+        ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
         ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
       `,
     );
@@ -275,7 +276,7 @@ export class TransactionService {
     eager?: boolean, // eagerly pulling all related data
   ): Promise<Transaction[]> {
     const { from, to } = metricQuery || {};
-    let queryBuilder = this.getTransactionIntervalQueryBuilder(
+    const queryBuilder = this.getTransactionIntervalQueryBuilder(
       context,
       from,
       to,

@@ -6,6 +6,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 import {
   Aggregator,
+  DaoService,
   DaoStatsService,
   DaoStatsHistoryService,
   millisToNanos,
@@ -24,6 +25,7 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
+    private readonly daoService: DaoService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {
@@ -97,6 +99,13 @@ export class AggregatorService {
       for await (const metrics of aggregationService.aggregateMetrics(
         contractId,
       )) {
+        await this.daoService.create([
+          {
+            dao: metrics[0].dao,
+            contractId,
+          },
+        ]);
+
         await PromisePool.withConcurrency(500)
           .for(metrics)
           .handleError((error) => {

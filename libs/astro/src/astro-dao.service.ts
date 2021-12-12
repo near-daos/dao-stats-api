@@ -4,7 +4,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
-import { Dao } from '@dao-stats/common';
+import { DaoContract } from '@dao-stats/common';
 import {
   ContractInterface,
   TokenContractInterface,
@@ -12,7 +12,7 @@ import {
 } from './interfaces';
 
 @Injectable()
-export class AstroDaoService implements Dao {
+export class AstroDaoService implements DaoContract {
   private readonly logger = new Logger(AstroDaoService.name);
 
   constructor(

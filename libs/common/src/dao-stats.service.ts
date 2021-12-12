@@ -51,7 +51,7 @@ export class DaoStatsService {
   }: DaoStatsValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value) as value`);
+      .select(`${func}(value)::int as value`);
 
     query.andWhere('contract_id = :contract', { contract });
 
@@ -68,7 +68,7 @@ export class DaoStatsService {
       return 0;
     }
 
-    return parseInt(result['value']);
+    return result['value'];
   }
 
   async getLeaderboard({
@@ -80,23 +80,18 @@ export class DaoStatsService {
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`dao, ${func}(value) as value`)
+      .select(`dao, ${func}(value)::int as value`)
       .where('contract_id = :contract', { contract });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const result = await query
+    return query
       .andWhere('metric = :metric', { metric })
       .groupBy('dao')
       .orderBy('value', 'DESC')
       .take(limit)
       .execute();
-
-    return result.map((row) => ({
-      ...row,
-      value: parseInt(row.value),
-    }));
   }
 }
