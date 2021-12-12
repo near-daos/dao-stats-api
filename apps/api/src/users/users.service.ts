@@ -3,7 +3,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
-  Contract,
   ContractContext,
   DaoContractContext,
   DaoStatsHistoryService,
