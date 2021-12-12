@@ -3,6 +3,9 @@ import moment from 'moment';
 export const getGrowth = (current: number, prev: number) =>
   Math.round(((current - prev) / (current || 1)) * 10000) / 100;
 
+export const getRate = (current, prev) =>
+  Math.round((current / (prev || 1)) * 10000) / 100;
+
 export const getDailyIntervals = (
   from: number,
   to: number,

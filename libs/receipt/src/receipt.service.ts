@@ -22,7 +22,7 @@ export class ReceiptService {
     context: DaoContractContext,
     metricQuery?: MetricQuery,
   ): Promise<Receipt[]> {
-    const { contract, dao } = context;
+    const { dao } = context;
     const { from, to } = metricQuery || {};
 
     return this.getReceiptIntervalQueryBuilder(context, from, to, true)
@@ -36,7 +36,7 @@ export class ReceiptService {
     context: DaoContractContext,
     metricQuery?: MetricQuery,
   ): Promise<Receipt[]> {
-    const { contract, dao } = context;
+    const { dao } = context;
     const { from, to } = metricQuery || {};
 
     return this.getReceiptIntervalQueryBuilder(context, from, to, true)
@@ -74,7 +74,7 @@ export class ReceiptService {
     to?: number,
     eager?: boolean, // eagerly pulling all related data
   ): SelectQueryBuilder<Receipt> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contract } = context as DaoContractContext;
 
     const qb = this.receiptRepository.createQueryBuilder('receipt');
 

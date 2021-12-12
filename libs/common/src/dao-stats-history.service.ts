@@ -5,7 +5,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { DaoStatsHistory } from './entities';
 import { DaoStatsMetric } from './types';
 
-interface DaoStatsHistoryValueParams {
+export interface DaoStatsHistoryValueParams {
   from?: number;
   to?: number;
   contract: string;
@@ -14,9 +14,9 @@ interface DaoStatsHistoryValueParams {
   func?: 'AVG' | 'SUM' | 'COUNT';
 }
 
-type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
+export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
 
-interface DaoStatsHistoryHistoryResponse {
+export interface DaoStatsHistoryHistoryResponse {
   date: Date;
   value: number;
 }
