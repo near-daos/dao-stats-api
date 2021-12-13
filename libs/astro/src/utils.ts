@@ -1,4 +1,4 @@
-import { Role, RoleGroup } from './types';
+import { Role, RoleKindGroup } from './types';
 
 export const btoaJSON = (b: string) => {
   try {
@@ -7,7 +7,7 @@ export const btoaJSON = (b: string) => {
 };
 
 export const isRoleGroup = (role: Role) => {
-  return (role.kind as RoleGroup).Group !== undefined;
+  return (role as Role<RoleKindGroup>).kind.Group !== undefined;
 };
 
 export const isRoleGroupCouncil = (role: Role) => {
