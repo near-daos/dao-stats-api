@@ -27,49 +27,45 @@ export class TokensService {
 
     const dayAgo = moment().subtract(1, 'day');
 
-    const [
-      ftTokensCount,
-      ftTokensCountPrev,
-      nftTokensCount,
-      nftTokensCountPrev,
-    ] = await Promise.all([
-      this.daoStatsService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.TokensFtCount,
-      }),
-      this.daoStatsHistoryService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.TokensFtCount,
-        to: dayAgo.valueOf(),
-      }),
-      this.daoStatsService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.TokensNftCount,
-      }),
-      this.daoStatsHistoryService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.TokensNftCount,
-        to: dayAgo.valueOf(),
-      }),
-    ]);
+    const [ftsCount, ftsCountPrev, nftsCount, nftsCountPrev] =
+      await Promise.all([
+        this.daoStatsService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.FtsCount,
+        }),
+        this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.FtsCount,
+          to: dayAgo.valueOf(),
+        }),
+        this.daoStatsService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.NftsCount,
+        }),
+        this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
+          metric: DaoStatsMetric.NftsCount,
+          to: dayAgo.valueOf(),
+        }),
+      ]);
 
     return {
-      ftTokens: {
-        count: ftTokensCount,
-        growth: getGrowth(ftTokensCount, ftTokensCountPrev),
+      fts: {
+        count: ftsCount,
+        growth: getGrowth(ftsCount, ftsCountPrev),
       },
-      nftTokens: {
-        count: nftTokensCount,
-        growth: getGrowth(nftTokensCount, nftTokensCountPrev),
+      nfts: {
+        count: nftsCount,
+        growth: getGrowth(nftsCount, nftsCountPrev),
       },
     };
   }
 
-  async ftTokens(
+  async fts(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
@@ -79,7 +75,7 @@ export class TokensService {
     const history = await this.daoStatsHistoryService.getHistory({
       contract,
       dao,
-      metric: DaoStatsMetric.TokensFtCount,
+      metric: DaoStatsMetric.FtsCount,
       from,
       to,
     });
@@ -92,7 +88,7 @@ export class TokensService {
     };
   }
 
-  async nftTokens(
+  async nfts(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
@@ -102,7 +98,7 @@ export class TokensService {
     const history = await this.daoStatsHistoryService.getHistory({
       contract,
       dao,
-      metric: DaoStatsMetric.TokensNftCount,
+      metric: DaoStatsMetric.NftsCount,
       from,
       to,
     });
@@ -115,14 +111,14 @@ export class TokensService {
     };
   }
 
-  async ftTokensLeaderboard(
+  async ftsLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     const { contract } = context;
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contract,
-      metric: DaoStatsMetric.TokensFtCount,
+      metric: DaoStatsMetric.FtsCount,
     });
 
     const dayAgo = moment().subtract(1, 'day');
@@ -134,13 +130,13 @@ export class TokensService {
           this.daoStatsHistoryService.getValue({
             contract,
             dao,
-            metric: DaoStatsMetric.TokensFtCount,
+            metric: DaoStatsMetric.FtsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contract,
             dao,
-            metric: DaoStatsMetric.TokensFtCount,
+            metric: DaoStatsMetric.FtsCount,
             from: weekAgo.valueOf(),
           }),
         ]);
@@ -162,14 +158,14 @@ export class TokensService {
     return { metrics };
   }
 
-  async nftTokensLeaderboard(
+  async nftsLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     const { contract } = context;
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contract,
-      metric: DaoStatsMetric.TokensNftCount,
+      metric: DaoStatsMetric.NftsCount,
     });
 
     const dayAgo = moment().subtract(1, 'day');
@@ -181,13 +177,13 @@ export class TokensService {
           this.daoStatsHistoryService.getValue({
             contract,
             dao,
-            metric: DaoStatsMetric.TokensNftCount,
+            metric: DaoStatsMetric.NftsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contract,
             dao,
-            metric: DaoStatsMetric.TokensNftCount,
+            metric: DaoStatsMetric.NftsCount,
             from: weekAgo.valueOf(),
           }),
         ]);

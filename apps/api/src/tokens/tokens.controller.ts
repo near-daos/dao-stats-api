@@ -42,12 +42,12 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/ft-tokens')
+  @Get('/fts')
   async ftTokens(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.ftTokens(context, metricQuery);
+    return this.tokensService.fts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -58,11 +58,11 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/ft-tokens/leaderboard')
+  @Get('/fts/leaderboard')
   async ftTokensLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.ftTokensLeaderboard(context);
+    return this.tokensService.ftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -73,12 +73,12 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/nft-tokens')
+  @Get('/nfts')
   async nftTokens(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.nftTokens(context, metricQuery);
+    return this.tokensService.nfts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -89,11 +89,11 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/nft-tokens/leaderboard')
+  @Get('/nfts/leaderboard')
   async nftTokensLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.nftTokensLeaderboard(context);
+    return this.tokensService.nftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -119,12 +119,12 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/:dao/ft-tokens')
+  @Get('/:dao/fts')
   async daoFtTokens(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.ftTokens(context, metricQuery);
+    return this.tokensService.fts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -135,11 +135,11 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/:dao/nft-tokens')
+  @Get('/:dao/nfts')
   async daoNftTokens(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.nftTokens(context, metricQuery);
+    return this.tokensService.nfts(context, metricQuery);
   }
 }

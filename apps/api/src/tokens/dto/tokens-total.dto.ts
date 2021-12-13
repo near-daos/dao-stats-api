@@ -3,8 +3,8 @@ import { TotalMetric } from '@dao-stats/common';
 
 export class TokensTotalResponse {
   @ApiProperty()
-  ftTokens: TotalMetric;
+  fts: TotalMetric;
 
   @ApiProperty()
-  nftTokens: TotalMetric;
+  nfts: TotalMetric;
 }

@@ -155,11 +155,11 @@ export class AggregationService implements Aggregator {
       let policy: Policy,
         proposals: ProposalsResponse,
         bounties: BountyResponse,
-        ftTokens: string[],
-        nftTokens: string[];
+        fts: string[],
+        nfts: string[];
 
       try {
-        [policy, proposals, bounties, ftTokens, nftTokens] = await Promise.all([
+        [policy, proposals, bounties, fts, nfts] = await Promise.all([
           contract.get_policy(),
           getProposals(),
           getBounties(),
@@ -316,22 +316,22 @@ export class AggregationService implements Aggregator {
         ];
       }
 
-      if (ftTokens) {
+      if (fts) {
         yield [
           {
             ...common,
-            metric: DaoStatsMetric.TokensFtCount,
-            value: ftTokens.length,
+            metric: DaoStatsMetric.FtsCount,
+            value: fts.length,
           },
         ];
       }
 
-      if (nftTokens) {
+      if (nfts) {
         yield [
           {
             ...common,
-            metric: DaoStatsMetric.TokensNftCount,
-            value: nftTokens.length,
+            metric: DaoStatsMetric.NftsCount,
+            value: nfts.length,
           },
         ];
       }
