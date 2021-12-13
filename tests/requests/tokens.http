@@ -1,0 +1,23 @@
+GET http://127.0.0.1:3000/api/v1/astro/tokens
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/ft-tokens
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/nft-tokens
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/ft-tokens/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/nft-tokens/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/community.sputnik-dao.near
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/community.sputnik-dao.near/ft-tokens
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tokens/community.sputnik-dao.near/nft-tokens
+Accept: application/json
