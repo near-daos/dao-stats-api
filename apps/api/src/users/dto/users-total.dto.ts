@@ -6,8 +6,11 @@ export class UsersTotalResponse {
   users: TotalMetric;
 
   @ApiProperty()
-  council: TotalMetric;
+  avgDaoUsers: TotalMetric;
 
   @ApiProperty()
   interactions: TotalMetric;
+
+  @ApiProperty()
+  avgDaoInteractions: TotalMetric;
 }

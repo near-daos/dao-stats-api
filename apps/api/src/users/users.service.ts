@@ -15,7 +15,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { UsersTotalResponse } from './dto/users-total.dto';
-import { getDailyIntervals, getGrowth } from '../utils';
+import { getAverage, getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class UsersService {
@@ -37,47 +37,59 @@ export class UsersService {
     const [
       usersCount,
       dayAgoUsersCount,
-      avgCouncilSize,
-      dayAgoAvgCouncilSize,
+      daoUsers,
+      dayAgoDaoUsers,
       interactions,
       dayAgoInteractions,
+      daoInteractions,
+      dayAgoDaoInteractions,
     ] = await Promise.all([
       this.transactionService.getUsersTotalCount(context),
       this.transactionService.getUsersTotalCount(context, {
         to: millisToNanos(dayAgo.valueOf()),
       }),
-      this.daoStatsService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.CouncilSize,
-        func: 'AVG',
-      }),
-      this.daoStatsHistoryService.getValue({
-        contract,
-        dao,
-        metric: DaoStatsMetric.CouncilSize,
-        func: 'AVG',
-        to: dayAgo.valueOf(),
+      this.transactionService.getDaoUsers(context),
+      this.transactionService.getDaoUsers(context, {
+        to: millisToNanos(dayAgo.valueOf()),
       }),
       this.transactionService.getUsersInteractionsCount(context),
       this.transactionService.getUsersInteractionsCount(context, {
         to: dayAgo.valueOf(),
       }),
+      this.transactionService.getDaoInteractions(context),
+      this.transactionService.getDaoInteractions(context, {
+        to: millisToNanos(dayAgo.valueOf()),
+      }),
     ]);
+
+    const avgDaoUsers = getAverage(daoUsers.map(({ count }) => count));
+    const dayAgoAvgDaoUsers = getAverage(
+      dayAgoDaoUsers.map(({ count }) => count),
+    );
+
+    const avgDaoInteractions = getAverage(
+      daoInteractions.map(({ count }) => count),
+    );
+    const dayAgoAvgDaoInteractions = getAverage(
+      dayAgoDaoInteractions.map(({ count }) => count),
+    );
 
     return {
       users: {
         count: usersCount,
         growth: getGrowth(usersCount, dayAgoUsersCount),
       },
-      council: {
-        count: avgCouncilSize,
-        growth: getGrowth(avgCouncilSize, dayAgoAvgCouncilSize),
+      avgDaoUsers: {
+        count: avgDaoUsers,
+        growth: getGrowth(avgDaoUsers, dayAgoAvgDaoUsers),
       },
-      // TODO
       interactions: {
         count: interactions,
         growth: getGrowth(interactions, dayAgoInteractions),
+      },
+      avgDaoInteractions: {
+        count: avgDaoInteractions,
+        growth: getGrowth(avgDaoInteractions, dayAgoAvgDaoInteractions),
       },
     };
   }
@@ -175,27 +187,34 @@ export class UsersService {
     return { metrics };
   }
 
-  async council(
-    contractContext: ContractContext | DaoContractContext,
+  async average(
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contract, dao } = contractContext as DaoContractContext;
     const { from, to } = metricQuery;
 
-    const history = await this.daoStatsHistoryService.getHistory({
-      contract,
-      dao,
-      metric: DaoStatsMetric.CouncilSize,
-      func: 'AVG',
-      from,
-      to,
-    });
+    const days = getDailyIntervals(from, to || moment().valueOf());
+
+    // TODO: optimize day-by-day querying
+    const { results: byDays } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .handleError((e) => this.logger.error(e))
+      .process(async ({ start, end }) => {
+        const qr = await this.transactionService.getDaoUsers(context, {
+          to: end,
+        });
+
+        return { count: getAverage(qr.map(({ count }) => count)), start, end };
+      });
 
     return {
-      metrics: history.map((row) => ({
-        timestamp: row.date.valueOf(),
-        count: row.value,
-      })),
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
     };
   }
 
@@ -316,5 +335,36 @@ export class UsersService {
     });
 
     return { metrics };
+  }
+
+  async interactionsAverage(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { from, to } = metricQuery;
+
+    const days = getDailyIntervals(from, to || moment().valueOf());
+
+    // TODO: optimize day-by-day querying
+    const { results: byDays } = await PromisePool.withConcurrency(5)
+      .for(days)
+      .handleError((e) => this.logger.error(e))
+      .process(async ({ start, end }) => {
+        const qr = await this.transactionService.getDaoInteractions(context, {
+          to: end,
+        });
+
+        return { count: getAverage(qr.map(({ count }) => count)), start, end };
+      });
+
+    return {
+      metrics: byDays
+        .flat()
+        .sort((a, b) => a.end - b.end)
+        .map(({ end: timestamp, count }) => ({
+          timestamp,
+          count,
+        })),
+    };
   }
 }
