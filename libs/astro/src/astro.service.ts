@@ -22,7 +22,8 @@ import {
   ProposalKind,
   ProposalsResponse,
   ProposalStatus,
-  RoleGroup,
+  Role,
+  RoleKindGroup,
 } from './types';
 import { AstroDaoService } from './astro-dao.service';
 
@@ -161,11 +162,16 @@ export class AggregationService implements Aggregator {
         continue;
       }
 
-      const council = policy.roles.find(isRoleGroupCouncil);
-      const councilSize = council
-        ? (council.kind as RoleGroup).Group.length
-        : 0;
+      const council = policy.roles.find(isRoleGroupCouncil) as
+        | Role<RoleKindGroup>
+        | undefined;
+      const councilSize = council ? council.kind.Group.length : 0;
       const groups = policy.roles.filter(isRoleGroup);
+      const members = [
+        ...new Set(
+          groups.map((group: Role<RoleKindGroup>) => group.kind.Group).flat(),
+        ),
+      ];
       const proposalsPayouts = proposals.filter(
         (prop) => prop.kind[ProposalKind.Transfer],
       );
@@ -211,6 +217,11 @@ export class AggregationService implements Aggregator {
           ...common,
           metric: DaoStatsMetric.CouncilSize,
           value: councilSize,
+        },
+        {
+          ...common,
+          metric: DaoStatsMetric.MembersCount,
+          value: members.length,
         },
         {
           ...common,

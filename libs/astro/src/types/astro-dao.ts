@@ -3,28 +3,28 @@ export type NearAmount = string;
 export type NearTime = string;
 
 // Matches everyone, who is not matched by other roles.
-export type RoleEveryone = 'Everyone';
+export type RoleKindEveryone = 'Everyone';
 
 // Member greater or equal than given balance. Can use `1` as non-zero balance.
-export type RoleMember = {
+export type RoleKindMember = {
   Member: number[];
 };
 
 // Set of accounts.
-export type RoleGroup = {
+export type RoleKindGroup = {
   Group: string[];
 };
 
-export type RoleKind = RoleEveryone | RoleMember | RoleGroup;
+export type RoleKind = RoleKindEveryone | RoleKindMember | RoleKindGroup;
 
 export enum WeightKind {
   TokenWeight = 'TokenWeight',
   RoleWeight = 'RoleWeight',
 }
 
-export interface Role {
+export interface Role<T = RoleKind> {
   name: string;
-  kind: RoleKind;
+  kind: T;
   permissions: string[];
   vote_policy: VotePolicy;
 }
@@ -81,9 +81,7 @@ export enum ProposalKind {
 export namespace ProposalKindBody {
   export type ChangeConfig = any;
 
-  export interface ChangePolicy {
-    [ProposalKind.ChangePolicy]: Policy;
-  }
+  export type ChangePolicy = Policy;
 
   export interface AddMemberToRole {
     member_id: AccountId;
@@ -98,6 +96,7 @@ export namespace ProposalKindBody {
   export type FunctionCall = any;
   export type UpgradeSelf = any;
   export type UpgradeRemote = any;
+
   export interface Transfer {
     token_id: AccountId;
     receiver_id: AccountId;
