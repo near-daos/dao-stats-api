@@ -70,12 +70,43 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/average')
+  @Get('/members')
+  async members(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.members(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/members/leaderboard')
+  async membersLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.usersService.membersLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/average-users')
   async council(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.average(context, metricQuery);
+    return this.usersService.averageUsers(context, metricQuery);
   }
 
   @ApiResponse({
@@ -102,12 +133,11 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/interactions-average')
-  async interactionsAverage(
+  @Get('/interactions/leaderboard')
+  async interactionsLeaderboard(
     @Param() context: ContractContext,
-    @Query(MetricQueryPipe) metricQuery: MetricQuery,
-  ): Promise<MetricResponse> {
-    return this.usersService.interactionsAverage(context, metricQuery);
+  ): Promise<LeaderboardMetricResponse> {
+    return this.usersService.interactionsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -118,11 +148,12 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(ContractInterceptor)
-  @Get('/interactions/leaderboard')
-  async interactionsLeaderboard(
+  @Get('/average-interactions')
+  async interactionsAverage(
     @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.interactionsLeaderboard(context);
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.averageInteractions(context, metricQuery);
   }
 
   @ApiResponse({
@@ -154,6 +185,22 @@ export class UsersController {
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.usersService.users(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/members')
+  async daoMembers(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.members(context, metricQuery);
   }
 
   @ApiResponse({
