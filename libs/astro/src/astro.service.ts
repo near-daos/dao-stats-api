@@ -159,141 +159,153 @@ export class AggregationService implements Aggregator {
         ]);
       } catch (err) {
         this.logger.error(err);
-        continue;
       }
-
-      const council = policy.roles.find(isRoleGroupCouncil) as
-        | Role<RoleKindGroup>
-        | undefined;
-      const councilSize = council ? council.kind.Group.length : 0;
-      const groups = policy.roles.filter(isRoleGroup);
-      const members = [
-        ...new Set(
-          groups.map((group: Role<RoleKindGroup>) => group.kind.Group).flat(),
-        ),
-      ];
-      const proposalsPayouts = proposals.filter(
-        (prop) => prop.kind[ProposalKind.Transfer],
-      );
-      const proposalsBounties = proposals.filter(
-        (prop) =>
-          prop.kind[ProposalKind.AddBounty] ||
-          prop.kind[ProposalKind.BountyDone],
-      );
-      const proposalsMembers = proposals.filter(
-        (prop) =>
-          prop.kind[ProposalKind.AddMemberToRole] ||
-          prop.kind[ProposalKind.RemoveMemberFromRole],
-      );
-      const proposalsCouncilMembers = proposals.filter((prop) => {
-        const kind =
-          prop.kind[ProposalKind.AddMemberToRole] ||
-          prop.kind[ProposalKind.RemoveMemberFromRole];
-        return kind ? kind.role.toLowerCase() === 'council' : false;
-      });
-      const proposalsPolicyChanges = proposals.filter(
-        ({ kind }) => kind[ProposalKind.ChangePolicy],
-      );
-      const proposalsInProgress = proposals.filter(
-        ({ status }) => status === ProposalStatus.InProgress,
-      );
-      const proposalsApproved = proposals.filter(
-        ({ status }) => status === ProposalStatus.Approved,
-      );
-      const proposalsRejected = proposals.filter(
-        ({ status }) => status === ProposalStatus.Rejected,
-      );
-      const proposalsExpired = proposals.filter(
-        ({ status }) => status === ProposalStatus.Expired,
-      );
 
       const common = {
         contractId,
         dao: contract.contractId,
       };
 
-      yield [
-        {
-          ...common,
-          metric: DaoStatsMetric.CouncilSize,
-          value: councilSize,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.MembersCount,
-          value: members.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.GroupsCount,
-          value: groups.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsCount,
-          value: proposals.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsPayoutCount,
-          value: proposalsPayouts.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsCouncilMemberCount,
-          value: proposalsCouncilMembers.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsPolicyChangeCount,
-          value: proposalsPolicyChanges.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsInProgressCount,
-          value: proposalsInProgress.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsApprovedCount,
-          value: proposalsApproved.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsRejectedCount,
-          value: proposalsRejected.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsExpiredCount,
-          value: proposalsExpired.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsBountyCount,
-          value: proposalsBounties.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.ProposalsMemberCount,
-          value: proposalsMembers.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.BountiesCount,
-          value: bounties.length,
-        },
-        {
-          ...common,
-          metric: DaoStatsMetric.BountiesValueLocked,
-          value: bounties.reduce(
-            (acc, bounty) =>
-              // TODO confirm bounty VL formula
-              acc + yoctoToPico(parseInt(bounty.amount) * bounty.times),
-            0,
+      if (policy) {
+        const council = policy.roles.find(isRoleGroupCouncil) as
+          | Role<RoleKindGroup>
+          | undefined;
+        const councilSize = council ? council.kind.Group.length : 0;
+        const groups = policy.roles.filter(isRoleGroup);
+        const members = [
+          ...new Set(
+            groups.map((group: Role<RoleKindGroup>) => group.kind.Group).flat(),
           ),
-        },
-      ];
+        ];
+
+        yield [
+          {
+            ...common,
+            metric: DaoStatsMetric.CouncilSize,
+            value: councilSize,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.MembersCount,
+            value: members.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.GroupsCount,
+            value: groups.length,
+          },
+        ];
+      }
+
+      if (proposals) {
+        const proposalsPayouts = proposals.filter(
+          (prop) => prop.kind[ProposalKind.Transfer],
+        );
+        const proposalsBounties = proposals.filter(
+          (prop) =>
+            prop.kind[ProposalKind.AddBounty] ||
+            prop.kind[ProposalKind.BountyDone],
+        );
+        const proposalsMembers = proposals.filter(
+          (prop) =>
+            prop.kind[ProposalKind.AddMemberToRole] ||
+            prop.kind[ProposalKind.RemoveMemberFromRole],
+        );
+        const proposalsCouncilMembers = proposals.filter((prop) => {
+          const kind =
+            prop.kind[ProposalKind.AddMemberToRole] ||
+            prop.kind[ProposalKind.RemoveMemberFromRole];
+          return kind ? kind.role.toLowerCase() === 'council' : false;
+        });
+        const proposalsPolicyChanges = proposals.filter(
+          ({ kind }) => kind[ProposalKind.ChangePolicy],
+        );
+        const proposalsInProgress = proposals.filter(
+          ({ status }) => status === ProposalStatus.InProgress,
+        );
+        const proposalsApproved = proposals.filter(
+          ({ status }) => status === ProposalStatus.Approved,
+        );
+        const proposalsRejected = proposals.filter(
+          ({ status }) => status === ProposalStatus.Rejected,
+        );
+        const proposalsExpired = proposals.filter(
+          ({ status }) => status === ProposalStatus.Expired,
+        );
+
+        yield [
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsCount,
+            value: proposals.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsPayoutCount,
+            value: proposalsPayouts.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsCouncilMemberCount,
+            value: proposalsCouncilMembers.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsPolicyChangeCount,
+            value: proposalsPolicyChanges.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsInProgressCount,
+            value: proposalsInProgress.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsApprovedCount,
+            value: proposalsApproved.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsRejectedCount,
+            value: proposalsRejected.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsExpiredCount,
+            value: proposalsExpired.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsBountyCount,
+            value: proposalsBounties.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.ProposalsMemberCount,
+            value: proposalsMembers.length,
+          },
+        ];
+      }
+
+      if (bounties) {
+        yield [
+          {
+            ...common,
+            metric: DaoStatsMetric.BountiesCount,
+            value: bounties.length,
+          },
+          {
+            ...common,
+            metric: DaoStatsMetric.BountiesValueLocked,
+            value: bounties.reduce(
+              (acc, bounty) =>
+                // TODO confirm bounty VL formula
+                acc + yoctoToPico(parseInt(bounty.amount) * bounty.times),
+              0,
+            ),
+          },
+        ];
+      }
     }
 
     this.logger.log('Finished aggregating Astro metrics.');
