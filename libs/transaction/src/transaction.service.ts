@@ -160,6 +160,15 @@ export class TransactionService {
     );
   }
 
+  async getDaoUsers(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<TransactionLeaderboardDto[]> {
+    return await this.getDaoInteractionsCountQueryBuilder(context, metricQuery)
+      .select('count(distinct signer_account_id)::int, receiver_account_id')
+      .execute();
+  }
+
   async getUsersActivityQuery(
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
@@ -213,6 +222,16 @@ export class TransactionService {
       context,
       metricQuery,
       daily,
+    ).execute();
+  }
+
+  async getDaoInteractions(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<TransactionLeaderboardDto[]> {
+    return await this.getDaoInteractionsCountQueryBuilder(
+      context,
+      metricQuery,
     ).execute();
   }
 
@@ -411,19 +430,27 @@ export class TransactionService {
       .andWhere('type != :type', { type: CreateDao });
   }
 
+  private getDaoInteractionsCountQueryBuilder(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: MetricQuery,
+  ): SelectQueryBuilder<Transaction> {
+    const { from, to } = metricQuery || {};
+
+    return this.getTransactionIntervalQueryBuilder(context, from, to)
+      .select('count(receiver_account_id)::int, receiver_account_id')
+      .andWhere('type != :type', { type: TransactionType.CreateDao })
+      .groupBy('receiver_account_id');
+  }
+
   private getUserInteractionsCountQueryBuilder(
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): SelectQueryBuilder<Transaction> {
     const { from, to } = metricQuery || {};
 
-    const queryBuilder = this.getTransactionIntervalQueryBuilder(
-      context,
-      from,
-      to,
-    );
-
-    return queryBuilder.select('count(receiver_account_id)::int');
+    return this.getTransactionIntervalQueryBuilder(context, from, to)
+      .select('count(receiver_account_id)::int')
+      .andWhere('type != :type', { type: TransactionType.CreateDao });
   }
 
   private getTransactionLeaderboardQueryBuilder(
