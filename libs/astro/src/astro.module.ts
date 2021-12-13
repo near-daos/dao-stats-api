@@ -4,6 +4,7 @@ import {
   NearIndexerDBProvider,
   NearIndexerService,
 } from '@dao-stats/near-indexer';
+import { NearHelperModule } from '@dao-stats/near-helper';
 import { AggregationService } from '.';
 import { AstroDaoModule } from './astro-dao.module';
 import configuration from './config/configuration';
@@ -14,6 +15,7 @@ import configuration from './config/configuration';
       load: [configuration],
     }),
     AstroDaoModule,
+    NearHelperModule,
   ],
   providers: [AggregationService, NearIndexerService, NearIndexerDBProvider],
   exports: [AggregationService],

@@ -7,25 +7,27 @@ import {
   Aggregator,
   DaoStatsDto,
   DaoStatsMetric,
+  findAllByKey,
+  millisToNanos,
+  nanosToMillis,
   TransactionDto,
   TransactionType,
   VoteType,
-  millisToNanos,
-  nanosToMillis,
   yoctoToPico,
-  findAllByKey,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
+import { NearHelperService } from '@dao-stats/near-helper';
+import { AstroDaoService } from './astro-dao.service';
 import { isRoleGroup, isRoleGroupCouncil } from './utils';
 import {
   BountyResponse,
+  Policy,
   ProposalKind,
   ProposalsResponse,
   ProposalStatus,
   Role,
   RoleKindGroup,
 } from './types';
-import { AstroDaoService } from './astro-dao.service';
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -34,6 +36,7 @@ export class AggregationService implements Aggregator {
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
+    private readonly nearHelperService: NearHelperService,
     private readonly astroDaoService: AstroDaoService,
   ) {}
 
@@ -149,13 +152,19 @@ export class AggregationService implements Aggregator {
         return (await Promise.all(promises)).flat();
       };
 
-      let policy, proposals, bounties;
+      let policy: Policy,
+        proposals: ProposalsResponse,
+        bounties: BountyResponse,
+        ftTokens: string[],
+        nftTokens: string[];
 
       try {
-        [policy, proposals, bounties] = await Promise.all([
+        [policy, proposals, bounties, ftTokens, nftTokens] = await Promise.all([
           contract.get_policy(),
           getProposals(),
           getBounties(),
+          this.nearHelperService.getLikelyTokens(contract.contractId),
+          this.nearHelperService.getLikelyNFTs(contract.contractId),
         ]);
       } catch (err) {
         this.logger.error(err);
@@ -303,6 +312,26 @@ export class AggregationService implements Aggregator {
                 acc + yoctoToPico(parseInt(bounty.amount) * bounty.times),
               0,
             ),
+          },
+        ];
+      }
+
+      if (ftTokens) {
+        yield [
+          {
+            ...common,
+            metric: DaoStatsMetric.TokensFtCount,
+            value: ftTokens.length,
+          },
+        ];
+      }
+
+      if (nftTokens) {
+        yield [
+          {
+            ...common,
+            metric: DaoStatsMetric.TokensNftCount,
+            value: nftTokens.length,
           },
         ];
       }
