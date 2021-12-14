@@ -88,6 +88,7 @@ export class AggregatorService {
                 ...receiptAction,
                 contractId,
                 argsJson: receiptAction.args,
+                includedInBlockTimestamp: receipt.includedInBlockTimestamp,
               })),
             })),
           })),

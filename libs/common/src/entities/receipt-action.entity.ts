@@ -19,7 +19,7 @@ export class ReceiptAction implements HasContract {
 
   @ManyToOne(() => Receipt, (receipt) => receipt.receiptActions, {
     nullable: true,
-    createForeignKeyConstraints: false,
+    eager: true
   })
   @JoinColumn({ name: 'receipt_id' })
   receipt?: Receipt;
@@ -38,4 +38,7 @@ export class ReceiptAction implements HasContract {
 
   @Column({ type: 'json', nullable: true })
   argsJson: Record<string, unknown>;
+
+  @Column({ type: 'bigint', nullable: true })
+  includedInBlockTimestamp: number;
 }

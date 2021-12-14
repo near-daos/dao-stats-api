@@ -1,102 +1,125 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import {
-  ContractContext,
+  DailyCountDto,
   DaoContractContext,
-  millisToNanos,
-  nanosToMillis,
-  picoToNear,
-  Receipt,
-  yoctoToPico,
+  MetricQuery,
 } from '@dao-stats/common';
-import { TransactionService } from '@dao-stats/transaction';
 import { FlowTotalResponse } from './dto/flow-total.dto';
 import { getGrowth } from '../utils';
-import { ReceiptService } from 'libs/receipt/src';
 import { ContractService } from '../contract/contract.service';
+import { ReceiptActionService } from 'libs/receipt/src/receipt-action.service';
+import { TransferType } from 'libs/receipt/src/types/transfer-type';
+import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 
 @Injectable()
 export class FlowService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly transactionService: TransactionService,
-    private readonly receiptService: ReceiptService,
+    private readonly receiptActionService: ReceiptActionService,
     private readonly contractService: ContractService,
   ) {}
 
-  async totals(
-    context: DaoContractContext | ContractContext,
-  ): Promise<FlowTotalResponse> {
-    const { contract, dao } = context as DaoContractContext;
+  async totals(context: DaoContractContext): Promise<FlowTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
 
-    let contractContext = context as DaoContractContext;
-    if (!dao) {
-      const { contractName: dao } = await this.contractService.findById(
-        contract,
-      );
-
-      contractContext = {
-        ...context,
-        dao,
-      };
-    }
-
-    const [txCount, dayAgoTxCount, incoming, outgoing] = await Promise.all([
-      this.transactionService.getTransactionTotalCount(contractContext),
-      this.transactionService.getTransactionTotalCount(contractContext, {
-        from: null,
-        to: millisToNanos(dayAgo.valueOf()),
+    const [
+      txInCount,
+      dayAgoTxInCount,
+      txOutCount,
+      dayAgoTxOutCount,
+      totalIn,
+      dayAgoTotalIn,
+      totalOut,
+      dayAgoTotalOut,
+    ] = await Promise.all([
+      this.receiptActionService.getTransfers(context, TransferType.Incoming),
+      this.receiptActionService.getTransfers(context, TransferType.Incoming, {
+        to: dayAgo.valueOf(),
       }),
-      this.receiptService.findIncomingReceipts(contractContext),
-      this.receiptService.findOutgoingReceipts(contractContext),
+      this.receiptActionService.getTransfers(context, TransferType.Outgoing),
+      this.receiptActionService.getTransfers(context, TransferType.Outgoing, {
+        to: dayAgo.valueOf(),
+      }),
+      this.receiptActionService.getFunds(context, TransferType.Incoming),
+      this.receiptActionService.getFunds(context, TransferType.Incoming, {
+        to: dayAgo.valueOf(),
+      }),
+      this.receiptActionService.getFunds(context, TransferType.Outgoing),
+      this.receiptActionService.getFunds(context, TransferType.Outgoing, {
+        to: dayAgo.valueOf(),
+      }),
     ]);
-
-    // TODO: move calculations to postgres query when migrated to 'json' type of ReceiptAction args
-
-    const dayAgoIncoming = incoming.filter(
-      ({ includedInBlockTimestamp }) =>
-        nanosToMillis(includedInBlockTimestamp) <
-        moment().subtract(1, 'days').valueOf(),
-    );
-
-    const dayAgoOutgoing = outgoing.filter(
-      ({ includedInBlockTimestamp }) =>
-        nanosToMillis(includedInBlockTimestamp) <
-        moment().subtract(1, 'days').valueOf(),
-    );
-
-    const totalIn = this.calculateTotalNear(incoming);
-    const totalOut = this.calculateTotalNear(outgoing);
 
     return {
       totalIn: {
-        count: totalIn,
-        growth: getGrowth(totalIn, this.calculateTotalNear(dayAgoIncoming)),
+        count: totalIn.count,
+        growth: getGrowth(totalIn.count, dayAgoTotalIn.count),
       },
       totalOut: {
-        count: totalOut,
-        growth: getGrowth(totalOut, this.calculateTotalNear(dayAgoOutgoing)),
+        count: totalOut.count,
+        growth: getGrowth(totalOut.count, dayAgoTotalOut.count),
       },
-      transactions: {
-        count: txCount,
-        growth: getGrowth(txCount, dayAgoTxCount),
+      transactionsIn: {
+        count: txInCount,
+        growth: getGrowth(txInCount, dayAgoTxInCount),
+      },
+      transactionsOut: {
+        count: txOutCount,
+        growth: getGrowth(txOutCount, dayAgoTxOutCount),
       },
     };
   }
 
-  private calculateTotalNear(receipts: Receipt[]): number {
-    return picoToNear(
-      receipts
-        .map(({ receiptActions }) => receiptActions)
-        .flat()
-        .reduce(
-          (acc, action) =>
-            acc + yoctoToPico(parseInt(action?.args?.deposit as string) || 0),
-          0,
-        ),
+  async funds(
+    context: DaoContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<FlowMetricResponse> {
+    return this.history(
+      await this.receiptActionService.getFundsHistory(
+        context,
+        TransferType.Incoming,
+        metricQuery,
+      ),
+      await this.receiptActionService.getFundsHistory(
+        context,
+        TransferType.Incoming,
+        metricQuery,
+      ),
     );
+  }
+
+  async transactions(
+    context: DaoContractContext,
+    metricQuery?: MetricQuery,
+  ): Promise<FlowMetricResponse> {
+    return this.history(
+      await this.receiptActionService.getTransfersHistory(
+        context,
+        TransferType.Incoming,
+        metricQuery,
+      ),
+      await this.receiptActionService.getTransfersHistory(
+        context,
+        TransferType.Incoming,
+        metricQuery,
+      ),
+    );
+  }
+
+  private history(
+    incoming: DailyCountDto[],
+    outgoing: DailyCountDto[],
+  ): FlowMetricResponse {
+    return {
+      in: incoming.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
+      out: outgoing.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
+    };
   }
 }
