@@ -6,11 +6,14 @@ export class UsersTotalResponse {
   users: TotalMetric;
 
   @ApiProperty()
-  avgDaoUsers: TotalMetric;
+  members: TotalMetric;
+
+  @ApiProperty()
+  averageUsers: TotalMetric;
 
   @ApiProperty()
   interactions: TotalMetric;
 
   @ApiProperty()
-  avgDaoInteractions: TotalMetric;
+  averageInteractions: TotalMetric;
 }

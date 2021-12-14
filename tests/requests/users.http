@@ -7,13 +7,31 @@ Accept: application/json
 GET http://127.0.0.1:3000/api/v1/astro/users/users/leaderboard
 Accept: application/json
 ###
+GET http://127.0.0.1:3000/api/v1/astro/users/members
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/members/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/average-users
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/interactions
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/interactions/leaderboard
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/users/average-interactions
+Accept: application/json
+###
 GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/users
 Accept: application/json
 ###
-GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/council
+GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/members
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/users/community.sputnik-dao.near/interactions
