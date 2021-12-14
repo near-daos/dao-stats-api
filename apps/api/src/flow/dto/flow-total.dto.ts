@@ -9,5 +9,8 @@ export class FlowTotalResponse {
   totalOut: TotalMetric;
 
   @ApiProperty()
-  transactions: TotalMetric;
+  transactionsIn: TotalMetric;
+  
+  @ApiProperty()
+  transactionsOut: TotalMetric;
 }
