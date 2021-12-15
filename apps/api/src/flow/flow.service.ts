@@ -1,11 +1,7 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 
-import {
-  DaoContractContext,
-  MetricQuery,
-  yoctoToPico,
-} from '@dao-stats/common';
+import { DaoContractContext, MetricQuery } from '@dao-stats/common';
 import { FlowTotalResponse } from './dto/flow-total.dto';
 import { getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
@@ -222,7 +218,7 @@ export class FlowService {
           dao,
           activity: {
             count,
-            growth: getGrowth(yoctoToPico(count), yoctoToPico(dayAgoCount)),
+            growth: getGrowth(count, dayAgoCount),
           },
           overview: days.map(({ end: timestamp }) => ({
             timestamp,
@@ -245,7 +241,7 @@ export class FlowService {
           dao,
           activity: {
             count,
-            growth: getGrowth(yoctoToPico(count), yoctoToPico(dayAgoCount)),
+            growth: getGrowth(count, dayAgoCount),
           },
           overview: days.map(({ end: timestamp }) => ({
             timestamp,
