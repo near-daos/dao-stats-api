@@ -42,6 +42,8 @@ export class GeneralService {
       dayAgoActivity,
       groupsCount,
       dayAgoGroupsCount,
+      averageGroupsCount,
+      dayAgoAverageGroupsCount,
     ] = await Promise.all([
       this.daoStatsService.getValue({
         contract,
@@ -67,6 +69,19 @@ export class GeneralService {
         metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
       }),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.GroupsCount,
+        func: 'AVG',
+      }),
+      this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.GroupsCount,
+        to: dayAgo.valueOf(),
+        func: 'AVG',
+      }),
     ]);
 
     return {
@@ -81,6 +96,10 @@ export class GeneralService {
       groups: {
         count: groupsCount,
         growth: getGrowth(groupsCount, dayAgoGroupsCount),
+      },
+      averageGroups: {
+        count: averageGroupsCount,
+        growth: getGrowth(averageGroupsCount, dayAgoAverageGroupsCount),
       },
     };
   }
@@ -255,5 +274,29 @@ export class GeneralService {
     );
 
     return { metrics };
+  }
+
+  async averageGroups(
+    contractContext: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contract, dao } = contractContext as DaoContractContext;
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
+      metric: DaoStatsMetric.GroupsCount,
+      from,
+      to,
+      func: 'AVG',
+    });
+
+    return {
+      metrics: history.map((row) => ({
+        timestamp: row.date.valueOf(),
+        count: row.value,
+      })),
+    };
   }
 }
