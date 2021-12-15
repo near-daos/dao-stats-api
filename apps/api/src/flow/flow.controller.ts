@@ -11,6 +11,8 @@ import { FlowTotalResponse } from './dto/flow-total.dto';
 import { FlowService } from './flow.service';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowContractContextQueryPipe } from 'libs/receipt/src/pipes/flow-contract-context-query.pipe';
+import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
 
 @ApiTags('Flow')
 @Controller('flow')
@@ -45,7 +47,22 @@ export class FlowController {
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.funds(context, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: FlowLeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/funds/leaderboard')
+  async fundsLeaderboard(
+    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+  ): Promise<FlowLeaderboardMetricResponse> {
+    return this.flowService.leaderboard(context, FlowMetricType.Fund);
   }
 
   @ApiResponse({
@@ -61,7 +78,26 @@ export class FlowController {
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.transactions(context, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: FlowLeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/transactions/leaderboard')
+  async transactionsLeaderboard(
+    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+  ): Promise<FlowLeaderboardMetricResponse> {
+    return this.flowService.leaderboard(context, FlowMetricType.Transaction);
   }
 
   @ApiResponse({
@@ -92,7 +128,7 @@ export class FlowController {
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.funds(context, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
   }
 
   @ApiResponse({
@@ -108,6 +144,10 @@ export class FlowController {
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.transactions(context, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
   }
 }

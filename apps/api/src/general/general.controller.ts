@@ -113,6 +113,22 @@ export class GeneralController {
 
   @ApiResponse({
     status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(ContractInterceptor)
+  @Get('/average-groups')
+  async averageGroups(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.generalService.averageGroups(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: GeneralTotalResponse,
   })
   @ApiBadRequestResponse({
