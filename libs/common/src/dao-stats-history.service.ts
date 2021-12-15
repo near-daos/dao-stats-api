@@ -120,7 +120,7 @@ export class DaoStatsHistoryService {
     return query
       .andWhere('metric = :metric', { metric })
       .groupBy('date')
-      .orderBy('date', 'DESC')
+      .orderBy('date', 'ASC')
       .execute();
   }
 }
