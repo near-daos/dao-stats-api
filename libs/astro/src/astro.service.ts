@@ -13,7 +13,7 @@ import {
   TransactionDto,
   TransactionType,
   VoteType,
-  yoctoToPico,
+  yoctoToNear,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { NearHelperService } from '@dao-stats/near-helper';
@@ -309,7 +309,7 @@ export class AggregationService implements Aggregator {
             value: bounties.reduce(
               (acc, bounty) =>
                 // TODO confirm bounty VL formula
-                acc + yoctoToPico(parseInt(bounty.amount) * bounty.times),
+                acc + yoctoToNear(bounty.amount) * bounty.times,
               0,
             ),
           },

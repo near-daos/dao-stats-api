@@ -8,7 +8,6 @@ import {
   DaoStatsMetric,
   DaoStatsService,
   MetricQuery,
-  picoToNear,
 } from '@dao-stats/common';
 import { TvlTotalResponse } from './dto/tvl-total.dto';
 import { getGrowth } from '../utils';
@@ -77,7 +76,7 @@ export class TvlService {
           growth: getGrowth(bountiesCount, bountiesCountPrev),
         },
         vl: {
-          count: picoToNear(bountiesValueLocked),
+          count: bountiesValueLocked,
           growth: getGrowth(bountiesValueLocked, bountiesValueLockedPrev),
         },
       },
@@ -130,7 +129,7 @@ export class TvlService {
     return {
       metrics: history.map((row) => ({
         timestamp: row.date.valueOf(),
-        count: picoToNear(row.value),
+        count: row.value,
       })),
     };
   }
@@ -194,7 +193,7 @@ export class TvlService {
             })),
           },
           vl: {
-            count: picoToNear(vl),
+            count: vl,
             growth: getGrowth(vl, vlPrev),
             overview: vlHistory.map((row) => ({
               timestamp: row.date.valueOf(),
