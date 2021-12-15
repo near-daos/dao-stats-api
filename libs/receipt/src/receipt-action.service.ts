@@ -42,7 +42,7 @@ export class ReceiptActionService {
       metricQuery,
       true,
     )
-      .addSelect(`count(*) as count`, '')
+      .addSelect(`count(*)::int as count`, '')
       .execute();
   }
 
