@@ -10,4 +10,7 @@ export class GeneralTotalResponse {
 
   @ApiProperty()
   groups: TotalMetric;
+
+  @ApiProperty()
+  averageGroups: TotalMetric;
 }
