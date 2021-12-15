@@ -3,8 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class FlowMetricResponse {
   @ApiProperty({ type: [Metric] })
-  in: Metric[];
+  incoming: Metric[];
 
   @ApiProperty({ type: [Metric] })
-  out: Metric[];
+  outgoing: Metric[];
 }
