@@ -120,7 +120,7 @@ export class FlowService {
       this.receiptActionService.getHistory(
         context,
         metricType,
-        TransferType.Incoming,
+        TransferType.Outgoing,
         metricQuery,
       ),
     ]);
