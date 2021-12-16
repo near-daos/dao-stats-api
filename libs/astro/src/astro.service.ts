@@ -41,8 +41,8 @@ export class AggregationService implements Aggregator {
   ) {}
 
   async *aggregateTransactions(
-    fromTimestamp?: number,
-    toTimestamp?: number,
+    fromTimestamp?: bigint,
+    toTimestamp?: bigint,
   ): AsyncGenerator<TransactionDto[]> {
     const { contractName } = this.configService.get('dao');
 
@@ -53,7 +53,9 @@ export class AggregationService implements Aggregator {
     this.logger.log('Starting aggregating Astro transactions...');
 
     while (true) {
-      const to = Math.min(Decimal.sum(from, chunkSize).toNumber(), toTimestamp);
+      const to = BigInt(
+        Decimal.min(String(from + chunkSize), String(toTimestamp)).toString(),
+      );
 
       this.logger.log(
         `Querying transactions from: ${moment(

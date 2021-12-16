@@ -15,7 +15,7 @@ import {
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
 
-const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
+const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
 
 @Injectable()
 export class AggregatorService {
@@ -40,7 +40,7 @@ export class AggregatorService {
     schedulerRegistry.addInterval('polling', interval);
   }
 
-  public async scheduleAggregation(from?: number, to?: number): Promise<void> {
+  public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {

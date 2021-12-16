@@ -45,8 +45,14 @@ export class Transaction extends BaseEntity implements HasContract {
   @Column()
   receiptConversionTokensBurnt: string;
 
-  @Column({ type: 'bigint' })
-  blockTimestamp: number;
+  @Column({
+    type: 'bigint',
+    transformer: {
+      from: (value: string) => BigInt(value),
+      to: (value: bigint) => String(value),
+    },
+  })
+  blockTimestamp: bigint;
 
   @Column({ nullable: true, type: 'enum', enum: TransactionType })
   type: TransactionType;
