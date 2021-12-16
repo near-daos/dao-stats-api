@@ -1,7 +1,11 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 
-import { DaoContractContext, MetricQuery } from '@dao-stats/common';
+import {
+  DaoContractContext,
+  LeaderboardMetric,
+  MetricQuery,
+} from '@dao-stats/common';
 import { FlowTotalResponse } from './dto/flow-total.dto';
 import { getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
@@ -125,15 +129,25 @@ export class FlowService {
       ),
     ]);
 
+    const days = [
+      ...new Set([
+        ...incoming.map(({ day }) => moment(day).valueOf()),
+        ...outgoing.map(({ day }) => moment(day).valueOf()),
+      ]),
+    ].sort((a, b) => a.valueOf() - b.valueOf());
+
     return {
-      incoming: incoming.map(({ day, count }) => ({
-        timestamp: moment(day).valueOf(),
-        count,
-      })),
-      outgoing: outgoing.map(({ day, count }) => ({
-        timestamp: moment(day).valueOf(),
-        count,
-      })),
+      metrics: days.map((day) => {
+        return {
+          timestamp: day,
+          incoming:
+            incoming.find((metric) => day === moment(metric.day).valueOf())
+              ?.count || 0,
+          outgoing:
+            outgoing.find((metric) => day === moment(metric.day).valueOf())
+              ?.count || 0,
+        };
+      }),
     };
   }
 
@@ -208,52 +222,50 @@ export class FlowService {
     ]);
 
     return {
-      incoming: incoming.map(({ receiver_account_id: dao, count }) => {
-        const dayAgoCount =
-          dayAgoIncoming.find(
-            ({ receiver_account_id }) => receiver_account_id === dao,
-          )?.count || 0;
-
-        return {
-          dao,
-          activity: {
-            count,
-            growth: getGrowth(count, dayAgoCount),
-          },
-          overview: days.map(({ end: timestamp }) => ({
-            timestamp,
-            count:
-              byDaysIncoming.find(
-                ({ receiver_account_id, day }) =>
-                  receiver_account_id === dao &&
-                  moment(day).isSame(moment(timestamp), 'day'),
-              )?.count || 0,
-          })),
-        };
-      }),
-      outgoing: outgoing.map(({ receiver_account_id: dao, count }) => {
-        const dayAgoCount =
-          dayAgoOutgoing.find(
-            ({ receiver_account_id }) => receiver_account_id === dao,
-          )?.count || 0;
-
-        return {
-          dao,
-          activity: {
-            count,
-            growth: getGrowth(count, dayAgoCount),
-          },
-          overview: days.map(({ end: timestamp }) => ({
-            timestamp,
-            count:
-              byDaysOutgoing.find(
-                ({ receiver_account_id, day }) =>
-                  receiver_account_id === dao &&
-                  moment(day).isSame(moment(timestamp), 'day'),
-              )?.count || 0,
-          })),
-        };
-      }),
+      incoming: this.getLeaderboardMetrics(
+        incoming,
+        dayAgoIncoming,
+        byDaysIncoming,
+        days,
+      ),
+      outgoing: this.getLeaderboardMetrics(
+        outgoing,
+        dayAgoOutgoing,
+        byDaysOutgoing,
+        days,
+      ),
     };
+  }
+
+  // TODO: re-visit leaderboard metric types
+  private getLeaderboardMetrics(
+    data,
+    dayAgoData,
+    byDaysData,
+    days: { start: number; end: number }[],
+  ): LeaderboardMetric[] {
+    return data.map(({ receiver_account_id: dao, count }) => {
+      const dayAgoCount =
+        dayAgoData.find(
+          ({ receiver_account_id }) => receiver_account_id === dao,
+        )?.count || 0;
+
+      return {
+        dao,
+        activity: {
+          count,
+          growth: getGrowth(count, dayAgoCount),
+        },
+        overview: days.map(({ end: timestamp }) => ({
+          timestamp,
+          count:
+            byDaysData.find(
+              ({ receiver_account_id, day }) =>
+                receiver_account_id === dao &&
+                moment(day).isSame(moment(timestamp), 'day'),
+            )?.count || 0,
+        })),
+      };
+    });
   }
 }
