@@ -8,6 +8,7 @@ import {
   MetricQuery,
   MetricQueryPipe,
   LeaderboardMetricResponse,
+  HttpCacheInterceptor,
 } from '@dao-stats/common';
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
@@ -25,7 +26,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -40,7 +41,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/daos')
   async daos(
     @Param() context: ContractContext,
@@ -56,7 +57,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/active')
   async active(
     @Param() context: ContractContext,
@@ -72,7 +73,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/active/leaderboard')
   async activeLeaderboard(
     @Param() context: ContractContext,
@@ -87,7 +88,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/groups')
   async groups(
     @Param() context: ContractContext,
@@ -103,7 +104,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/groups/leaderboard')
   async groupsLeaderboard(
     @Param() context: ContractContext,
@@ -118,7 +119,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/average-groups')
   async averageGroups(
     @Param() context: ContractContext,
@@ -134,7 +135,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -149,7 +150,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/groups')
   async daoGroups(
     @Param() context: DaoContractContext,

@@ -13,6 +13,7 @@ import {
   nanosToMillis,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
+import { CacheService } from '@dao-stats/cache';
 
 const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
 
@@ -22,6 +23,7 @@ export class AggregatorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
@@ -120,5 +122,7 @@ export class AggregatorService {
         this.logger.log(`Stored ${metrics.length} metric(s)`);
       }
     }
+
+    await this.cacheService.clearCache();
   }
 }
