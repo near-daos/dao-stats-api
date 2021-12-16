@@ -3,6 +3,7 @@ import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
   DaoContractContext,
+  HttpCacheInterceptor,
   MetricQuery,
   MetricQueryPipe,
 } from '@dao-stats/common';
@@ -26,7 +27,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -41,7 +42,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/funds')
   async funds(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -57,7 +58,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/funds/leaderboard')
   async fundsLeaderboard(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -72,7 +73,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/transactions')
   async transactions(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -92,7 +93,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/transactions/leaderboard')
   async transactionsLeaderboard(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -107,7 +108,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -122,7 +123,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/funds')
   async daoFunds(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,
@@ -138,7 +139,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/transactions')
   async daoTransactions(
     @Param(FlowContractContextQueryPipe) context: DaoContractContext,

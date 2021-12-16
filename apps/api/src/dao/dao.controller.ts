@@ -1,10 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   ContractContext,
   DaoContractContext,
   DaoResponse,
   DaoService,
+  HttpCacheInterceptor,
 } from '@dao-stats/common';
 
 @ApiTags('DAOs')
@@ -19,6 +20,7 @@ export class DaoController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @UseInterceptors(HttpCacheInterceptor)
   @Get()
   async daos(@Param() context: ContractContext): Promise<DaoResponse[]> {
     const { contract } = context;
@@ -33,6 +35,7 @@ export class DaoController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @UseInterceptors(HttpCacheInterceptor)
   @Get('/:dao')
   async dao(@Param() context: DaoContractContext): Promise<DaoResponse> {
     const { contract, dao } = context;
@@ -46,6 +49,7 @@ export class DaoController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @UseInterceptors(HttpCacheInterceptor)
   @Get('/autocomplete/:input')
   async autocomplete(
     @Param() context: ContractContext,
