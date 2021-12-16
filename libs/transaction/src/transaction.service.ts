@@ -7,6 +7,7 @@ import {
   DailyCountDto,
   DaoContractContext,
   MetricQuery,
+  millisToNanos,
   Transaction,
   TransactionType,
   VoteType,
@@ -60,8 +61,8 @@ export class TransactionService {
           from transactions
           where contract_id = '${contract}' and type = '${txType}'
           ${dao ? `and receiver_account_id = '${dao}'` : ''}
-          ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
-          ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
+          ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
+          ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
           group by 1
         )
         
@@ -134,8 +135,8 @@ export class TransactionService {
         select count(distinct signer_account_id)::int from transactions 
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
-        ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
-        ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
+        ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
+        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
       `,
     );
   }
@@ -153,8 +154,8 @@ export class TransactionService {
       `
         select count(distinct signer_account_id)::int, receiver_account_id from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
-        ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
-        ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
+        ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
+        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
         group by receiver_account_id
       `,
     );
@@ -181,8 +182,8 @@ export class TransactionService {
       `
         select count(distinct signer_account_id)::int as count, receiver_account_id from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
-        ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
-        ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
+        ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
+        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
         group by receiver_account_id
         order by count DESC
         limit 10
@@ -282,8 +283,8 @@ export class TransactionService {
     return this.connection.query(`
         select count(signer_account_id)::int as count, receiver_account_id from transactions 
         where contract_id = '${contractId}' and type = '${AddProposal}'
-        ${from ? `and (block_timestamp / 1000 / 1000) > ${from}` : ''}
-        ${to ? `and (block_timestamp / 1000 / 1000) < ${to}` : ''}
+        ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
+        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
         group by receiver_account_id
         order by count DESC
     `);
@@ -493,11 +494,11 @@ export class TransactionService {
     }
 
     if (from) {
-      qb.andWhere('(block_timestamp / 1000 / 1000) > :from', { from });
+      qb.andWhere('block_timestamp >= :from', { from: millisToNanos(from) });
     }
 
     if (to) {
-      qb.andWhere('(block_timestamp / 1000 / 1000) < :to', { to });
+      qb.andWhere('block_timestamp <= :to', { to: millisToNanos(to) });
     }
 
     return qb;
