@@ -15,8 +15,6 @@ import {
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
 
-const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
-
 @Injectable()
 export class AggregatorService {
   private readonly logger = new Logger(AggregatorService.name);
@@ -68,7 +66,7 @@ export class AggregatorService {
           );
         }
 
-        from = lastTx?.blockTimestamp || FIRST_BLOCK_TIMESTAMP;
+        from = lastTx?.blockTimestamp;
       }
 
       if (!to) {
