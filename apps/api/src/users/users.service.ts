@@ -48,11 +48,11 @@ export class UsersService {
     ] = await Promise.all([
       this.transactionService.getUsersTotalCount(context),
       this.transactionService.getUsersTotalCount(context, {
-        to: millisToNanos(dayAgo.valueOf()),
+        to: dayAgo.valueOf(),
       }),
       this.transactionService.getDaoUsers(context),
       this.transactionService.getDaoUsers(context, {
-        to: millisToNanos(dayAgo.valueOf()),
+        to: dayAgo.valueOf(),
       }),
       this.transactionService.getUsersInteractionsCount(context),
       this.transactionService.getUsersInteractionsCount(context, {
@@ -60,7 +60,7 @@ export class UsersService {
       }),
       this.transactionService.getDaoInteractions(context),
       this.transactionService.getDaoInteractions(context, {
-        to: millisToNanos(dayAgo.valueOf()),
+        to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
         contract,
