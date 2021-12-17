@@ -10,7 +10,7 @@ export class TransactionDto {
   convertedIntoReceiptId: string;
   receiptConversionGasBurnt: string;
   receiptConversionTokensBurnt: string;
-  blockTimestamp: number;
+  blockTimestamp: bigint;
   type: TransactionType;
   voteType?: VoteType;
 }

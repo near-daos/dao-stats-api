@@ -6,6 +6,7 @@ import {
   ContractContext,
   DaoContractContext,
   MetricQuery,
+  millisToNanos,
   Receipt,
 } from '@dao-stats/common';
 
@@ -89,13 +90,15 @@ export class ReceiptService {
     // }
 
     if (from) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) > :from', {
-        from,
+      qb.andWhere('included_in_block_timestamp >= :from', {
+        from: millisToNanos(from),
       });
     }
 
     if (to) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) < :to', { to });
+      qb.andWhere('included_in_block_timestamp <= :to', {
+        to: millisToNanos(to),
+      });
     }
 
     qb.orderBy('included_in_block_timestamp', 'ASC');

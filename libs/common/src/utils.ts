@@ -1,11 +1,11 @@
 import Decimal from 'decimal.js';
 
-export const millisToNanos = (millis: number): number => {
-  return millis * 1000 * 1000;
+export const millisToNanos = (millis: number): bigint => {
+  return BigInt(Decimal.mul(millis, 1e6).toString());
 };
 
-export const nanosToMillis = (nanos: number): number => {
-  return nanos / 1000 / 1000;
+export const nanosToMillis = (nanos: bigint): number => {
+  return Decimal.div(String(nanos), 1e6).toNumber();
 };
 
 export const yoctoToNear = (yocto: number | string): number => {

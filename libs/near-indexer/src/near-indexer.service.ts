@@ -15,7 +15,7 @@ export class NearIndexerService {
   /** Pass either single accountId or array of accountIds */
   async findLastTransactionByAccountIds(
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: bigint,
   ): Promise<Transaction> {
     return this.buildAggregationTransactionQuery(
       this.connection.getRepository(Transaction),
@@ -30,8 +30,8 @@ export class NearIndexerService {
   /** Pass either single accountId or array of accountIds */
   async findTransactionsByAccountIds(
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
-    toBlockTimestamp?: number,
+    fromBlockTimestamp?: bigint,
+    toBlockTimestamp?: bigint,
   ): Promise<Transaction[]> {
     return this.buildAggregationTransactionQuery(
       this.connection.getRepository(Transaction),
@@ -50,8 +50,8 @@ export class NearIndexerService {
   private buildAggregationTransactionQuery(
     repository: Repository<Transaction>,
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
-    toBlockTimestamp?: number,
+    fromBlockTimestamp?: bigint,
+    toBlockTimestamp?: bigint,
   ): SelectQueryBuilder<Transaction> {
     let queryBuilder = repository
       .createQueryBuilder('transaction')
@@ -60,25 +60,22 @@ export class NearIndexerService {
 
     queryBuilder =
       accountIds instanceof Array
-        ? queryBuilder.where(
-            'transaction.receiver_account_id = ANY(ARRAY[:...ids])',
-            {
-              ids: accountIds,
-            },
-          )
+        ? queryBuilder.where('transaction.receiver_account_id IN (:...ids)', {
+            ids: accountIds,
+          })
         : queryBuilder.where('transaction.receiver_account_id LIKE :id', {
             id: `%${accountIds}`,
           });
 
     queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
-          from: fromBlockTimestamp,
+      ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
+          from: String(fromBlockTimestamp),
         })
       : queryBuilder;
 
     queryBuilder = toBlockTimestamp
-      ? queryBuilder.andWhere('transaction.block_timestamp < :to', {
-          to: toBlockTimestamp,
+      ? queryBuilder.andWhere('transaction.block_timestamp <= :to', {
+          to: String(toBlockTimestamp),
         })
       : queryBuilder;
 
