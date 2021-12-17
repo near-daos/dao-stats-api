@@ -1,6 +1,11 @@
+import dotenv from 'dotenv';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitContracts1639584157798 implements MigrationInterface {
+  constructor() {
+    dotenv.config();
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     type CONTRACT_ENV = 'testnet' | 'mainnet';
 
