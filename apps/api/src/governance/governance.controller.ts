@@ -8,6 +8,7 @@ import {
   MetricQueryPipe,
   MetricResponse,
   LeaderboardMetricResponse,
+  HttpCacheInterceptor,
 } from '@dao-stats/common';
 
 import { ContractInterceptor } from '../interceptors/contract.interceptor';
@@ -29,7 +30,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -44,7 +45,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/proposals')
   async proposals(
     @Param() context: ContractContext,
@@ -60,7 +61,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/proposals/leaderboard')
   async proposalsLeaderboard(
     @Param() context: ContractContext,
@@ -75,7 +76,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/proposals-types')
   async proposalsTypes(
     @Param() context: ContractContext,
@@ -91,7 +92,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/proposals-types/leaderboard')
   async proposalsTypesLeaderboard(
     @Param() context: ContractContext,
@@ -106,7 +107,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/vote-rate')
   async rate(
     @Param() context: ContractContext,
@@ -122,7 +123,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/vote-rate/leaderboard')
   async rateLeaderboard(
     @Param() context: ContractContext,
@@ -137,7 +138,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -152,7 +153,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/proposals')
   async daoProposals(
     @Param() context: DaoContractContext,
@@ -168,7 +169,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/proposals-types')
   async daoProposalsTypes(
     @Param() context: DaoContractContext,
@@ -184,7 +185,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/vote-rate')
   async daoRate(
     @Param() context: DaoContractContext,

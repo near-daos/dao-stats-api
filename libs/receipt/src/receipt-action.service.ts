@@ -6,6 +6,7 @@ import {
   DailyCountDto,
   DaoContractContext,
   MetricQuery,
+  millisToNanos,
   ReceiptAction,
 } from '@dao-stats/common';
 import { TransferType } from './types/transfer-type';
@@ -173,13 +174,15 @@ export class ReceiptActionService {
     }
 
     if (from) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) > :from', {
-        from,
+      qb.andWhere('included_in_block_timestamp >= :from', {
+        from: String(millisToNanos(from)),
       });
     }
 
     if (to) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) < :to', { to });
+      qb.andWhere('included_in_block_timestamp <= :to', {
+        to: String(millisToNanos(to)),
+      });
     }
 
     const baseSelection =

@@ -17,6 +17,7 @@ import {
   DaoModule,
 } from '@dao-stats/common';
 import { AggregatorService } from './aggregator.service';
+import { HttpCacheModule } from '@dao-stats/cache';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AggregatorService } from './aggregator.service';
     DaoModule,
     DaoStatsModule,
     DaoStatsHistoryModule,
+    HttpCacheModule,
   ],
   providers: [AggregatorService],
 })

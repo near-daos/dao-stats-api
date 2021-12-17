@@ -13,8 +13,7 @@ import {
   nanosToMillis,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-
-const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
+import { CacheService } from '@dao-stats/cache';
 
 @Injectable()
 export class AggregatorService {
@@ -22,6 +21,7 @@ export class AggregatorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
@@ -38,7 +38,7 @@ export class AggregatorService {
     schedulerRegistry.addInterval('polling', interval);
   }
 
-  public async scheduleAggregation(from?: number, to?: number): Promise<void> {
+  public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {
@@ -66,7 +66,7 @@ export class AggregatorService {
           );
         }
 
-        from = lastTx?.blockTimestamp || FIRST_BLOCK_TIMESTAMP;
+        from = lastTx?.blockTimestamp;
       }
 
       if (!to) {
@@ -120,5 +120,7 @@ export class AggregatorService {
         this.logger.log(`Stored ${metrics.length} metric(s)`);
       }
     }
+
+    await this.cacheService.clearCache();
   }
 }

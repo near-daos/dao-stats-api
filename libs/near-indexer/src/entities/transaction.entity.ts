@@ -32,6 +32,12 @@ export class Transaction {
   @Column({ nullable: true })
   receiptConversionTokensBurnt: string;
 
-  @Column({ type: 'bigint' })
-  blockTimestamp: number;
+  @Column({
+    type: 'bigint',
+    transformer: {
+      from: (value: string) => BigInt(value),
+      to: (value: bigint) => String(value),
+    },
+  })
+  blockTimestamp: bigint;
 }

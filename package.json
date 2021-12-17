@@ -25,7 +25,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test-api:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "test-aggregator:e2e": "jest --config ./apps/aggregator/test/jest-e2e.json",
-    "migration:run": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run"
+    "migration:show": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:show",
+    "migration:run": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
+    "migration:generate": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:generate -n SchemaRefactoring",
+    "migration:revert": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:revert",
+    "schema:sync": "ts-node --transpile-only ./node_modules/typeorm/cli.js schema:sync",
+    "schema:drop": "ts-node --transpile-only ./node_modules/typeorm/cli.js schema:drop"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -51,6 +56,7 @@
     "camelcase-keys": "^7.0.0",
     "class-transformer": "=0.4.0",
     "class-validator": "^0.13.1",
+    "dotenv": "^10.0.0",
     "firebase-admin": "^9.10.0",
     "ioredis": "^4.14.1",
     "js-yaml": "^4.1.0",

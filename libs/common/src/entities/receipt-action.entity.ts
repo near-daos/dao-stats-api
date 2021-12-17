@@ -19,7 +19,7 @@ export class ReceiptAction implements HasContract {
 
   @ManyToOne(() => Receipt, (receipt) => receipt.receiptActions, {
     nullable: true,
-    eager: true
+    eager: true,
   })
   @JoinColumn({ name: 'receipt_id' })
   receipt?: Receipt;

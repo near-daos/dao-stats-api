@@ -17,6 +17,6 @@ export class DaoStats implements HasContract {
   @PrimaryColumn({ type: 'enum', enum: DaoStatsMetric })
   metric: DaoStatsMetric;
 
-  @Column({ type: 'double precision', nullable: false, default: 0 })
+  @Column({ type: 'double precision', default: 0 })
   value: number;
 }

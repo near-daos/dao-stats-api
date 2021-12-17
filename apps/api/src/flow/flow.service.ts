@@ -1,19 +1,18 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
-
 import {
   DaoContractContext,
   LeaderboardMetric,
   MetricQuery,
 } from '@dao-stats/common';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import { getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
 import { ReceiptActionService } from 'libs/receipt/src/receipt-action.service';
 import { TransferType } from 'libs/receipt/src/types/transfer-type';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
 import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
+import { getDailyIntervals, getGrowth, yoctoToNear } from '../utils';
 
 @Injectable()
 export class FlowService {
@@ -91,11 +90,11 @@ export class FlowService {
 
     return {
       totalIn: {
-        count: totalIn.count || 0,
+        count: yoctoToNear(totalIn.count || 0).toNumber(),
         growth: getGrowth(totalIn.count, dayAgoTotalIn.count),
       },
       totalOut: {
-        count: totalOut.count || 0,
+        count: yoctoToNear(totalOut.count || 0).toNumber(),
         growth: getGrowth(totalOut.count, dayAgoTotalOut.count),
       },
       transactionsIn: {
@@ -138,14 +137,23 @@ export class FlowService {
 
     return {
       metrics: days.map((day) => {
+        const inc =
+          incoming.find((metric) => day === moment(metric.day).valueOf())
+            ?.count || 0;
+        const out =
+          outgoing.find((metric) => day === moment(metric.day).valueOf())
+            ?.count || 0;
+
         return {
           timestamp: day,
           incoming:
-            incoming.find((metric) => day === moment(metric.day).valueOf())
-              ?.count || 0,
+            metricType == FlowMetricType.Fund
+              ? yoctoToNear(inc).toNumber()
+              : inc,
           outgoing:
-            outgoing.find((metric) => day === moment(metric.day).valueOf())
-              ?.count || 0,
+            metricType === FlowMetricType.Fund
+              ? yoctoToNear(out).toNumber()
+              : out,
         };
       }),
     };
@@ -223,12 +231,14 @@ export class FlowService {
 
     return {
       incoming: this.getLeaderboardMetrics(
+        metricType,
         incoming,
         dayAgoIncoming,
         byDaysIncoming,
         days,
       ),
       outgoing: this.getLeaderboardMetrics(
+        metricType,
         outgoing,
         dayAgoOutgoing,
         byDaysOutgoing,
@@ -239,6 +249,7 @@ export class FlowService {
 
   // TODO: re-visit leaderboard metric types
   private getLeaderboardMetrics(
+    metricType: FlowMetricType,
     data,
     dayAgoData,
     byDaysData,
@@ -253,18 +264,28 @@ export class FlowService {
       return {
         dao,
         activity: {
-          count,
+          count:
+            metricType === FlowMetricType.Fund
+              ? yoctoToNear(count).toNumber()
+              : count,
           growth: getGrowth(count, dayAgoCount),
         },
-        overview: days.map(({ end: timestamp }) => ({
-          timestamp,
-          count:
+        overview: days.map(({ end: timestamp }) => {
+          const count =
             byDaysData.find(
               ({ receiver_account_id, day }) =>
                 receiver_account_id === dao &&
                 moment(day).isSame(moment(timestamp), 'day'),
-            )?.count || 0,
-        })),
+            )?.count || 0;
+
+          return {
+            timestamp,
+            count:
+              metricType === FlowMetricType.Fund
+                ? yoctoToNear(count).toNumber()
+                : count,
+          };
+        }),
       };
     });
   }

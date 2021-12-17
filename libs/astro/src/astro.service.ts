@@ -29,6 +29,8 @@ import {
   RoleKindGroup,
 } from './types';
 
+const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
+
 @Injectable()
 export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
@@ -41,19 +43,21 @@ export class AggregationService implements Aggregator {
   ) {}
 
   async *aggregateTransactions(
-    fromTimestamp?: number,
-    toTimestamp?: number,
+    fromTimestamp?: bigint | null,
+    toTimestamp?: bigint,
   ): AsyncGenerator<TransactionDto[]> {
     const { contractName } = this.configService.get('dao');
 
     const chunkSize = millisToNanos(3 * 24 * 60 * 60 * 1000); // 3 days
 
-    let from = fromTimestamp; //TODO: validation
+    let from = fromTimestamp || FIRST_BLOCK_TIMESTAMP;
 
     this.logger.log('Starting aggregating Astro transactions...');
 
     while (true) {
-      const to = Math.min(Decimal.sum(from, chunkSize).toNumber(), toTimestamp);
+      const to = BigInt(
+        Decimal.min(String(from + chunkSize), String(toTimestamp)).toString(),
+      );
 
       this.logger.log(
         `Querying transactions from: ${moment(

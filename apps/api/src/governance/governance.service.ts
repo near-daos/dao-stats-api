@@ -161,13 +161,13 @@ export class GovernanceService {
           this.daoStatsHistoryService.getValue({
             contract,
             dao,
-            metric: DaoStatsMetric.GroupsCount,
+            metric: DaoStatsMetric.ProposalsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contract,
             dao,
-            metric: DaoStatsMetric.GroupsCount,
+            metric: DaoStatsMetric.ProposalsCount,
             from: weekAgo.valueOf(),
           }),
         ]);
