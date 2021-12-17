@@ -62,7 +62,7 @@ export class TransactionService {
           where contract_id = '${contract}' and type = '${txType}'
           ${dao ? `and receiver_account_id = '${dao}'` : ''}
           ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-          ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
+          ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
           group by 1
         )
         
@@ -136,7 +136,7 @@ export class TransactionService {
         where contract_id = '${contract}'
         ${dao ? `and receiver_account_id = '${dao}'` : ''}
         ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
+        ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
       `,
     );
   }
@@ -155,7 +155,7 @@ export class TransactionService {
         select count(distinct signer_account_id)::int, receiver_account_id from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
         ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
+        ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
         group by receiver_account_id
       `,
     );
@@ -183,7 +183,7 @@ export class TransactionService {
         select count(distinct signer_account_id)::int as count, receiver_account_id from transactions 
         where contract_id = '${contract}' and type != '${CreateDao}'
         ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
+        ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
         group by receiver_account_id
         order by count DESC
         limit 10
@@ -284,7 +284,7 @@ export class TransactionService {
         select count(signer_account_id)::int as count, receiver_account_id from transactions 
         where contract_id = '${contractId}' and type = '${AddProposal}'
         ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-        ${to ? `and block_timestamp =< ${millisToNanos(to)}` : ''}
+        ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
         group by receiver_account_id
         order by count DESC
     `);
