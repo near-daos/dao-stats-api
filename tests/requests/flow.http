@@ -4,7 +4,13 @@ Accept: application/json
 GET http://127.0.0.1:3000/api/v1/astro/flow/funds
 Accept: application/json
 ###
+GET http://127.0.0.1:3000/api/v1/astro/flow/funds/leaderboard
+Accept: application/json
+###
 GET http://127.0.0.1:3000/api/v1/astro/flow/transactions
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/flow/transactions/leaderboard
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/flow/genesis.sputnik-dao.near
