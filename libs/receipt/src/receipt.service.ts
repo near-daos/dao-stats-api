@@ -91,13 +91,13 @@ export class ReceiptService {
 
     if (from) {
       qb.andWhere('included_in_block_timestamp >= :from', {
-        from: millisToNanos(from),
+        from: String(millisToNanos(from)),
       });
     }
 
     if (to) {
       qb.andWhere('included_in_block_timestamp <= :to', {
-        to: millisToNanos(to),
+        to: String(millisToNanos(to)),
       });
     }
 
