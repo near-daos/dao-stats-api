@@ -12,8 +12,10 @@ export const getAverage = (values: number[]) =>
     ? Math.round(values.reduce((acc, value) => acc + value, 0) / values.length)
     : 0;
 
-export const yoctoToNear = (yocto: string | number | bigint): Decimal =>
-  new Decimal(String(yocto)).div(Decimal.pow(10, 24));
+export const convertFunds = (
+  amount: string | number | bigint,
+  conversionFactor: number = 1,
+): Decimal => new Decimal(String(amount)).div(conversionFactor);
 
 export const getDailyIntervals = (
   from: number,
