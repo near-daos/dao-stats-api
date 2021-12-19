@@ -222,11 +222,13 @@ export class TransactionService {
     }
 
     if (from) {
-      qb.andWhere(`block_timestamp >= ${millisToNanos(from)}`);
+      qb.andWhere('block_timestamp >= :from', {
+        from: String(millisToNanos(from)),
+      });
     }
 
     if (to) {
-      qb.andWhere(`block_timestamp <= ${millisToNanos(to)}`);
+      qb.andWhere('block_timestamp <= :to', { to: String(millisToNanos(to)) });
     }
 
     return qb;
