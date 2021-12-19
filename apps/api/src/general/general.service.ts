@@ -90,8 +90,8 @@ export class GeneralService {
         growth: getGrowth(daoCount, dayAgoDaoCount),
       },
       activity: {
-        count: activity,
-        growth: getGrowth(activity, dayAgoActivity),
+        count: activity.count,
+        growth: getGrowth(activity.count, dayAgoActivity.count),
       },
       groups: {
         count: groupsCount,
@@ -159,7 +159,7 @@ export class GeneralService {
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
-    const byDays = await this.transactionService.getContractActivityLeaderboard(
+    const byDays = await this.transactionService.getActivityLeaderboard(
       context,
       {
         from: weekAgo.valueOf(),
@@ -169,15 +169,19 @@ export class GeneralService {
     );
 
     const dayAgo = moment().subtract(1, 'days');
-    const dayAgoActivity =
-      await this.transactionService.getContractActivityLeaderboard(context, {
+    const dayAgoActivity = await this.transactionService.getActivityLeaderboard(
+      context,
+      {
         to: dayAgo.valueOf(),
-      });
+      },
+    );
 
-    const totalActivity =
-      await this.transactionService.getContractActivityLeaderboard(context, {
+    const totalActivity = await this.transactionService.getActivityLeaderboard(
+      context,
+      {
         to: moment().valueOf(),
-      });
+      },
+    );
 
     const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
       const dayAgoCount =
