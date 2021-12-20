@@ -9,4 +9,7 @@ export class ContractResponse {
 
   @ApiProperty()
   description: string;
+
+  @ApiProperty()
+  conversionFactor: number;
 }

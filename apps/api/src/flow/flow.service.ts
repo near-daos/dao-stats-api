@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 import {
+  Contract,
   DaoContractContext,
   LeaderboardMetric,
   MetricQuery,
@@ -12,7 +13,7 @@ import { TransferType } from 'libs/receipt/src/types/transfer-type';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
 import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
-import { getDailyIntervals, getGrowth, yoctoToNear } from '../utils';
+import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class FlowService {
@@ -23,6 +24,10 @@ export class FlowService {
 
   async totals(context: DaoContractContext): Promise<FlowTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
+
+    const { conversionFactor } = await this.contractService.findById(
+      context.contract,
+    );
 
     const [
       txInCount,
@@ -90,11 +95,11 @@ export class FlowService {
 
     return {
       totalIn: {
-        count: yoctoToNear(totalIn.count || 0).toNumber(),
+        count: convertFunds(totalIn.count || 0, conversionFactor).toNumber(),
         growth: getGrowth(totalIn.count, dayAgoTotalIn.count),
       },
       totalOut: {
-        count: yoctoToNear(totalOut.count || 0).toNumber(),
+        count: convertFunds(totalOut.count || 0, conversionFactor).toNumber(),
         growth: getGrowth(totalOut.count, dayAgoTotalOut.count),
       },
       transactionsIn: {
@@ -113,6 +118,10 @@ export class FlowService {
     metricType: FlowMetricType,
     metricQuery?: MetricQuery,
   ): Promise<FlowMetricResponse> {
+    const { conversionFactor } = await this.contractService.findById(
+      context.contract,
+    );
+
     const [incoming, outgoing] = await Promise.all([
       this.receiptActionService.getHistory(
         context,
@@ -148,11 +157,11 @@ export class FlowService {
           timestamp: day,
           incoming:
             metricType == FlowMetricType.Fund
-              ? yoctoToNear(inc).toNumber()
+              ? convertFunds(inc, conversionFactor).toNumber()
               : inc,
           outgoing:
             metricType === FlowMetricType.Fund
-              ? yoctoToNear(out).toNumber()
+              ? convertFunds(out, conversionFactor).toNumber()
               : out,
         };
       }),
@@ -166,6 +175,8 @@ export class FlowService {
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
+
+    const contract = await this.contractService.findById(context.contract);
 
     const [
       byDaysIncoming,
@@ -236,6 +247,7 @@ export class FlowService {
         dayAgoIncoming,
         byDaysIncoming,
         days,
+        contract,
       ),
       outgoing: this.getLeaderboardMetrics(
         metricType,
@@ -243,6 +255,7 @@ export class FlowService {
         dayAgoOutgoing,
         byDaysOutgoing,
         days,
+        contract,
       ),
     };
   }
@@ -254,7 +267,10 @@ export class FlowService {
     dayAgoData,
     byDaysData,
     days: { start: number; end: number }[],
+    contract: Contract,
   ): LeaderboardMetric[] {
+    const { conversionFactor } = contract;
+
     return data.map(({ receiver_account_id: dao, count }) => {
       const dayAgoCount =
         dayAgoData.find(
@@ -266,7 +282,7 @@ export class FlowService {
         activity: {
           count:
             metricType === FlowMetricType.Fund
-              ? yoctoToNear(count).toNumber()
+              ? convertFunds(count, conversionFactor).toNumber()
               : count,
           growth: getGrowth(count, dayAgoCount),
         },
@@ -282,7 +298,7 @@ export class FlowService {
             timestamp,
             count:
               metricType === FlowMetricType.Fund
-                ? yoctoToNear(count).toNumber()
+                ? convertFunds(count, conversionFactor).toNumber()
                 : count,
           };
         }),

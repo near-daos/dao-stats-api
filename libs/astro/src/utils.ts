@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+
 import { Role, RoleKindGroup } from './types';
 
 export const btoaJSON = (b: string) => {
@@ -12,4 +14,8 @@ export const isRoleGroup = (role: Role) => {
 
 export const isRoleGroupCouncil = (role: Role) => {
   return isRoleGroup(role) && role.name.toLowerCase() === 'council';
+};
+
+export const yoctoToNear = (yocto: number | string): number => {
+  return new Decimal(yocto).div(1e24).toNumber();
 };

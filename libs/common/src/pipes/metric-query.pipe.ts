@@ -12,7 +12,7 @@ export class MetricQueryPipe implements PipeTransform {
     const { to } = query;
     let { from } = query;
     if (!from) {
-      const tx = await this.transactionService.getFirstTransaction('astro');
+      const tx = await this.transactionService.firstTransaction('astro');
 
       from = Math.floor(nanosToMillis(tx?.blockTimestamp));
     }

@@ -8,10 +8,6 @@ export const nanosToMillis = (nanos: bigint): number => {
   return Decimal.div(String(nanos), 1e6).toNumber();
 };
 
-export const yoctoToNear = (yocto: number | string): number => {
-  return new Decimal(yocto).div(1e24).toNumber();
-};
-
 export const findAllByKey = (obj: Record<string, any>, keyToFind: string) => {
   if (!obj) return null;
 
