@@ -41,6 +41,10 @@ export class AggregationService implements Aggregator {
     private readonly astroDaoService: AstroDaoService,
   ) {}
 
+  /**
+   * TODO remove transaction collection logic when all transaction queries are converted to dao stats.
+   * @deprecated
+   */
   async *aggregateTransactions(
     fromTimestamp?: bigint | null,
     toTimestamp?: bigint,
