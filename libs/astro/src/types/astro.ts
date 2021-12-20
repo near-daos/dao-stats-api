@@ -146,4 +146,4 @@ export interface Bounty {
   max_deadline: NearTime;
 }
 
-export type BountyResponse = Bounty[];
+export type BountiesResponse = Bounty[];

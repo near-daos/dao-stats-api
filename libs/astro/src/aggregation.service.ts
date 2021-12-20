@@ -16,10 +16,10 @@ import {
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { NearHelperService } from '@dao-stats/near-helper';
-import { AstroDaoService } from './astro-dao.service';
+import { AstroService } from './astro.service';
 import { isRoleGroup, isRoleGroupCouncil, yoctoToNear } from './utils';
 import {
-  BountyResponse,
+  BountiesResponse,
   Policy,
   ProposalKind,
   ProposalsResponse,
@@ -38,7 +38,7 @@ export class AggregationService implements Aggregator {
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearHelperService: NearHelperService,
-    private readonly astroDaoService: AstroDaoService,
+    private readonly astroService: AstroService,
   ) {}
 
   /**
@@ -121,7 +121,7 @@ export class AggregationService implements Aggregator {
 
     this.logger.log('Staring aggregating Astro metrics...');
 
-    const contracts = await this.astroDaoService.getContracts();
+    const contracts = await this.astroService.getDaoContracts();
 
     this.logger.log(`Received ${contracts.length} contract(s)`);
 
@@ -141,35 +141,17 @@ export class AggregationService implements Aggregator {
         })...`,
       );
 
-      const getProposals = async () => {
-        const lastProposalId = await contract.get_last_proposal_id();
-        const promises: Promise<ProposalsResponse>[] = [];
-        for (let i = 0; i <= lastProposalId; i += 200) {
-          promises.push(contract.get_proposals({ from_index: i, limit: 200 }));
-        }
-        return (await Promise.all(promises)).flat();
-      };
-
-      const getBounties = async () => {
-        const lastBountyId = await contract.get_last_bounty_id();
-        const promises: Promise<BountyResponse>[] = [];
-        for (let i = 0; i < lastBountyId; i += 200) {
-          promises.push(contract.get_bounties({ from_index: i, limit: 200 }));
-        }
-        return (await Promise.all(promises)).flat();
-      };
-
       let policy: Policy,
         proposals: ProposalsResponse,
-        bounties: BountyResponse,
+        bounties: BountiesResponse,
         fts: string[],
         nfts: string[];
 
       try {
         [policy, proposals, bounties, fts, nfts] = await Promise.all([
           contract.get_policy(),
-          getProposals(),
-          getBounties(),
+          contract.getProposalsChunked(),
+          contract.getBountiesChunked(),
           this.nearHelperService.getLikelyTokens(contract.contractId),
           this.nearHelperService.getLikelyNFTs(contract.contractId),
         ]);
