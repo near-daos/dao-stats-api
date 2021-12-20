@@ -151,6 +151,22 @@ export class GeneralController {
     description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
+  @Get('/:dao/activity')
+  async daoActivity(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.generalService.active(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/groups')
   async daoGroups(
     @Param() context: DaoContractContext,

@@ -13,12 +13,11 @@ import {
   TransactionDto,
   TransactionType,
   VoteType,
-  yoctoToNear,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { NearHelperService } from '@dao-stats/near-helper';
 import { AstroDaoService } from './astro-dao.service';
-import { isRoleGroup, isRoleGroupCouncil } from './utils';
+import { isRoleGroup, isRoleGroupCouncil, yoctoToNear } from './utils';
 import {
   BountyResponse,
   Policy,
