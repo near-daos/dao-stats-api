@@ -35,10 +35,10 @@ export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
 
   constructor(
+    private readonly astroService: AstroService,
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearHelperService: NearHelperService,
-    private readonly astroService: AstroService,
   ) {}
 
   /**
