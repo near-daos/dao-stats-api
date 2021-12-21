@@ -1,7 +1,15 @@
 import { Account, Contract } from 'near-api-js';
+import { ContractMethods } from 'near-api-js/lib/contract';
 import { TokenFactoryContractInterface } from '../interfaces';
 
-const Base: { new (...args): TokenFactoryContractInterface } = Contract as any;
+// enable typings for dynamic methods
+const Base: {
+  new (
+    account: Account,
+    contractId: string,
+    options: ContractMethods,
+  ): TokenFactoryContractInterface;
+} = Contract as any;
 
 export class TokenFactoryContract extends Base {
   constructor(account: Account, contractId: string) {

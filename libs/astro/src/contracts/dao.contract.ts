@@ -1,8 +1,16 @@
 import { Account, Contract } from 'near-api-js';
+import { ContractMethods } from 'near-api-js/lib/contract';
 import { BountiesResponse, ProposalsResponse } from '../types';
 import { DaoContractInterface } from '../interfaces';
 
-const Base: { new (...args): DaoContractInterface } = Contract as any;
+// enable typings for dynamic methods
+const Base: {
+  new (
+    account: Account,
+    contractId: string,
+    options: ContractMethods,
+  ): DaoContractInterface;
+} = Contract as any;
 
 export class DaoContract extends Base {
   constructor(account: Account, contractId: string) {
