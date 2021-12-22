@@ -6,6 +6,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import {
   Aggregator,
+  DaoDto,
   DaoStatsDto,
   findAllByKey,
   millisToNanos,
@@ -106,7 +107,16 @@ export class AggregationService implements Aggregator {
       : null;
   }
 
-  async *aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto[]> {
+  async getDaos(contractId: string): Promise<DaoDto[]> {
+    const factoryContract = await this.astroService.getDaoFactoryContract();
+    const daos = await factoryContract.getDaoList();
+    return daos.map((dao) => ({
+      dao,
+      contractId,
+    }));
+  }
+
+  async *aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto> {
     const { contractName } = this.configService.get('dao');
 
     this.logger.log('Staring aggregating Astro metrics...');
@@ -124,19 +134,15 @@ export class AggregationService implements Aggregator {
         `Aggregated DAO Factory (${contractName}) metric (${type}): ${value}`,
       );
 
-      yield [
-        {
-          contractId,
-          dao: contractName, // TODO: make optional
-          metric: type,
-          value,
-        },
-      ];
+      yield {
+        contractId,
+        dao: contractName, // TODO: make optional
+        metric: type,
+        value,
+      };
     }
 
     const daoContracts = await this.astroService.getDaoContracts();
-
-    this.logger.log(`Received ${daoContracts.length} contract(s)`);
 
     for (const [i, daoContract] of daoContracts.entries()) {
       for (const metricClass of DAO_METRICS) {
@@ -152,14 +158,12 @@ export class AggregationService implements Aggregator {
           }) metric (${type}): ${value}`,
         );
 
-        yield [
-          {
-            contractId,
-            dao: contractName,
-            metric: type,
-            value,
-          },
-        ];
+        yield {
+          contractId,
+          dao: contractName,
+          metric: type,
+          value,
+        };
       }
     }
 

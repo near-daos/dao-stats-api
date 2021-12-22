@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import PromisePool from '@supercharge/promise-pool';
 import {
   Aggregator,
   DaoService,
@@ -97,27 +96,17 @@ export class AggregatorService {
         this.logger.log(`Stored ${transactions.length} transaction(s)`);
       }
 
-      for await (const metrics of aggregationService.aggregateMetrics(
+      const daos = await aggregationService.getDaos(contractId);
+
+      await this.daoService.create(daos);
+
+      this.logger.log(`Stored ${daos.length} DAO(s)`);
+
+      for await (const metric of aggregationService.aggregateMetrics(
         contractId,
       )) {
-        await this.daoService.create([
-          {
-            dao: metrics[0].dao,
-            contractId,
-          },
-        ]);
-
-        await PromisePool.withConcurrency(500)
-          .for(metrics)
-          .handleError((error) => {
-            throw error;
-          })
-          .process(async (metric) => {
-            await this.daoStatsService.createOrUpdate(metric);
-            await this.daoStatsHistoryService.createOrUpdate(metric);
-          });
-
-        this.logger.log(`Stored ${metrics.length} metric(s)`);
+        await this.daoStatsService.createOrUpdate(metric);
+        await this.daoStatsHistoryService.createOrUpdate(metric);
       }
     }
 
