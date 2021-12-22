@@ -1,5 +1,6 @@
 import { Account, Contract } from 'near-api-js';
 import { ContractMethods } from 'near-api-js/lib/contract';
+import { Cacheable } from '@type-cacheable/core';
 import { DaoFactoryContractInterface } from '../interfaces';
 
 // enable typings for dynamic methods
@@ -19,6 +20,9 @@ export class DaoFactoryContract extends Base {
     });
   }
 
+  @Cacheable({
+    cacheKey: (args, context) => `daos:${context.account.accountId}`,
+  })
   async getDaoList(): Promise<string[]> {
     try {
       return this.get_dao_list();

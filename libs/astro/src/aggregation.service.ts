@@ -15,7 +15,6 @@ import {
   VoteType,
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
-import { NearHelperService } from '@dao-stats/near-helper';
 import { AstroService } from './astro.service';
 import { DAO_METRICS, FACTORY_METRICS } from './metrics';
 
@@ -30,7 +29,6 @@ export class AggregationService implements Aggregator {
     private readonly astroService: AstroService,
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
-    private readonly nearHelperService: NearHelperService,
   ) {}
 
   /**

@@ -1,5 +1,6 @@
 import { Account, Contract } from 'near-api-js';
 import { ContractMethods } from 'near-api-js/lib/contract';
+import { Cacheable } from '@type-cacheable/core';
 import {
   BountiesResponse,
   Policy,
@@ -46,11 +47,17 @@ export class DaoContract extends Base {
     return this.get_policy();
   }
 
+  @Cacheable({
+    cacheKey: (args, context) => `groups:${context.account.accountId}`,
+  })
   async getGroups(): Promise<Role[]> {
-    const policy = await this.get_policy(); // TODO: add caching
+    const policy = await this.get_policy();
     return policy.roles.filter(isRoleGroup);
   }
 
+  @Cacheable({
+    cacheKey: (args, context) => `proposals:${context.account.accountId}`,
+  })
   async getProposals(chunkSize = 200): Promise<ProposalsResponse> {
     const lastProposalId = await this.get_last_proposal_id();
     const promises: Promise<ProposalsResponse>[] = [];
@@ -60,6 +67,9 @@ export class DaoContract extends Base {
     return (await Promise.all(promises)).flat();
   }
 
+  @Cacheable({
+    cacheKey: (args, context) => `bounties:${context.account.accountId}`,
+  })
   async getBounties(chunkSize = 200): Promise<BountiesResponse> {
     const lastBountyId = await this.get_last_bounty_id();
     const promises: Promise<BountiesResponse>[] = [];
