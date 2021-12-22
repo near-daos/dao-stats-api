@@ -48,6 +48,7 @@ export class DaoContract extends Base {
   }
 
   @Cacheable({
+    ttlSeconds: 300,
     cacheKey: (args, context) => `groups:${context.account.accountId}`,
   })
   async getGroups(): Promise<Role[]> {
@@ -56,6 +57,7 @@ export class DaoContract extends Base {
   }
 
   @Cacheable({
+    ttlSeconds: 300,
     cacheKey: (args, context) => `proposals:${context.account.accountId}`,
   })
   async getProposals(chunkSize = 200): Promise<ProposalsResponse> {
@@ -68,6 +70,7 @@ export class DaoContract extends Base {
   }
 
   @Cacheable({
+    ttlSeconds: 300,
     cacheKey: (args, context) => `bounties:${context.account.accountId}`,
   })
   async getBounties(chunkSize = 200): Promise<BountiesResponse> {

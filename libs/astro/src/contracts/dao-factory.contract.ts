@@ -21,6 +21,7 @@ export class DaoFactoryContract extends Base {
   }
 
   @Cacheable({
+    ttlSeconds: 300,
     cacheKey: (args, context) => `daos:${context.account.accountId}`,
   })
   async getDaoList(): Promise<string[]> {
