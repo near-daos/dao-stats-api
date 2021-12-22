@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class DaoResponse {
+export class DaoDto {
   @ApiProperty()
   dao: string;
 
   @ApiProperty()
-  description: string;
+  contractId: string;
 
   @ApiProperty()
-  metadata: Record<string, any>;
+  description?: string | null;
+
+  @ApiProperty()
+  metadata?: Record<string, any> | null;
 }

@@ -1066,6 +1066,18 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
+"@type-cacheable/core@^10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@type-cacheable/core/-/core-10.0.2.tgz#f3eca3584c3ac6a0f62a3779207ac4dfd439a2f2"
+  integrity sha512-Gaq9SqCbnMbeX2AJHMwRK0hYtpLQ0cXxxALl0dOfs0xUO7RFy4lTk0wejO9NzPirrQyMPD9JrfG4DG0UvY3yoQ==
+  dependencies:
+    serialize-javascript "^6.0.0"
+
+"@type-cacheable/lru-cache-adapter@^10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@type-cacheable/lru-cache-adapter/-/lru-cache-adapter-10.0.2.tgz#e31a14410d7c28f0f6a304b2c02c3aaec80f8a63"
+  integrity sha512-VUyZl5caXwKKozn4cyssu6hrxSToSmHBjjuzK4fKYDzlKDzmGC/tB9ld5qqEFI2AtNws6xjvgAIzCUbsvEbHsQ==
+
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.16"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.16.tgz#bc12c74b7d65e82d29876b5d0baf5c625ac58702"
