@@ -1,6 +1,6 @@
 import { Near } from 'near-api-js';
 import { ConfigService } from '@nestjs/config';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { NEAR_PROVIDER } from '@dao-stats/near';
 import {
@@ -11,8 +11,6 @@ import {
 
 @Injectable()
 export class AstroService {
-  private readonly logger = new Logger(AstroService.name);
-
   constructor(
     private readonly config: ConfigService,
     @Inject(NEAR_PROVIDER)
@@ -38,12 +36,7 @@ export class AstroService {
 
   async getDaoContracts(): Promise<DaoContract[]> {
     const factoryContract = await this.getDaoFactoryContract();
-    let daos;
-    try {
-      daos = await factoryContract.get_dao_list();
-    } catch (err) {
-      daos = await factoryContract.getDaoListChunked();
-    }
+    const daos = await factoryContract.getDaoList();
     return Promise.all(daos.map((dao) => this.getDaoContract(dao)));
   }
 }

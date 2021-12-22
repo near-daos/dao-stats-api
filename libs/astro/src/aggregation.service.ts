@@ -1,12 +1,12 @@
 import moment from 'moment';
 import Decimal from 'decimal.js';
+import { ModuleRef } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
 
 import {
   Aggregator,
   DaoStatsDto,
-  DaoStatsMetric,
   findAllByKey,
   millisToNanos,
   nanosToMillis,
@@ -17,16 +17,7 @@ import {
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { NearHelperService } from '@dao-stats/near-helper';
 import { AstroService } from './astro.service';
-import { isRoleGroup, isRoleGroupCouncil, yoctoToNear } from './utils';
-import {
-  BountiesResponse,
-  Policy,
-  ProposalKind,
-  ProposalsResponse,
-  ProposalStatus,
-  Role,
-  RoleKindGroup,
-} from './types';
+import { DAO_METRICS, FACTORY_METRICS } from './metrics';
 
 const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
 
@@ -35,6 +26,7 @@ export class AggregationService implements Aggregator {
   private readonly logger = new Logger(AggregationService.name);
 
   constructor(
+    private readonly moduleRef: ModuleRef,
     private readonly astroService: AstroService,
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
@@ -121,206 +113,53 @@ export class AggregationService implements Aggregator {
 
     this.logger.log('Staring aggregating Astro metrics...');
 
-    const contracts = await this.astroService.getDaoContracts();
+    const factoryContract = await this.astroService.getDaoFactoryContract();
 
-    this.logger.log(`Received ${contracts.length} contract(s)`);
+    for (const metricClass of FACTORY_METRICS) {
+      const metric = await this.moduleRef.create(metricClass);
+      const type = metric.getType();
+      const value = await metric.getCurrentValue({
+        contract: factoryContract,
+      });
 
-    yield [
-      {
-        contractId,
-        dao: contractName,
-        metric: DaoStatsMetric.DaoCount,
-        value: contracts.length,
-      },
-    ];
-
-    for (const [i, contract] of contracts.entries()) {
       this.logger.log(
-        `Querying data for contract ${contract.contractId} (${i + 1}/${
-          contracts.length
-        })...`,
+        `Aggregated DAO Factory (${contractName}) metric (${type}): ${value}`,
       );
 
-      let policy: Policy,
-        proposals: ProposalsResponse,
-        bounties: BountiesResponse,
-        fts: string[],
-        nfts: string[];
+      yield [
+        {
+          contractId,
+          dao: contractName, // TODO: make optional
+          metric: type,
+          value,
+        },
+      ];
+    }
 
-      try {
-        [policy, proposals, bounties, fts, nfts] = await Promise.all([
-          contract.get_policy(),
-          contract.getProposalsChunked(),
-          contract.getBountiesChunked(),
-          this.nearHelperService.getLikelyTokens(contract.contractId),
-          this.nearHelperService.getLikelyNFTs(contract.contractId),
-        ]);
-      } catch (err) {
-        this.logger.error(err);
-      }
+    const daoContracts = await this.astroService.getDaoContracts();
 
-      const common = {
-        contractId,
-        dao: contract.contractId,
-      };
+    this.logger.log(`Received ${daoContracts.length} contract(s)`);
 
-      if (policy) {
-        const council = policy.roles.find(isRoleGroupCouncil) as
-          | Role<RoleKindGroup>
-          | undefined;
-        const councilSize = council ? council.kind.Group.length : 0;
-        const groups = policy.roles.filter(isRoleGroup);
-        const members = [
-          ...new Set(
-            groups.map((group: Role<RoleKindGroup>) => group.kind.Group).flat(),
-          ),
-        ];
-
-        yield [
-          {
-            ...common,
-            metric: DaoStatsMetric.CouncilSize,
-            value: councilSize,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.MembersCount,
-            value: members.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.GroupsCount,
-            value: groups.length,
-          },
-        ];
-      }
-
-      if (proposals) {
-        const proposalsPayouts = proposals.filter(
-          (prop) => prop.kind[ProposalKind.Transfer],
-        );
-        const proposalsBounties = proposals.filter(
-          (prop) =>
-            prop.kind[ProposalKind.AddBounty] ||
-            prop.kind[ProposalKind.BountyDone],
-        );
-        const proposalsMembers = proposals.filter(
-          (prop) =>
-            prop.kind[ProposalKind.AddMemberToRole] ||
-            prop.kind[ProposalKind.RemoveMemberFromRole],
-        );
-        const proposalsCouncilMembers = proposals.filter((prop) => {
-          const kind =
-            prop.kind[ProposalKind.AddMemberToRole] ||
-            prop.kind[ProposalKind.RemoveMemberFromRole];
-          return kind ? kind.role.toLowerCase() === 'council' : false;
+    for (const [i, daoContract] of daoContracts.entries()) {
+      for (const metricClass of DAO_METRICS) {
+        const metric = await this.moduleRef.create(metricClass);
+        const type = metric.getType();
+        const value = await metric.getCurrentValue({
+          contract: daoContract,
         });
-        const proposalsPolicyChanges = proposals.filter(
-          ({ kind }) => kind[ProposalKind.ChangePolicy],
-        );
-        const proposalsInProgress = proposals.filter(
-          ({ status }) => status === ProposalStatus.InProgress,
-        );
-        const proposalsApproved = proposals.filter(
-          ({ status }) => status === ProposalStatus.Approved,
-        );
-        const proposalsRejected = proposals.filter(
-          ({ status }) => status === ProposalStatus.Rejected,
-        );
-        const proposalsExpired = proposals.filter(
-          ({ status }) => status === ProposalStatus.Expired,
+
+        this.logger.log(
+          `Aggregated (${i + 1}/${daoContracts.length}) DAO (${
+            daoContract.contractId
+          }) metric (${type}): ${value}`,
         );
 
         yield [
           {
-            ...common,
-            metric: DaoStatsMetric.ProposalsCount,
-            value: proposals.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsPayoutCount,
-            value: proposalsPayouts.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsCouncilMemberCount,
-            value: proposalsCouncilMembers.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsPolicyChangeCount,
-            value: proposalsPolicyChanges.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsInProgressCount,
-            value: proposalsInProgress.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsApprovedCount,
-            value: proposalsApproved.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsRejectedCount,
-            value: proposalsRejected.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsExpiredCount,
-            value: proposalsExpired.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsBountyCount,
-            value: proposalsBounties.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.ProposalsMemberCount,
-            value: proposalsMembers.length,
-          },
-        ];
-      }
-
-      if (bounties) {
-        yield [
-          {
-            ...common,
-            metric: DaoStatsMetric.BountiesCount,
-            value: bounties.length,
-          },
-          {
-            ...common,
-            metric: DaoStatsMetric.BountiesValueLocked,
-            value: bounties.reduce(
-              (acc, bounty) =>
-                // TODO confirm bounty VL formula
-                acc + yoctoToNear(bounty.amount) * bounty.times,
-              0,
-            ),
-          },
-        ];
-      }
-
-      if (fts) {
-        yield [
-          {
-            ...common,
-            metric: DaoStatsMetric.FtsCount,
-            value: fts.length,
-          },
-        ];
-      }
-
-      if (nfts) {
-        yield [
-          {
-            ...common,
-            metric: DaoStatsMetric.NftsCount,
-            value: nfts.length,
+            contractId,
+            dao: contractName,
+            metric: type,
+            value,
           },
         ];
       }

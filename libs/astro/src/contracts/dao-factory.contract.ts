@@ -19,7 +19,15 @@ export class DaoFactoryContract extends Base {
     });
   }
 
-  async getDaoListChunked(chunkSize = 200): Promise<string[]> {
+  async getDaoList(): Promise<string[]> {
+    try {
+      return this.get_dao_list();
+    } catch (err) {
+      return this.getDaos();
+    }
+  }
+
+  async getDaos(chunkSize = 200): Promise<string[]> {
     const lastProposalId = await this.get_number_daos();
     const promises: Promise<string[]>[] = [];
     for (let i = 0; i <= lastProposalId; i += chunkSize) {
