@@ -49,7 +49,7 @@ export class DaoContract extends Base {
 
   @Cacheable({
     ttlSeconds: 300,
-    cacheKey: (args, context) => `groups:${context.account.accountId}`,
+    cacheKey: (args, context) => `groups:${context.contractId}`,
   })
   async getGroups(): Promise<Role[]> {
     const policy = await this.get_policy();
@@ -58,7 +58,7 @@ export class DaoContract extends Base {
 
   @Cacheable({
     ttlSeconds: 300,
-    cacheKey: (args, context) => `proposals:${context.account.accountId}`,
+    cacheKey: (args, context) => `proposals:${context.contractId}`,
   })
   async getProposals(chunkSize = 200): Promise<ProposalsResponse> {
     const lastProposalId = await this.get_last_proposal_id();
@@ -71,7 +71,7 @@ export class DaoContract extends Base {
 
   @Cacheable({
     ttlSeconds: 300,
-    cacheKey: (args, context) => `bounties:${context.account.accountId}`,
+    cacheKey: (args, context) => `bounties:${context.contractId}`,
   })
   async getBounties(chunkSize = 200): Promise<BountiesResponse> {
     const lastBountyId = await this.get_last_bounty_id();
@@ -83,12 +83,12 @@ export class DaoContract extends Base {
   }
 
   async getProposalsByStatus(status: ProposalStatus): Promise<Proposal[]> {
-    const proposals = await this.getProposals(); // TODO: add caching
+    const proposals = await this.getProposals();
     return proposals.filter((prop) => prop.status === status);
   }
 
   async getProposalsByKinds(kinds: ProposalKind[]): Promise<Proposal[]> {
-    const proposals = await this.getProposals(); // TODO: add caching
+    const proposals = await this.getProposals();
     return proposals.filter((prop) =>
       (Object.keys(prop.kind) as ProposalKind[]).some((kind) =>
         kinds.includes(kind),
