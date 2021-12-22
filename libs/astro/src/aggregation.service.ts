@@ -126,9 +126,18 @@ export class AggregationService implements Aggregator {
     for (const metricClass of FACTORY_METRICS) {
       const metric = await this.moduleRef.create(metricClass);
       const type = metric.getType();
-      const value = await metric.getCurrentValue({
-        contract: factoryContract,
-      });
+      let value;
+
+      try {
+        value = await metric.getCurrentValue({
+          contract: factoryContract,
+        });
+      } catch (err) {
+        this.logger.error(
+          `Aggregation error for DAO factory "${contractName}", metric "${type}": ${err}`,
+        );
+        continue;
+      }
 
       this.logger.log(
         `Aggregated DAO Factory (${contractName}) metric (${type}): ${value}`,
@@ -148,9 +157,18 @@ export class AggregationService implements Aggregator {
       for (const metricClass of DAO_METRICS) {
         const metric = await this.moduleRef.create(metricClass);
         const type = metric.getType();
-        const value = await metric.getCurrentValue({
-          contract: daoContract,
-        });
+        let value;
+
+        try {
+          value = await metric.getCurrentValue({
+            contract: daoContract,
+          });
+        } catch (err) {
+          this.logger.error(
+            `Aggregation error for contract "${daoContract.contractId}", metric "${type}": ${err}`,
+          );
+          continue;
+        }
 
         this.logger.log(
           `Aggregated (${i + 1}/${daoContracts.length}) DAO (${
