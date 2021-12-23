@@ -26,7 +26,7 @@ export class UsersController {
   })
   @Get('/')
   async totals(@Param() context: ContractContext): Promise<UsersTotalResponse> {
-    return this.usersService.totals();
+    return this.usersService.totals(context);
   }
 
   @ApiResponse({
@@ -41,7 +41,7 @@ export class UsersController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.users(metricQuery);
+    return this.usersService.users(context, metricQuery);
   }
 
   @ApiResponse({
@@ -55,7 +55,7 @@ export class UsersController {
   async usersLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.usersLeaderboard();
+    return this.usersService.usersLeaderboard(context);
   }
 
   @ApiResponse({
@@ -70,7 +70,7 @@ export class UsersController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.members(metricQuery);
+    return this.usersService.members(context, metricQuery);
   }
 
   @ApiResponse({
@@ -84,7 +84,7 @@ export class UsersController {
   async membersLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.membersLeaderboard();
+    return this.usersService.membersLeaderboard(context);
   }
 
   @ApiResponse({
@@ -99,7 +99,7 @@ export class UsersController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.averageUsers(metricQuery);
+    return this.usersService.averageUsers(context, metricQuery);
   }
 
   @ApiResponse({
@@ -114,7 +114,7 @@ export class UsersController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.interactions(metricQuery);
+    return this.usersService.interactions(context, metricQuery);
   }
 
   @ApiResponse({
@@ -128,7 +128,7 @@ export class UsersController {
   async interactionsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.usersService.interactionsLeaderboard();
+    return this.usersService.interactionsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -143,7 +143,7 @@ export class UsersController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.averageInteractions(metricQuery);
+    return this.usersService.averageInteractions(context, metricQuery);
   }
 
   @ApiResponse({
@@ -157,7 +157,7 @@ export class UsersController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<UsersTotalResponse> {
-    return this.usersService.totals();
+    return this.usersService.totals(context);
   }
 
   @ApiResponse({
@@ -172,7 +172,7 @@ export class UsersController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.users(metricQuery);
+    return this.usersService.users(context, metricQuery);
   }
 
   @ApiResponse({
@@ -187,7 +187,7 @@ export class UsersController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.members(metricQuery);
+    return this.usersService.members(context, metricQuery);
   }
 
   @ApiResponse({
@@ -202,6 +202,6 @@ export class UsersController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.usersService.interactions(metricQuery);
+    return this.usersService.interactions(context, metricQuery);
   }
 }

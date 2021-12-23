@@ -3,6 +3,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
+  ContractContext,
+  DaoContractContext,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -20,21 +22,21 @@ import {
   patchMetricDays,
 } from '../utils';
 import { DailyMetric } from '@dao-stats/common/dto/daily-metric.dto';
-import { ContractContextService } from '../context/contract-context.service';
 
 @Injectable()
-export class UsersService extends ContractContextService {
+export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   constructor(
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
-  ) {
-    super();
-  }
+  ) {}
 
-  async totals(): Promise<UsersTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<UsersTotalResponse> {
+    const { contractId: contract, dao } = context as DaoContractContext;
     const dayAgo = moment().subtract(1, 'days');
 
     const [
@@ -49,24 +51,30 @@ export class UsersService extends ContractContextService {
       membersCount,
       dayAgoMembersCount,
     ] = await Promise.all([
-      this.transactionService.getUsersTotalCount(),
-      this.transactionService.getUsersTotalCount({
+      this.transactionService.getUsersTotalCount(context),
+      this.transactionService.getUsersTotalCount(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getDaoUsers(),
-      this.transactionService.getDaoUsers({
+      this.transactionService.getDaoUsers(context),
+      this.transactionService.getDaoUsers(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getInteractionsCount(),
-      this.transactionService.getInteractionsCount({
+      this.transactionService.getInteractionsCount(context),
+      this.transactionService.getInteractionsCount(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getDaoInteractions(),
-      this.transactionService.getDaoInteractions({
+      this.transactionService.getDaoInteractions(context),
+      this.transactionService.getDaoInteractions(context, {
         to: dayAgo.valueOf(),
       }),
-      this.daoStatsService.getValue({ metric: DaoStatsMetric.MembersCount }),
+      this.daoStatsService.getValue({
+        contract,
+        dao,
+        metric: DaoStatsMetric.MembersCount,
+      }),
       this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
         metric: DaoStatsMetric.MembersCount,
         to: dayAgo.valueOf(),
       }),
@@ -108,13 +116,16 @@ export class UsersService extends ContractContextService {
     };
   }
 
-  async users(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async users(
+    context: DaoContractContext | ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
     // TODO: optimize day-by-day querying
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
       .for(getDailyIntervals(from, to || moment().valueOf()))
       .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getUsersTotalCount({
+        const qr = await this.transactionService.getUsersTotalCount(context, {
           to: end,
         });
 
@@ -128,14 +139,16 @@ export class UsersService extends ContractContextService {
     return this.combineDailyMetrics(byDays);
   }
 
-  async usersLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async usersLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
       .for(days)
       .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getDaoUsers({
+        const qr = await this.transactionService.getDaoUsers(context, {
           to: end,
         });
 
@@ -148,10 +161,10 @@ export class UsersService extends ContractContextService {
 
     const dayAgo = moment().subtract(1, 'days');
     const [dayAgoActivity, totalActivity] = await Promise.all([
-      this.transactionService.getDaoUsers({
+      this.transactionService.getDaoUsers(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getDaoUsers({
+      this.transactionService.getDaoUsers(context, {
         to: moment().valueOf(),
       }),
     ]);
@@ -185,10 +198,17 @@ export class UsersService extends ContractContextService {
     return { metrics };
   }
 
-  async members(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async members(
+    contractContext: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contractId: contract, dao } = contractContext as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.MembersCount,
       from,
       to,
@@ -206,11 +226,16 @@ export class UsersService extends ContractContextService {
     };
   }
 
-  async membersLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async membersLeaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId: contract } = contractContext;
+
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.MembersCount,
     });
 
@@ -218,11 +243,15 @@ export class UsersService extends ContractContextService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
+            contract,
+
             dao,
             metric: DaoStatsMetric.MembersCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
+            contract,
+
             dao,
             metric: DaoStatsMetric.MembersCount,
             from: weekAgo.valueOf(),
@@ -246,7 +275,10 @@ export class UsersService extends ContractContextService {
     return { metrics };
   }
 
-  async averageUsers(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async averageUsers(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
 
     const days = getDailyIntervals(from, to || moment().valueOf());
@@ -256,7 +288,7 @@ export class UsersService extends ContractContextService {
       .for(days)
       .handleError((e) => this.logger.error(e))
       .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getDaoUsers({
+        const qr = await this.transactionService.getDaoUsers(context, {
           to: end,
         });
 
@@ -266,11 +298,16 @@ export class UsersService extends ContractContextService {
     return this.combineDailyMetrics(byDays);
   }
 
-  async councilLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async councilLeaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId: contract } = contractContext;
+
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.CouncilSize,
       func: 'AVG',
     });
@@ -279,12 +316,14 @@ export class UsersService extends ContractContextService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
+            contract,
             dao,
             metric: DaoStatsMetric.CouncilSize,
             func: 'AVG',
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
+            contract,
             dao,
             metric: DaoStatsMetric.CouncilSize,
             func: 'AVG',
@@ -309,8 +348,12 @@ export class UsersService extends ContractContextService {
     return { metrics };
   }
 
-  async interactions(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async interactions(
+    context: DaoContractContext | ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
     const metrics = await this.transactionService.getInteractionsCountDaily(
+      context,
       metricQuery,
     );
 
@@ -326,23 +369,26 @@ export class UsersService extends ContractContextService {
     };
   }
 
-  async interactionsLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async interactionsLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
 
     const [byDays, dayAgoActivity, totalActivity] = await Promise.all([
       this.transactionService.getActivityLeaderboard(
+        context,
         {
           from: weekAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,
       ),
-      this.transactionService.getActivityLeaderboard({
+      this.transactionService.getActivityLeaderboard(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getActivityLeaderboard({
+      this.transactionService.getActivityLeaderboard(context, {
         to: moment().valueOf(),
       }),
     ]);
@@ -374,7 +420,10 @@ export class UsersService extends ContractContextService {
     return { metrics };
   }
 
-  async averageInteractions(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async averageInteractions(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
 
     // TODO: optimize day-by-day querying
@@ -382,7 +431,7 @@ export class UsersService extends ContractContextService {
       .for(getDailyIntervals(from, to || moment().valueOf()))
       .handleError((e) => this.logger.error(e))
       .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getDaoInteractions({
+        const qr = await this.transactionService.getDaoInteractions(context, {
           to: end,
         });
 

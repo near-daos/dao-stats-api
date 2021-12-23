@@ -28,7 +28,7 @@ export class GeneralController {
   async totals(
     @Param() context: ContractContext,
   ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals();
+    return this.generalService.totals(context);
   }
 
   @ApiResponse({
@@ -43,7 +43,7 @@ export class GeneralController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.daos(metricQuery);
+    return this.generalService.daos(context, metricQuery);
   }
 
   @ApiResponse({
@@ -58,7 +58,7 @@ export class GeneralController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.active(metricQuery);
+    return this.generalService.active(context, metricQuery);
   }
 
   @ApiResponse({
@@ -72,7 +72,7 @@ export class GeneralController {
   async activeLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.activeLeaderboard();
+    return this.generalService.activeLeaderboard(context);
   }
 
   @ApiResponse({
@@ -87,7 +87,7 @@ export class GeneralController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.groups(metricQuery);
+    return this.generalService.groups(context, metricQuery);
   }
 
   @ApiResponse({
@@ -101,7 +101,7 @@ export class GeneralController {
   async groupsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.groupsLeaderboard();
+    return this.generalService.groupsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -116,7 +116,7 @@ export class GeneralController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.averageGroups(metricQuery);
+    return this.generalService.averageGroups(context, metricQuery);
   }
 
   @ApiResponse({
@@ -130,7 +130,7 @@ export class GeneralController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals();
+    return this.generalService.totals(context);
   }
 
   @ApiResponse({
@@ -145,7 +145,7 @@ export class GeneralController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.active(metricQuery);
+    return this.generalService.active(context, metricQuery);
   }
 
   @ApiResponse({
@@ -160,6 +160,6 @@ export class GeneralController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.groups(metricQuery);
+    return this.generalService.groups(context, metricQuery);
   }
 }

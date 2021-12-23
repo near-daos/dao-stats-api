@@ -32,7 +32,7 @@ export class GovernanceController {
   async totals(
     @Param() context: ContractContext,
   ): Promise<GovernanceTotalResponse> {
-    return this.governanceService.totals();
+    return this.governanceService.totals(context);
   }
 
   @ApiResponse({
@@ -47,7 +47,7 @@ export class GovernanceController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.proposals(metricQuery);
+    return this.governanceService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -61,7 +61,7 @@ export class GovernanceController {
   async proposalsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.governanceService.proposalsLeaderboard();
+    return this.governanceService.proposalsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -76,7 +76,7 @@ export class GovernanceController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.governanceService.proposalsTypes(metricQuery);
+    return this.governanceService.proposalsTypes(context, metricQuery);
   }
 
   @ApiResponse({
@@ -90,7 +90,7 @@ export class GovernanceController {
   async proposalsTypesLeaderboard(
     @Param() context: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
-    return this.governanceService.proposalsTypesLeaderboard();
+    return this.governanceService.proposalsTypesLeaderboard(context);
   }
 
   @ApiResponse({
@@ -105,7 +105,7 @@ export class GovernanceController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.voteRate(metricQuery);
+    return this.governanceService.voteRate(context, metricQuery);
   }
 
   @ApiResponse({
@@ -119,7 +119,7 @@ export class GovernanceController {
   async rateLeaderboard(
     @Param() context: ContractContext,
   ): Promise<VoteRateLeaderboardResponse> {
-    return this.governanceService.voteRateLeaderboard();
+    return this.governanceService.voteRateLeaderboard(context);
   }
 
   @ApiResponse({
@@ -133,7 +133,7 @@ export class GovernanceController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<GovernanceTotalResponse> {
-    return this.governanceService.totals();
+    return this.governanceService.totals(context);
   }
 
   @ApiResponse({
@@ -148,7 +148,7 @@ export class GovernanceController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.proposals(metricQuery);
+    return this.governanceService.proposals(context, metricQuery);
   }
 
   @ApiResponse({
@@ -163,7 +163,7 @@ export class GovernanceController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    return this.governanceService.proposalsTypes(metricQuery);
+    return this.governanceService.proposalsTypes(context, metricQuery);
   }
 
   @ApiResponse({
@@ -178,6 +178,6 @@ export class GovernanceController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.governanceService.voteRate(metricQuery);
+    return this.governanceService.voteRate(context, metricQuery);
   }
 }

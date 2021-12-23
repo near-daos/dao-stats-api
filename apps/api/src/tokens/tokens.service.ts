@@ -2,6 +2,8 @@ import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 
 import {
+  ContractContext,
+  DaoContractContext,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -19,22 +21,34 @@ export class TokensService {
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {}
 
-  async totals(): Promise<TokensTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<TokensTotalResponse> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const dayAgo = moment().subtract(1, 'day');
 
     const [ftsCount, ftsCountPrev, nftsCount, nftsCountPrev] =
       await Promise.all([
         this.daoStatsService.getValue({
+          contract,
+          dao,
           metric: DaoStatsMetric.FtsCount,
         }),
         this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
           metric: DaoStatsMetric.FtsCount,
           to: dayAgo.valueOf(),
         }),
         this.daoStatsService.getValue({
+          contract,
+          dao,
           metric: DaoStatsMetric.NftsCount,
         }),
         this.daoStatsHistoryService.getValue({
+          contract,
+          dao,
           metric: DaoStatsMetric.NftsCount,
           to: dayAgo.valueOf(),
         }),
@@ -52,10 +66,17 @@ export class TokensService {
     };
   }
 
-  async fts(metricQuery: MetricQuery): Promise<any> {
+  async fts(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.FtsCount,
       from,
       to,
@@ -73,10 +94,17 @@ export class TokensService {
     };
   }
 
-  async nfts(metricQuery: MetricQuery): Promise<any> {
+  async nfts(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.NftsCount,
       from,
       to,
@@ -94,8 +122,13 @@ export class TokensService {
     };
   }
 
-  async ftsLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async ftsLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId: contract } = context;
+
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.FtsCount,
     });
 
@@ -106,11 +139,13 @@ export class TokensService {
       leaderboard.map(async ({ dao, value }) => {
         const [countPrev, countHistory] = await Promise.all([
           this.daoStatsHistoryService.getValue({
+            contract,
             dao,
             metric: DaoStatsMetric.FtsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
+            contract,
             dao,
             metric: DaoStatsMetric.FtsCount,
             from: weekAgo.valueOf(),
@@ -134,8 +169,13 @@ export class TokensService {
     return { metrics };
   }
 
-  async nftsLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async nftsLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId: contract } = context;
+
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.NftsCount,
     });
 
@@ -146,11 +186,13 @@ export class TokensService {
       leaderboard.map(async ({ dao, value }) => {
         const [countPrev, countHistory] = await Promise.all([
           this.daoStatsHistoryService.getValue({
+            contract,
             dao,
             metric: DaoStatsMetric.NftsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
+            contract,
             dao,
             metric: DaoStatsMetric.NftsCount,
             from: weekAgo.valueOf(),

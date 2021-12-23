@@ -27,7 +27,7 @@ export class TvlController {
   })
   @Get('/')
   async totals(@Param() context: ContractContext): Promise<TvlTotalResponse> {
-    return this.tvlService.totals();
+    return this.tvlService.totals(context);
   }
 
   @ApiResponse({
@@ -42,7 +42,7 @@ export class TvlController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesNumber(metricQuery);
+    return this.tvlService.bountiesNumber(context, metricQuery);
   }
 
   @ApiResponse({
@@ -57,7 +57,7 @@ export class TvlController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesValueLocked(metricQuery);
+    return this.tvlService.bountiesValueLocked(context, metricQuery);
   }
 
   @ApiResponse({
@@ -71,7 +71,7 @@ export class TvlController {
   async groups(
     @Param() context: ContractContext,
   ): Promise<TvlBountiesLeaderboardResponse> {
-    return this.tvlService.bountiesLeaderboard();
+    return this.tvlService.bountiesLeaderboard(context);
   }
 
   @ApiResponse({
@@ -85,7 +85,7 @@ export class TvlController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<TvlTotalResponse> {
-    return this.tvlService.totals();
+    return this.tvlService.totals(context);
   }
 
   @ApiResponse({
@@ -100,7 +100,7 @@ export class TvlController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesNumber(metricQuery);
+    return this.tvlService.bountiesNumber(context, metricQuery);
   }
 
   @ApiResponse({
@@ -115,6 +115,6 @@ export class TvlController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tvlService.bountiesValueLocked(metricQuery);
+    return this.tvlService.bountiesValueLocked(context, metricQuery);
   }
 }

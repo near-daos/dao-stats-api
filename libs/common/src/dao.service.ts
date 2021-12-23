@@ -3,29 +3,20 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Dao } from './entities';
-import { ContractContextService } from 'apps/api/src/context/contract-context.service';
 import { DaoDto } from './dto';
 
 @Injectable()
-export class DaoService extends ContractContextService {
+export class DaoService {
   constructor(
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
-  ) {
-    super();
-  }
+  ) {}
 
-  // TODO: split aggregation/retrieval interactions due to ContractContext injection
-
-  async find(): Promise<DaoDto[]> {
-    const { contractId } = this.getContract();
-
+  async find(contractId: string): Promise<DaoDto[]> {
     return this.daoRepository.find({ where: { contractId } });
   }
 
-  async findById(dao: string): Promise<DaoDto> {
-    const { contractId } = this.getContract();
-
+  async findById(contractId: string, dao: string): Promise<DaoDto> {
     return this.daoRepository.findOne({ contractId, dao });
   }
 
@@ -33,9 +24,7 @@ export class DaoService extends ContractContextService {
     return this.daoRepository.save(dao);
   }
 
-  async autocomplete(input: string): Promise<DaoDto[]> {
-    const { contractId } = this.getContract();
-
+  async autocomplete(contractId: string, input: string): Promise<DaoDto[]> {
     return this.daoRepository
       .createQueryBuilder('dao')
       .where('contract_id = :contractId', { contractId })

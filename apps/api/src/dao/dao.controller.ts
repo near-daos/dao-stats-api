@@ -21,7 +21,9 @@ export class DaoController {
   })
   @Get()
   async daos(@Param() context: ContractContext): Promise<DaoDto[]> {
-    return this.daoService.find();
+    const { contractId } = context;
+
+    return this.daoService.find(contractId);
   }
 
   @ApiResponse({
@@ -33,9 +35,9 @@ export class DaoController {
   })
   @Get('/:dao')
   async dao(@Param() context: DaoContractContext): Promise<DaoDto> {
-    const { dao } = context;
+    const { contractId, dao } = context;
 
-    const daoEntity = await this.daoService.findById(dao);
+    const daoEntity = await this.daoService.findById(contractId, dao);
 
     if (!daoEntity) {
       throw new BadRequestException('Invalid Dao ID');
@@ -56,7 +58,7 @@ export class DaoController {
     @Param() context: ContractContext,
     @Param('input') input: string,
   ): Promise<DaoDto[]> {
-    const { contract } = context;
-    return this.daoService.autocomplete(input);
+    const { contractId } = context;
+    return this.daoService.autocomplete(contractId, input);
   }
 }

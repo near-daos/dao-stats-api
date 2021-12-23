@@ -25,7 +25,7 @@ export class FlowController {
   async totals(
     @Param() context: DaoContractContext,
   ): Promise<FlowTotalResponse> {
-    return this.flowService.totals();
+    return this.flowService.totals(context);
   }
 
   @ApiResponse({
@@ -40,7 +40,7 @@ export class FlowController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(FlowMetricType.Fund, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
   }
 
   @ApiResponse({
@@ -54,7 +54,7 @@ export class FlowController {
   async fundsLeaderboard(
     @Param() context: DaoContractContext,
   ): Promise<FlowLeaderboardMetricResponse> {
-    return this.flowService.leaderboard(FlowMetricType.Fund);
+    return this.flowService.leaderboard(context, FlowMetricType.Fund);
   }
 
   @ApiResponse({
@@ -69,7 +69,11 @@ export class FlowController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(FlowMetricType.Transaction, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
   }
 
   @ApiResponse({
@@ -83,7 +87,7 @@ export class FlowController {
   async transactionsLeaderboard(
     @Param() context: DaoContractContext,
   ): Promise<FlowLeaderboardMetricResponse> {
-    return this.flowService.leaderboard(FlowMetricType.Transaction);
+    return this.flowService.leaderboard(context, FlowMetricType.Transaction);
   }
 
   @ApiResponse({
@@ -97,7 +101,7 @@ export class FlowController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<FlowTotalResponse> {
-    return this.flowService.totals();
+    return this.flowService.totals(context);
   }
 
   @ApiResponse({
@@ -112,7 +116,7 @@ export class FlowController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(FlowMetricType.Fund, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
   }
 
   @ApiResponse({
@@ -127,6 +131,10 @@ export class FlowController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(FlowMetricType.Transaction, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
   }
 }

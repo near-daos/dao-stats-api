@@ -29,7 +29,7 @@ export class TokensController {
   async totals(
     @Param() context: ContractContext,
   ): Promise<TokensTotalResponse> {
-    return this.tokensService.totals();
+    return this.tokensService.totals(context);
   }
 
   @ApiResponse({
@@ -44,7 +44,7 @@ export class TokensController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.fts(metricQuery);
+    return this.tokensService.fts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -58,7 +58,7 @@ export class TokensController {
   async ftTokensLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.ftsLeaderboard();
+    return this.tokensService.ftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -73,7 +73,7 @@ export class TokensController {
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.nfts(metricQuery);
+    return this.tokensService.nfts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -87,7 +87,7 @@ export class TokensController {
   async nftTokensLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.nftsLeaderboard();
+    return this.tokensService.nftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -101,7 +101,7 @@ export class TokensController {
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<TokensTotalResponse> {
-    return this.tokensService.totals();
+    return this.tokensService.totals(context);
   }
 
   @ApiResponse({
@@ -116,7 +116,7 @@ export class TokensController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.fts(metricQuery);
+    return this.tokensService.fts(context, metricQuery);
   }
 
   @ApiResponse({
@@ -131,6 +131,6 @@ export class TokensController {
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.tokensService.nfts(metricQuery);
+    return this.tokensService.nfts(context, metricQuery);
   }
 }

@@ -3,6 +3,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
+  ContractContext,
+  DaoContractContext,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -27,7 +29,11 @@ export class GeneralService {
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {}
 
-  async totals(): Promise<GeneralTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<GeneralTotalResponse> {
+    const { contractId: contract } = context as DaoContractContext;
+
     const dayAgo = moment().subtract(1, 'days');
 
     const [
@@ -41,28 +47,34 @@ export class GeneralService {
       dayAgoAverageGroupsCount,
     ] = await Promise.all([
       this.daoStatsService.getValue({
+        contract,
         metric: DaoStatsMetric.DaoCount,
       }),
       this.daoStatsHistoryService.getValue({
+        contract,
         metric: DaoStatsMetric.DaoCount,
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getContractActivityCount({
+      this.transactionService.getContractActivityCount(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getContractActivityCount(),
+      this.transactionService.getContractActivityCount(context),
       this.daoStatsService.getValue({
+        contract,
         metric: DaoStatsMetric.GroupsCount,
       }),
       this.daoStatsHistoryService.getValue({
+        contract,
         metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
+        contract,
         metric: DaoStatsMetric.GroupsCount,
         func: 'AVG',
       }),
       this.daoStatsHistoryService.getValue({
+        contract,
         metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
         func: 'AVG',
@@ -89,14 +101,24 @@ export class GeneralService {
     };
   }
 
-  async daos(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async daos(
+    context: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contractId: contract } = context;
+
     const [daoCountHistory, metrics] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
+        contract,
         metric: DaoStatsMetric.DaoCount,
       }),
-      this.transactionService.getTotalCountDaily(TransactionType.CreateDao, {
-        to: metricQuery.to,
-      }),
+      this.transactionService.getTotalCountDaily(
+        context,
+        TransactionType.CreateDao,
+        {
+          to: metricQuery.to,
+        },
+      ),
     ]);
 
     return {
@@ -114,8 +136,12 @@ export class GeneralService {
     };
   }
 
-  async active(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async active(
+    context: ContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
     const metrics = await this.transactionService.getContractActivityCountDaily(
+      context,
       metricQuery,
     );
 
@@ -131,11 +157,14 @@ export class GeneralService {
     };
   }
 
-  async activeLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async activeLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
 
     const byDays = await this.transactionService.getActivityLeaderboard(
+      context,
       {
         from: weekAgo.valueOf(),
         to: moment().valueOf(),
@@ -145,14 +174,18 @@ export class GeneralService {
 
     const dayAgo = moment().subtract(1, 'days');
     const dayAgoActivity = await this.transactionService.getActivityLeaderboard(
+      context,
       {
         to: dayAgo.valueOf(),
       },
     );
 
-    const totalActivity = await this.transactionService.getActivityLeaderboard({
-      to: moment().valueOf(),
-    });
+    const totalActivity = await this.transactionService.getActivityLeaderboard(
+      context,
+      {
+        to: moment().valueOf(),
+      },
+    );
 
     const metrics = totalActivity.map(({ receiver_account_id: dao, count }) => {
       const dayAgoCount =
@@ -181,10 +214,16 @@ export class GeneralService {
     return { metrics };
   }
 
-  async groups(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async groups(
+    contractContext: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contractId: contract, dao } = contractContext as DaoContractContext;
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.GroupsCount,
       from,
       to,
@@ -202,11 +241,16 @@ export class GeneralService {
     };
   }
 
-  async groupsLeaderboard(): Promise<LeaderboardMetricResponse> {
+  async groupsLeaderboard(
+    contractContext: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId: contract } = contractContext;
+
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.GroupsCount,
     });
 
@@ -214,11 +258,13 @@ export class GeneralService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
+            contract,
             dao,
             metric: DaoStatsMetric.GroupsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
+            contract,
             dao,
             metric: DaoStatsMetric.GroupsCount,
             from: weekAgo.valueOf(),
@@ -242,10 +288,17 @@ export class GeneralService {
     return { metrics };
   }
 
-  async averageGroups(metricQuery: MetricQuery): Promise<MetricResponse> {
+  async averageGroups(
+    contractContext: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    const { contractId: contract, dao } = contractContext as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.GroupsCount,
       from,
       to,

@@ -2,6 +2,8 @@ import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 
 import {
+  ContractContext,
+  DaoContractContext,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -19,7 +21,11 @@ export class TvlService {
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {}
 
-  async totals(): Promise<TvlTotalResponse> {
+  async totals(
+    context: DaoContractContext | ContractContext,
+  ): Promise<TvlTotalResponse> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const dayAgo = moment().subtract(1, 'day');
 
     const [
@@ -29,16 +35,24 @@ export class TvlService {
       bountiesValueLockedPrev,
     ] = await Promise.all([
       this.daoStatsService.getValue({
+        contract,
+        dao,
         metric: DaoStatsMetric.BountiesCount,
       }),
       this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
         metric: DaoStatsMetric.BountiesCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
+        contract,
+        dao,
         metric: DaoStatsMetric.BountiesValueLocked,
       }),
       this.daoStatsHistoryService.getValue({
+        contract,
+        dao,
         metric: DaoStatsMetric.BountiesValueLocked,
         to: dayAgo.valueOf(),
       }),
@@ -75,10 +89,17 @@ export class TvlService {
     };
   }
 
-  async bountiesNumber(metricQuery: MetricQuery): Promise<any> {
+  async bountiesNumber(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.BountiesCount,
       from,
       to,
@@ -96,10 +117,17 @@ export class TvlService {
     };
   }
 
-  async bountiesValueLocked(metricQuery: MetricQuery): Promise<any> {
+  async bountiesValueLocked(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contractId: contract, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
+      contract,
+      dao,
       metric: DaoStatsMetric.BountiesValueLocked,
       from,
       to,
@@ -117,8 +145,13 @@ export class TvlService {
     };
   }
 
-  async bountiesLeaderboard(): Promise<TvlBountiesLeaderboardResponse> {
+  async bountiesLeaderboard(
+    context: ContractContext,
+  ): Promise<TvlBountiesLeaderboardResponse> {
+    const { contractId: contract } = context;
+
     const leaderboard = await this.daoStatsService.getLeaderboard({
+      contract,
       metric: DaoStatsMetric.BountiesCount, // TODO confirm
     });
 
@@ -130,25 +163,30 @@ export class TvlService {
         const [countPrev, countHistory, vl, vlPrev, vlHistory] =
           await Promise.all([
             this.daoStatsHistoryService.getValue({
+              contract,
               dao,
               metric: DaoStatsMetric.BountiesCount,
               to: dayAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
+              contract,
               dao,
               metric: DaoStatsMetric.BountiesCount,
               from: weekAgo.valueOf(),
             }),
             this.daoStatsService.getValue({
+              contract,
               dao,
               metric: DaoStatsMetric.BountiesValueLocked,
             }),
             this.daoStatsHistoryService.getValue({
+              contract,
               dao,
               metric: DaoStatsMetric.BountiesValueLocked,
               to: dayAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
+              contract,
               dao,
               metric: DaoStatsMetric.BountiesValueLocked,
               from: weekAgo.valueOf(),
