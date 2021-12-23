@@ -26,7 +26,7 @@ export class DaoFactoryContract extends Base {
   })
   async getDaoList(): Promise<string[]> {
     try {
-      return this.get_dao_list();
+      return await this.get_dao_list();
     } catch (err) {
       return this.getDaos();
     }
