@@ -1,18 +1,16 @@
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import {
   ContractContext,
   DaoContractContext,
   MetricResponse,
   MetricQuery,
-  MetricQueryPipe,
   LeaderboardMetricResponse,
-  HttpCacheInterceptor,
 } from '@dao-stats/common';
 import { GeneralTotalResponse } from './dto/general-total.dto';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralService } from './general.service';
+import { MetricQueryPipe } from '../pipes';
 
 @ApiTags('General')
 @Controller('general')
@@ -26,12 +24,11 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
   ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals(context);
+    return this.generalService.totals();
   }
 
   @ApiResponse({
@@ -41,13 +38,12 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/daos')
   async daos(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.daos(context, metricQuery);
+    return this.generalService.daos(metricQuery);
   }
 
   @ApiResponse({
@@ -57,13 +53,12 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/active')
   async active(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.active(context, metricQuery);
+    return this.generalService.active(metricQuery);
   }
 
   @ApiResponse({
@@ -73,12 +68,11 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/active/leaderboard')
   async activeLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.activeLeaderboard(context);
+    return this.generalService.activeLeaderboard();
   }
 
   @ApiResponse({
@@ -88,13 +82,12 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/groups')
   async groups(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.groups(context, metricQuery);
+    return this.generalService.groups(metricQuery);
   }
 
   @ApiResponse({
@@ -104,12 +97,11 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/groups/leaderboard')
   async groupsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.generalService.groupsLeaderboard(context);
+    return this.generalService.groupsLeaderboard();
   }
 
   @ApiResponse({
@@ -119,13 +111,12 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/average-groups')
   async averageGroups(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.averageGroups(context, metricQuery);
+    return this.generalService.averageGroups(metricQuery);
   }
 
   @ApiResponse({
@@ -135,12 +126,11 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
   ): Promise<GeneralTotalResponse> {
-    return this.generalService.totals(context);
+    return this.generalService.totals();
   }
 
   @ApiResponse({
@@ -150,13 +140,12 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/activity')
   async daoActivity(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.active(context, metricQuery);
+    return this.generalService.active(metricQuery);
   }
 
   @ApiResponse({
@@ -166,12 +155,11 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/groups')
   async daoGroups(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.generalService.groups(context, metricQuery);
+    return this.generalService.groups(metricQuery);
   }
 }

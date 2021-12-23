@@ -1,33 +1,26 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
-import {
-  Contract,
-  DaoContractContext,
-  LeaderboardMetric,
-  MetricQuery,
-} from '@dao-stats/common';
+import { Contract, LeaderboardMetric, MetricQuery } from '@dao-stats/common';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import { ContractService } from '../contract/contract.service';
 import { ReceiptActionService } from 'libs/receipt/src/receipt-action.service';
 import { TransferType } from 'libs/receipt/src/types/transfer-type';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
 import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
+import { ContractContextService } from '../context/contract-context.service';
 
 @Injectable()
-export class FlowService {
-  constructor(
-    private readonly receiptActionService: ReceiptActionService,
-    private readonly contractService: ContractService,
-  ) {}
+export class FlowService extends ContractContextService {
+  constructor(private readonly receiptActionService: ReceiptActionService) {
+    super();
+  }
 
-  async totals(context: DaoContractContext): Promise<FlowTotalResponse> {
+  async totals(): Promise<FlowTotalResponse> {
+    const { contract } = this.getContext();
+    const { conversionFactor } = contract;
+
     const dayAgo = moment().subtract(1, 'days');
-
-    const { conversionFactor } = await this.contractService.findById(
-      context.contract,
-    );
 
     const [
       txInCount,
@@ -40,12 +33,10 @@ export class FlowService {
       dayAgoTotalOut,
     ] = await Promise.all([
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
         {
@@ -53,12 +44,10 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
         {
@@ -66,12 +55,10 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
         {
@@ -79,12 +66,10 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
         {
@@ -114,23 +99,19 @@ export class FlowService {
   }
 
   async history(
-    context: DaoContractContext,
     metricType: FlowMetricType,
     metricQuery?: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    const { conversionFactor } = await this.contractService.findById(
-      context.contract,
-    );
+    const { contract } = this.getContext();
+    const { conversionFactor } = contract;
 
     const [incoming, outgoing] = await Promise.all([
       this.receiptActionService.getHistory(
-        context,
         metricType,
         TransferType.Incoming,
         metricQuery,
       ),
       this.receiptActionService.getHistory(
-        context,
         metricType,
         TransferType.Outgoing,
         metricQuery,
@@ -169,14 +150,13 @@ export class FlowService {
   }
 
   async leaderboard(
-    context: DaoContractContext,
     metricType: FlowMetricType,
   ): Promise<FlowLeaderboardMetricResponse> {
+    const { contract } = this.getContext();
+
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contract);
 
     const [
       byDaysIncoming,
@@ -187,7 +167,6 @@ export class FlowService {
       outgoing,
     ] = await Promise.all([
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Incoming,
         {
@@ -197,7 +176,6 @@ export class FlowService {
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -207,7 +185,6 @@ export class FlowService {
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Incoming,
         {
@@ -215,7 +192,6 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Incoming,
         {
@@ -223,7 +199,6 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -231,7 +206,6 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        context,
         metricType,
         TransferType.Outgoing,
         {

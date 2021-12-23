@@ -4,9 +4,9 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats } from './entities';
 import { DaoStatsMetric } from './types';
+import { ContractContextService } from 'apps/api/src/context/contract-context.service';
 
 export interface DaoStatsValueParams {
-  contract: string;
   dao?: string;
   metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
@@ -22,13 +22,15 @@ export interface DaoStatsLeaderboardResponse {
 }
 
 @Injectable()
-export class DaoStatsService {
+export class DaoStatsService extends ContractContextService {
   constructor(
     @InjectRepository(DaoStats)
     private readonly repository: Repository<DaoStats>,
     @InjectConnection()
     private connection: Connection,
-  ) {}
+  ) {
+    super();
+  }
 
   async createOrUpdate(data: DaoStats): Promise<InsertResult> {
     return await this.connection
@@ -44,11 +46,12 @@ export class DaoStatsService {
   }
 
   async getValue({
-    contract,
     dao,
     metric,
     func = 'SUM',
   }: DaoStatsValueParams): Promise<number> {
+    const { contractId: contract } = this.getContext()?.contract;
+
     const query = this.repository
       .createQueryBuilder()
       .select(`${func}(value)::int as value`);
@@ -72,12 +75,13 @@ export class DaoStatsService {
   }
 
   async getLeaderboard({
-    contract,
-    metric,
     dao,
+    metric,
     func = 'SUM',
     limit = 10,
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
+    const { contractId: contract } = this.getContext()?.contract;
+
     const query = this.repository
       .createQueryBuilder()
       .select(`dao, ${func}(value)::int as value`)

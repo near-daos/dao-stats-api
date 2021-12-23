@@ -4,31 +4,31 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import {
   DailyCountDto,
-  DaoContractContext,
   MetricQuery,
   millisToNanos,
   ReceiptAction,
 } from '@dao-stats/common';
 import { TransferType } from './types/transfer-type';
 import { FlowMetricType } from './types/flow-metric-type';
+import { ContractContextService } from 'apps/api/src/context/contract-context.service';
 
 @Injectable()
-export class ReceiptActionService {
+export class ReceiptActionService extends ContractContextService {
   private readonly logger = new Logger(ReceiptActionService.name);
 
   constructor(
     @InjectRepository(ReceiptAction)
     private readonly receiptRepository: Repository<ReceiptAction>,
-  ) {}
+  ) {
+    super();
+  }
 
   async getTotals(
-    context: DaoContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<{ count: number }> {
     return this.getTransferIntervalQueryBuilder(
-      context,
       metricType,
       transferType,
       metricQuery,
@@ -36,13 +36,11 @@ export class ReceiptActionService {
   }
 
   async getHistory(
-    context: DaoContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
     return this.getTransferIntervalQueryBuilder(
-      context,
       metricType,
       transferType,
       metricQuery,
@@ -51,14 +49,12 @@ export class ReceiptActionService {
   }
 
   async getLeaderboard(
-    context: DaoContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
   ): Promise<any[]> {
     const qb = this.getTransferIntervalQueryBuilder(
-      context,
       metricType,
       transferType,
       metricQuery,
@@ -76,42 +72,25 @@ export class ReceiptActionService {
   }
 
   async getFunds(
-    context: DaoContractContext,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<{ count: number }> {
-    return this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-    ).getRawOne();
+    return this.getFundsQueryBuilder(transferType, metricQuery).getRawOne();
   }
 
   async getFundsHistory(
-    context: DaoContractContext,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
-    return this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-      true,
-    ).execute();
+    return this.getFundsQueryBuilder(transferType, metricQuery, true).execute();
   }
 
   async getFundsLeaderboard(
-    context: DaoContractContext,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
   ): Promise<any[]> {
-    const qb = this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-      daily,
-    )
+    const qb = this.getFundsQueryBuilder(transferType, metricQuery, daily)
       .addSelect('receipt_receiver_account_id', 'receiver_account_id')
       .addGroupBy('receiver_account_id')
       .addOrderBy('count', 'DESC');
@@ -124,13 +103,11 @@ export class ReceiptActionService {
   }
 
   private getFundsQueryBuilder(
-    context: DaoContractContext,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
   ) {
     const qb = this.getTransferIntervalQueryBuilder(
-      context,
       null,
       transferType,
       metricQuery,
@@ -148,28 +125,25 @@ export class ReceiptActionService {
   }
 
   private getTransferIntervalQueryBuilder(
-    context: DaoContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
   ): SelectQueryBuilder<ReceiptAction> {
-    const { contract, dao } = context;
+    const { contract, dao } = this.getContext();
+    const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
     const qb = this.receiptRepository
       .createQueryBuilder()
-      .where('contract_id = :contract', { contract })
+      .where('contract_id = :contractId', { contractId })
       .andWhere(`args_json->>'deposit' is not null`);
 
     if (transferType) {
       qb.andWhere(
         `receipt_${
           transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
-        }_account_id like :id`,
-        {
-          id: `%${dao}%`,
-        },
+        }_account_id ${dao ? `= '${dao}'` : `like '%${contractName}%'`}`,
       );
     }
 

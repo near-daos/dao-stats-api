@@ -9,6 +9,8 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './api.module';
+import { CacheService } from '@dao-stats/cache';
+import { API_WHITELIST } from '@dao-stats/common';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);
@@ -19,8 +21,8 @@ export default class Api {
       logger,
     });
     app.enableCors();
-    app.setGlobalPrefix('/api/v1/:contract', {
-      exclude: ['/api/v1/contracts'],
+    app.setGlobalPrefix('/api/v1/:contractId', {
+      exclude: app.get(API_WHITELIST),
     });
 
     if (process.env.NODE_ENV === 'development') {
