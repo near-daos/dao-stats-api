@@ -7,7 +7,7 @@ indexer:
     password: 'nearprotocol'
 
 near:
-  env: testnet
+  env: mainnet
   credentials: '.near-credentials'
 
 dao:
