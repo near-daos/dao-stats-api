@@ -50,7 +50,7 @@ export class DaoStatsService extends ContractContextService {
     metric,
     func = 'SUM',
   }: DaoStatsValueParams): Promise<number> {
-    const { contractId: contract } = this.getContext()?.contract;
+    const { contractId: contract } = this.getContract();
 
     const query = this.repository
       .createQueryBuilder()
@@ -80,7 +80,7 @@ export class DaoStatsService extends ContractContextService {
     func = 'SUM',
     limit = 10,
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
-    const { contractId: contract } = this.getContext()?.contract;
+    const { contractId: contract } = this.getContract();
 
     const query = this.repository
       .createQueryBuilder()

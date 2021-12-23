@@ -1,4 +1,4 @@
-import { DaoContractContext } from '@dao-stats/common';
+import { Contract, DaoContractContext } from '@dao-stats/common';
 import { RequestContext } from '@medibloc/nestjs-request-context';
 import { Injectable } from '@nestjs/common';
 import { HasContractContext } from '../interceptors/contract-context.interface';
@@ -7,5 +7,9 @@ import { HasContractContext } from '../interceptors/contract-context.interface';
 export class ContractContextService implements HasContractContext {
   public getContext(): DaoContractContext {
     return RequestContext.get();
+  }
+
+  public getContract(): Contract {
+    return this.getContext()?.contract;
   }
 }

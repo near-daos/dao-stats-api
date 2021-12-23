@@ -52,7 +52,7 @@ export class DaoStatsHistoryService extends ContractContextService {
     metric,
     func = 'SUM',
   }: DaoStatsHistoryValueParams): Promise<number> {
-    const { contractId: contract } = this.getContext()?.contract;
+    const { contractId: contract } = this.getContract();
 
     const query = this.repository
       .createQueryBuilder()
@@ -97,7 +97,7 @@ export class DaoStatsHistoryService extends ContractContextService {
     dao,
     metric,
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
-    const { contractId: contract } = this.getContext()?.contract;
+    const { contractId: contract } = this.getContract();
 
     const query = this.repository
       .createQueryBuilder()

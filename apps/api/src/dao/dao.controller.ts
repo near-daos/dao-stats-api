@@ -3,7 +3,7 @@ import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   ContractContext,
   DaoContractContext,
-  DaoResponse,
+  DaoDto,
   DaoService,
 } from '@dao-stats/common';
 
@@ -14,25 +14,25 @@ export class DaoController {
 
   @ApiResponse({
     status: 200,
-    type: [DaoResponse],
+    type: [DaoDto],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
   @Get()
-  async daos(@Param() context: ContractContext): Promise<DaoResponse[]> {
+  async daos(@Param() context: ContractContext): Promise<DaoDto[]> {
     return this.daoService.find();
   }
 
   @ApiResponse({
     status: 200,
-    type: DaoResponse,
+    type: DaoDto,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/:dao')
-  async dao(@Param() context: DaoContractContext): Promise<DaoResponse> {
+  async dao(@Param() context: DaoContractContext): Promise<DaoDto> {
     const { dao } = context;
 
     const daoEntity = await this.daoService.findById(dao);
@@ -46,7 +46,7 @@ export class DaoController {
 
   @ApiResponse({
     status: 200,
-    type: [DaoResponse],
+    type: [DaoDto],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -55,7 +55,8 @@ export class DaoController {
   async autocomplete(
     @Param() context: ContractContext,
     @Param('input') input: string,
-  ): Promise<DaoResponse[]> {
+  ): Promise<DaoDto[]> {
+    const { contract } = context;
     return this.daoService.autocomplete(input);
   }
 }

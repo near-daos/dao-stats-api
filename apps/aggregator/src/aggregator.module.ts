@@ -11,13 +11,13 @@ import configuration, {
 import { AggregatorValidationSchema } from '@dao-stats/config/validation';
 import { RedisModule } from '@dao-stats/redis';
 import { TransactionModule } from '@dao-stats/transaction';
+import { HttpCacheModule } from '@dao-stats/cache';
 import {
   DaoStatsModule,
   DaoStatsHistoryModule,
   DaoModule,
 } from '@dao-stats/common';
 import { AggregatorService } from './aggregator.service';
-import { HttpCacheModule } from '@dao-stats/cache';
 
 @Module({
   imports: [
