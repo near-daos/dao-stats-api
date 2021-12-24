@@ -36,7 +36,7 @@ export class UsersService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<UsersTotalResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
     const dayAgo = moment().subtract(1, 'days');
 
     const [
@@ -68,12 +68,12 @@ export class UsersService {
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.MembersCount,
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.MembersCount,
         to: dayAgo.valueOf(),
@@ -202,12 +202,12 @@ export class UsersService {
     contractContext: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract, dao } = contractContext as DaoContractContext;
+    const { contractId, dao } = contractContext as DaoContractContext;
 
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
-      contract,
+      contractId,
       dao,
       metric: DaoStatsMetric.MembersCount,
       from,
@@ -229,13 +229,13 @@ export class UsersService {
   async membersLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId: contract } = contractContext;
+    const { contractId } = contractContext;
 
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.MembersCount,
     });
 
@@ -243,15 +243,13 @@ export class UsersService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
-
+            contractId,
             dao,
             metric: DaoStatsMetric.MembersCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
-
+            contractId,
             dao,
             metric: DaoStatsMetric.MembersCount,
             from: weekAgo.valueOf(),
@@ -301,13 +299,13 @@ export class UsersService {
   async councilLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId: contract } = contractContext;
+    const { contractId } = contractContext;
 
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.CouncilSize,
       func: 'AVG',
     });
@@ -316,14 +314,14 @@ export class UsersService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
             func: 'AVG',
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
             func: 'AVG',

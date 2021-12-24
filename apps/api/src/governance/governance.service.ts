@@ -36,7 +36,7 @@ export class GovernanceService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<GovernanceTotalResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
 
@@ -50,39 +50,39 @@ export class GovernanceService {
       proposalsMemberCount,
     ] = await Promise.all([
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao: null,
         metric: DaoStatsMetric.ProposalsCount,
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         dao: null,
         metric: DaoStatsMetric.ProposalsCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao: null,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         dao: null,
         metric: DaoStatsMetric.ProposalsApprovedCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsPayoutCount,
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsBountyCount,
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsMemberCount,
       }),
@@ -115,11 +115,11 @@ export class GovernanceService {
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const [proposalCountHistory, metrics] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
@@ -150,13 +150,13 @@ export class GovernanceService {
   async proposalsLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId: contract } = contractContext;
+    const { contractId } = contractContext;
 
     const weekAgo = moment().subtract(7, 'days');
     const dayAgo = moment().subtract(1, 'days');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.ProposalsCount,
     });
 
@@ -164,13 +164,13 @@ export class GovernanceService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.ProposalsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.ProposalsCount,
             from: weekAgo.valueOf(),
@@ -199,34 +199,34 @@ export class GovernanceService {
 
     metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const { from, to } = metricQuery;
 
     const [totals, payouts, bounties, members] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
         from,
         to,
       }),
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsPayoutCount,
         from,
         to,
       }),
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsBountyCount,
         from,
         to,
       }),
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsMemberCount,
         from,
@@ -270,10 +270,10 @@ export class GovernanceService {
   async proposalsTypesLeaderboard(
     contractContext: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
-    const { contractId: contract } = contractContext;
+    const { contractId } = contractContext;
 
     const daos = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.ProposalsCount,
     });
 
@@ -281,17 +281,17 @@ export class GovernanceService {
       daos.map(async ({ dao, value }) => {
         const [payouts, bounties, members] = await Promise.all([
           this.daoStatsService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.ProposalsPayoutCount,
           }),
           this.daoStatsService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.ProposalsBountyCount,
           }),
           this.daoStatsService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.ProposalsMemberCount,
           }),
@@ -316,20 +316,20 @@ export class GovernanceService {
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const { from, to } = metricQuery;
 
     const [totalHistory, approvedHistory] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
         from,
         to,
       }),
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
         from,
@@ -357,20 +357,20 @@ export class GovernanceService {
   async voteRateLeaderboard(
     context: DaoContractContext | ContractContext,
   ): Promise<VoteRateLeaderboardResponse> {
-    const { contractId: contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
     const weekAgo = moment().subtract(7, 'days');
 
     const [totalLeaderboard, approvedLeaderboard] = await Promise.all([
       this.daoStatsService.getLeaderboard({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
         limit: 0,
       }),
       this.daoStatsService.getLeaderboard({
-        contract,
+        contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
         limit: 0,
@@ -395,25 +395,25 @@ export class GovernanceService {
         const [dayAgoTotal, dayAgoApproved, totalHistory, approvedHistory] =
           await Promise.all([
             this.daoStatsHistoryService.getValue({
-              contract,
+              contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
               to: dayAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getValue({
-              contract,
+              contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
               to: dayAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
-              contract,
+              contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
               from: weekAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
-              contract,
+              contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
               from: weekAgo.valueOf(),

@@ -6,9 +6,9 @@ import { DaoStatsHistory } from './entities';
 import { DaoStatsMetric } from './types';
 
 export interface DaoStatsHistoryValueParams {
-  contract: string;
   from?: number;
   to?: number;
+  contractId: string;
   dao?: string;
   metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
@@ -46,7 +46,7 @@ export class DaoStatsHistoryService {
   async getValue({
     from,
     to,
-    contract,
+    contractId,
     dao,
     metric,
     func = 'SUM',
@@ -67,7 +67,7 @@ export class DaoStatsHistoryService {
       });
     }
 
-    query.andWhere('contract_id = :contract', { contract });
+    query.andWhere('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
@@ -91,7 +91,7 @@ export class DaoStatsHistoryService {
     func = 'SUM',
     from,
     to,
-    contract,
+    contractId,
     dao,
     metric,
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
@@ -111,7 +111,7 @@ export class DaoStatsHistoryService {
       });
     }
 
-    query.andWhere('contract_id = :contract', { contract });
+    query.andWhere('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });

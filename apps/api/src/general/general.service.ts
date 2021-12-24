@@ -32,7 +32,7 @@ export class GeneralService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<GeneralTotalResponse> {
-    const { contractId: contract } = context as DaoContractContext;
+    const { contractId } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
 
@@ -47,11 +47,11 @@ export class GeneralService {
       dayAgoAverageGroupsCount,
     ] = await Promise.all([
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.DaoCount,
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.DaoCount,
         to: dayAgo.valueOf(),
       }),
@@ -60,21 +60,21 @@ export class GeneralService {
       }),
       this.transactionService.getContractActivityCount(context),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.GroupsCount,
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.GroupsCount,
         func: 'AVG',
       }),
       this.daoStatsHistoryService.getValue({
-        contract,
+        contractId,
         metric: DaoStatsMetric.GroupsCount,
         to: dayAgo.valueOf(),
         func: 'AVG',
@@ -105,11 +105,11 @@ export class GeneralService {
     context: ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract } = context;
+    const { contractId } = context;
 
     const [daoCountHistory, metrics] = await Promise.all([
       this.daoStatsHistoryService.getHistory({
-        contract,
+        contractId,
         metric: DaoStatsMetric.DaoCount,
       }),
       this.transactionService.getTotalCountDaily(
@@ -218,11 +218,11 @@ export class GeneralService {
     contractContext: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract, dao } = contractContext as DaoContractContext;
+    const { contractId, dao } = contractContext as DaoContractContext;
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
-      contract,
+      contractId,
       dao,
       metric: DaoStatsMetric.GroupsCount,
       from,
@@ -244,13 +244,13 @@ export class GeneralService {
   async groupsLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId: contract } = contractContext;
+    const { contractId } = contractContext;
 
     const dayAgo = moment().subtract(1, 'day');
     const weekAgo = moment().subtract(1, 'week');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.GroupsCount,
     });
 
@@ -258,13 +258,13 @@ export class GeneralService {
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.GroupsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.GroupsCount,
             from: weekAgo.valueOf(),
@@ -292,12 +292,12 @@ export class GeneralService {
     contractContext: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId: contract, dao } = contractContext as DaoContractContext;
+    const { contractId, dao } = contractContext as DaoContractContext;
 
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
-      contract,
+      contractId,
       dao,
       metric: DaoStatsMetric.GroupsCount,
       from,
