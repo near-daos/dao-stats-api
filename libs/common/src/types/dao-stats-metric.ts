@@ -16,5 +16,7 @@ export enum DaoStatsMetric {
   BountiesCount = 'BOUNTIES_COUNT',
   BountiesValueLocked = 'BOUNTIES_VALUE_LOCKED',
   FtsCount = 'FTS_COUNT',
+  FtsValueLocked = 'FTS_VALUE_LOCKED',
   NftsCount = 'NFTS_COUNT',
+  NftsValueLocked = 'NFTS_VALUE_LOCKED',
 }

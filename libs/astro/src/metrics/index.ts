@@ -14,7 +14,11 @@ import {
   ProposalsRejectedCountMetric,
   ProposalsTransferCountMetric,
 } from './proposals';
-import { FtsCountMetric, NftsCountMetric } from './tokens';
+import {
+  FtsCountMetric,
+  FtsValueLockedMetric,
+  NftsCountMetric,
+} from './tokens';
 
 export * from './bounties';
 export * from './factory';
@@ -41,5 +45,6 @@ export const DAO_METRICS = [
   BountiesCountMetric,
   BountiesValueLockedMetric,
   FtsCountMetric,
+  FtsValueLockedMetric,
   NftsCountMetric,
 ];
