@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node" : ">=14.16"
+  },
   "scripts": {
     "build": "nest build",
     "build-api": "nest build api",
@@ -45,6 +48,7 @@
     "@nestjs/swagger": "^5.1.5",
     "@nestjs/typeorm": "^8.0.2",
     "@nestjs/websockets": "^8.2.3",
+    "@medibloc/nestjs-request-context": "^1.0.0",
     "@supercharge/promise-pool": "^1.7.0",
     "@type-cacheable/core": "^10.0.2",
     "@type-cacheable/lru-cache-adapter": "^10.0.2",

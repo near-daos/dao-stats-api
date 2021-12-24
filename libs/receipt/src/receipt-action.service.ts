@@ -155,21 +155,19 @@ export class ReceiptActionService {
     daily?: boolean,
   ): SelectQueryBuilder<ReceiptAction> {
     const { contract, dao } = context;
+    const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
     const qb = this.receiptRepository
       .createQueryBuilder()
-      .where('contract_id = :contract', { contract })
+      .where('contract_id = :contractId', { contractId })
       .andWhere(`args_json->>'deposit' is not null`);
 
     if (transferType) {
       qb.andWhere(
         `receipt_${
           transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
-        }_account_id like :id`,
-        {
-          id: `%${dao}%`,
-        },
+        }_account_id ${dao ? `= '${dao}'` : `like '%${contractName}'`}`,
       );
     }
 

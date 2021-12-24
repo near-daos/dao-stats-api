@@ -1,19 +1,17 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
   ContractContext,
   DaoContractContext,
-  HttpCacheInterceptor,
   LeaderboardMetricResponse,
   MetricQuery,
-  MetricQueryPipe,
   MetricResponse,
 } from '@dao-stats/common';
 
 import { TokensTotalResponse } from './dto/tokens-total.dto';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { TokensService } from './tokens.service';
+import { MetricQueryPipe } from '../pipes';
 
 @ApiTags('Tokens')
 @Controller('tokens')
@@ -27,7 +25,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -42,7 +39,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/fts')
   async ftTokens(
     @Param() context: ContractContext,
@@ -58,7 +54,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/fts/leaderboard')
   async ftTokensLeaderboard(
     @Param() context: ContractContext,
@@ -73,7 +68,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/nfts')
   async nftTokens(
     @Param() context: ContractContext,
@@ -89,7 +83,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/nfts/leaderboard')
   async nftTokensLeaderboard(
     @Param() context: ContractContext,
@@ -104,7 +97,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -119,7 +111,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/fts')
   async daoFtTokens(
     @Param() context: DaoContractContext,
@@ -135,7 +126,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/nfts')
   async daoNftTokens(
     @Param() context: DaoContractContext,

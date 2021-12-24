@@ -6,7 +6,7 @@ import { DaoStats } from './entities';
 import { DaoStatsMetric } from './types';
 
 export interface DaoStatsValueParams {
-  contract: string;
+  contractId: string;
   dao?: string;
   metric: DaoStatsMetric;
   func?: 'AVG' | 'SUM' | 'COUNT';
@@ -44,7 +44,7 @@ export class DaoStatsService {
   }
 
   async getValue({
-    contract,
+    contractId,
     dao,
     metric,
     func = 'SUM',
@@ -53,7 +53,7 @@ export class DaoStatsService {
       .createQueryBuilder()
       .select(`${func}(value)::int as value`);
 
-    query.andWhere('contract_id = :contract', { contract });
+    query.andWhere('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
@@ -72,7 +72,7 @@ export class DaoStatsService {
   }
 
   async getLeaderboard({
-    contract,
+    contractId,
     metric,
     dao,
     func = 'SUM',
@@ -81,7 +81,7 @@ export class DaoStatsService {
     const query = this.repository
       .createQueryBuilder()
       .select(`dao, ${func}(value)::int as value`)
-      .where('contract_id = :contract', { contract });
+      .where('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });

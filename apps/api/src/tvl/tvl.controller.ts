@@ -1,19 +1,17 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
   ContractContext,
   DaoContractContext,
-  HttpCacheInterceptor,
   MetricQuery,
-  MetricQueryPipe,
   MetricResponse,
 } from '@dao-stats/common';
 
 import { TvlTotalResponse } from './dto/tvl-total.dto';
 import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-response.dto';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { TvlService } from './tvl.service';
+import { MetricQueryPipe } from '../pipes';
 
 @ApiTags('TVL')
 @Controller('tvl')
@@ -27,7 +25,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/')
   async totals(@Param() context: ContractContext): Promise<TvlTotalResponse> {
     return this.tvlService.totals(context);
@@ -40,7 +37,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/bounties/number')
   async bountiesNumber(
     @Param() context: ContractContext,
@@ -56,7 +52,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/bounties/vl')
   async bountiesValueLocked(
     @Param() context: ContractContext,
@@ -72,7 +67,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/bounties/leaderboard')
   async groups(
     @Param() context: ContractContext,
@@ -87,7 +81,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -102,7 +95,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/bounties/number')
   async daoBountiesNumber(
     @Param() context: DaoContractContext,
@@ -118,7 +110,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ContractInterceptor)
   @Get('/:dao/bounties/vl')
   async daoBountiesValueLocked(
     @Param() context: DaoContractContext,

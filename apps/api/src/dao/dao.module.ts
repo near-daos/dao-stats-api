@@ -5,6 +5,7 @@ import { CacheConfigService } from '@dao-stats/config/cache';
 import { Dao, DaoService } from '@dao-stats/common';
 
 import { DaoController } from './dao.controller';
+import { ContractModule } from '../contract/contract.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DaoController } from './dao.controller';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Dao]),
+    ContractModule
   ],
   providers: [DaoService],
   controllers: [DaoController],

@@ -9,9 +9,10 @@ import {
   DaoStatsService,
   LeaderboardMetricResponse,
   MetricQuery,
+  MetricType,
 } from '@dao-stats/common';
 import { TokensTotalResponse } from './dto/tokens-total.dto';
-import { getGrowth } from '../utils';
+import { getGrowth, patchMetricDays } from '../utils';
 
 @Injectable()
 export class TokensService {
@@ -23,30 +24,30 @@ export class TokensService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<TokensTotalResponse> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'day');
 
     const [ftsCount, ftsCountPrev, nftsCount, nftsCountPrev] =
       await Promise.all([
         this.daoStatsService.getValue({
-          contract,
+          contractId,
           dao,
           metric: DaoStatsMetric.FtsCount,
         }),
         this.daoStatsHistoryService.getValue({
-          contract,
+          contractId,
           dao,
           metric: DaoStatsMetric.FtsCount,
           to: dayAgo.valueOf(),
         }),
         this.daoStatsService.getValue({
-          contract,
+          contractId,
           dao,
           metric: DaoStatsMetric.NftsCount,
         }),
         this.daoStatsHistoryService.getValue({
-          contract,
+          contractId,
           dao,
           metric: DaoStatsMetric.NftsCount,
           to: dayAgo.valueOf(),
@@ -69,11 +70,12 @@ export class TokensService {
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
-      contract,
+      contractId,
       dao,
       metric: DaoStatsMetric.FtsCount,
       from,
@@ -81,10 +83,14 @@ export class TokensService {
     });
 
     return {
-      metrics: history.map((row) => ({
-        timestamp: row.date.valueOf(),
-        count: row.value,
-      })),
+      metrics: patchMetricDays(
+        metricQuery,
+        history.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+        MetricType.Total,
+      ),
     };
   }
 
@@ -92,11 +98,12 @@ export class TokensService {
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<any> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
+
     const { from, to } = metricQuery;
 
     const history = await this.daoStatsHistoryService.getHistory({
-      contract,
+      contractId,
       dao,
       metric: DaoStatsMetric.NftsCount,
       from,
@@ -104,20 +111,24 @@ export class TokensService {
     });
 
     return {
-      metrics: history.map((row) => ({
-        timestamp: row.date.valueOf(),
-        count: row.value,
-      })),
+      metrics: patchMetricDays(
+        metricQuery,
+        history.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+        MetricType.Total,
+      ),
     };
   }
 
   async ftsLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contract } = context;
+    const { contractId } = context;
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.FtsCount,
     });
 
@@ -128,13 +139,13 @@ export class TokensService {
       leaderboard.map(async ({ dao, value }) => {
         const [countPrev, countHistory] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.FtsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.FtsCount,
             from: weekAgo.valueOf(),
@@ -161,10 +172,10 @@ export class TokensService {
   async nftsLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contract } = context;
+    const { contractId } = context;
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
-      contract,
+      contractId,
       metric: DaoStatsMetric.NftsCount,
     });
 
@@ -175,13 +186,13 @@ export class TokensService {
       leaderboard.map(async ({ dao, value }) => {
         const [countPrev, countHistory] = await Promise.all([
           this.daoStatsHistoryService.getValue({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.NftsCount,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
-            contract,
+            contractId,
             dao,
             metric: DaoStatsMetric.NftsCount,
             from: weekAgo.valueOf(),
