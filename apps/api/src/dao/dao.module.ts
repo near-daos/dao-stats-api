@@ -13,7 +13,7 @@ import { ContractModule } from '../contract/contract.module';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Dao]),
-    ContractModule
+    ContractModule,
   ],
   providers: [DaoService],
   controllers: [DaoController],
