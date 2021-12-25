@@ -1,7 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { DaoContractContext, MetricQuery } from '@dao-stats/common';
+import {
+  ContractContext,
+  DaoContractContext,
+  MetricQuery,
+} from '@dao-stats/common';
 import { FlowTotalResponse } from './dto/flow-total.dto';
 import { FlowService } from './flow.service';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
@@ -22,9 +26,7 @@ export class FlowController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/')
-  async totals(
-    @Param() context: DaoContractContext,
-  ): Promise<FlowTotalResponse> {
+  async totals(@Param() context: ContractContext): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);
   }
 
@@ -37,7 +39,7 @@ export class FlowController {
   })
   @Get('/funds')
   async funds(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
     return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
@@ -52,7 +54,7 @@ export class FlowController {
   })
   @Get('/funds/leaderboard')
   async fundsLeaderboard(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
   ): Promise<FlowLeaderboardMetricResponse> {
     return this.flowService.leaderboard(context, FlowMetricType.Fund);
   }
@@ -66,7 +68,7 @@ export class FlowController {
   })
   @Get('/transactions')
   async transactions(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
     return this.flowService.history(
@@ -85,7 +87,7 @@ export class FlowController {
   })
   @Get('/transactions/leaderboard')
   async transactionsLeaderboard(
-    @Param() context: DaoContractContext,
+    @Param() context: ContractContext,
   ): Promise<FlowLeaderboardMetricResponse> {
     return this.flowService.leaderboard(context, FlowMetricType.Transaction);
   }
