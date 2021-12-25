@@ -1,6 +1,5 @@
 export * from './dto';
 export * from './entities';
-export * from './interceptors';
 export * from './interfaces';
 export * from './types';
 export * from './constants';
