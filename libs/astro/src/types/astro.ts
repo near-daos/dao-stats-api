@@ -206,7 +206,7 @@ export interface NfTokenForOwnerMintbaseInterface {
   origin_key: null;
 }
 
-export interface NfTokenForOwnerXParasInterface {
+export interface NfTokenForOwnerParasInterface {
   token_id: number;
   owner_id: AccountId;
   metadata: NfTokenForOwnerMetadata;
@@ -215,6 +215,6 @@ export interface NfTokenForOwnerXParasInterface {
 
 export type NfTokenForOwnerInterface =
   | NfTokenForOwnerMintbaseInterface
-  | NfTokenForOwnerXParasInterface;
+  | NfTokenForOwnerParasInterface;
 
 export type NfTokenForOwnerResponse = NfTokenForOwnerInterface[];
