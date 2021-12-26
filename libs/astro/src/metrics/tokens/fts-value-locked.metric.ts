@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric, convertFunds } from '@dao-stats/common';
-import { NearService } from '@dao-stats/near';
 import { NearHelperService } from '@dao-stats/near-helper';
+import { SodakiService } from '@dao-stats/sodaki';
 import { AstroService } from '../../astro.service';
 import {
   DaoContractMetricCurrentParams,
@@ -14,8 +14,8 @@ import {
 export class FtsValueLockedMetric implements DaoContractMetricInterface {
   constructor(
     private readonly astroService: AstroService,
-    private readonly nearService: NearService,
     private readonly nearHelperService: NearHelperService,
+    private readonly sodakiService: SodakiService,
   ) {}
 
   getType(): DaoStatsMetric {
@@ -28,14 +28,14 @@ export class FtsValueLockedMetric implements DaoContractMetricInterface {
     const tokens = await this.nearHelperService.getLikelyTokens(
       contract.contractId,
     );
-    const nearPrice = await this.nearService.getNearPrice();
+    const nearPrice = await this.sodakiService.getNearPrice();
     const tokenBalances = await Promise.all(
       tokens.map(async (token) => {
         const fTokenContract = await this.astroService.getFTokenContract(token);
         const [metadata, balance, price] = await Promise.all([
           fTokenContract.getMetadata(),
           fTokenContract.getBalance(contract.contractId),
-          this.nearService.getTokenPrice(token),
+          this.sodakiService.getTokenPrice(token),
         ]);
         const tokenBalance = convertFunds(
           balance,

@@ -64,6 +64,12 @@
       "@dao-stats/astro/*": [
         "libs/astro/src/*"
       ],
+      "@dao-stats/sodaki": [
+        "libs/sodaki/src"
+      ],
+      "@dao-stats/sodaki/*": [
+        "libs/sodaki/src/*"
+      ],
       "@dao-stats/sputnik-dao": [
         "libs/sputnik-dao/src"
       ],

@@ -1,24 +1,24 @@
 import { lastValueFrom, map } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cacheable } from '@type-cacheable/core';
-import { NearConfigService } from './near-config.service';
 
 @Injectable()
-export class NearService {
+export class SodakiService {
   constructor(
+    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly nearConfigService: NearConfigService,
   ) {}
 
   @Cacheable({
     ttlSeconds: 30,
   })
   async getTokenPrices(): Promise<any> {
+    const baseUri = this.configService.get<string>('sodaki.baseUri');
+
     return lastValueFrom(
-      this.httpService
-        .get(`${this.nearConfigService.tokenApiUrl}/last-tvl`)
-        .pipe(map((res) => res.data)),
+      this.httpService.get(`${baseUri}/last-tvl`).pipe(map((res) => res.data)),
     );
   }
 
@@ -26,9 +26,10 @@ export class NearService {
     ttlSeconds: 30,
   })
   async getSpotPrices(): Promise<any> {
+    const baseUri = this.configService.get<string>('sodaki.baseUri');
     return lastValueFrom(
       this.httpService
-        .get(`${this.nearConfigService.tokenApiUrl}/spot-price`)
+        .get(`${baseUri}/spot-price`)
         .pipe(map((res) => res.data)),
     );
   }
