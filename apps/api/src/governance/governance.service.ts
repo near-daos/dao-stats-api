@@ -51,23 +51,23 @@ export class GovernanceService {
     ] = await Promise.all([
       this.daoStatsService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
       this.daoStatsHistoryService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
       this.daoStatsHistoryService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
         to: dayAgo.valueOf(),
       }),

@@ -1,4 +1,9 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {
+  CacheModule,
+  ClassSerializerInterceptor,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -12,7 +17,7 @@ import configuration, {
 import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
-  API_WHITELIST,
+  CONTRACT_CONTEXT_FREE_API_LIST,
   Contract,
   ContractContext,
   Receipt,
@@ -21,7 +26,7 @@ import {
 } from '@dao-stats/common';
 import { RedisModule } from '@dao-stats/redis';
 
-import { ContractInterceptor } from './interceptors/contract-context.interceptor';
+import { ContractContextInterceptor } from './interceptors/contract-context.interceptor';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
@@ -30,8 +35,9 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { HttpCacheInterceptor } from './interceptors';
+import { DaoContractContextInterceptor } from './interceptors/dao-contract-context.interceptor';
 
 @Module({
   imports: [
@@ -70,10 +76,30 @@ import { HttpCacheInterceptor } from './interceptors';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ContractInterceptor,
+      useClass: ClassSerializerInterceptor,
     },
     {
-      provide: API_WHITELIST,
+      provide: APP_INTERCEPTOR,
+      useClass: ContractContextInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DaoContractContextInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          disableErrorMessages: false,
+          validationError: { target: false },
+          transformOptions: {
+            enableImplicitConversion: true,
+          },
+        }),
+    },
+    {
+      provide: CONTRACT_CONTEXT_FREE_API_LIST,
       useValue: ['/api/v1/contracts'],
     },
   ],
