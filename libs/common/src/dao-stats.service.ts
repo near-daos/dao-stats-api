@@ -3,13 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats } from './entities';
-import { DaoStatsMetric } from './types';
+import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
 export interface DaoStatsValueParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric;
-  func?: 'AVG' | 'SUM' | 'COUNT';
+  func?: DaoStatsAggregateFunction;
 }
 
 export interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
@@ -47,7 +47,7 @@ export class DaoStatsService {
     contractId,
     dao,
     metric,
-    func = 'SUM',
+    func = DaoStatsAggregateFunction.Sum,
   }: DaoStatsValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
@@ -73,9 +73,9 @@ export class DaoStatsService {
 
   async getLeaderboard({
     contractId,
-    metric,
     dao,
-    func = 'SUM',
+    metric,
+    func = DaoStatsAggregateFunction.Sum,
     limit = 10,
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
     const query = this.repository
