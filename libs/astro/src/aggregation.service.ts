@@ -178,7 +178,7 @@ export class AggregationService implements Aggregator {
 
         yield {
           contractId,
-          dao: contractName,
+          dao: daoContract.contractId,
           metric: type,
           value,
         };
