@@ -64,7 +64,9 @@ export class DaoContract extends Base {
     const lastProposalId = await this.get_last_proposal_id();
     const promises: Promise<ProposalsResponse>[] = [];
     for (let i = 0; i <= lastProposalId; i += chunkSize) {
-      promises.push(this.get_proposals({ from_index: i, limit: chunkSize }));
+      promises.push(
+        this.get_proposals({ from_index: String(i), limit: chunkSize }),
+      );
     }
     return (await Promise.all(promises)).flat();
   }
@@ -77,7 +79,9 @@ export class DaoContract extends Base {
     const lastBountyId = await this.get_last_bounty_id();
     const promises: Promise<BountiesResponse>[] = [];
     for (let i = 0; i < lastBountyId; i += chunkSize) {
-      promises.push(this.get_bounties({ from_index: i, limit: chunkSize }));
+      promises.push(
+        this.get_bounties({ from_index: String(i), limit: chunkSize }),
+      );
     }
     return (await Promise.all(promises)).flat();
   }

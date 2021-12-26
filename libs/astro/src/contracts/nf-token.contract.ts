@@ -26,8 +26,25 @@ export class NfTokenContract extends Base {
     cacheKey: ([accountId], context) =>
       `nft-tokens-for-owner:${context.contractId}:${accountId}`,
   })
-  async getTokensForOwner(accountId: string): Promise<NfTokenForOwnerResponse> {
-    return this.nft_tokens_for_owner({ account_id: accountId });
+  async getTokensForOwner(
+    accountId: string,
+    chunkSize = 100,
+  ): Promise<NfTokenForOwnerResponse> {
+    let nfts = [];
+    let chunk = [];
+    let fromIndex = 0;
+
+    do {
+      chunk = await this.nft_tokens_for_owner({
+        account_id: accountId,
+        from_index: String(fromIndex),
+        limit: chunkSize,
+      });
+      fromIndex += chunkSize;
+      nfts = nfts.concat(chunk);
+    } while (chunk.length === chunkSize);
+
+    return nfts;
   }
 
   @Cacheable({

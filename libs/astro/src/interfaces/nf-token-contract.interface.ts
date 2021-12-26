@@ -7,6 +7,8 @@ import {
 export interface NfTokenContractInterface extends Contract {
   nft_tokens_for_owner(args: {
     account_id: string;
+    from_index?: string;
+    limit?: number;
   }): Promise<NfTokenForOwnerResponse>;
   nft_metadata(): Promise<NfTokenMetadataResponse>;
 }

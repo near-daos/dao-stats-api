@@ -36,7 +36,7 @@ export class DaoFactoryContract extends Base {
     const lastProposalId = await this.get_number_daos();
     const promises: Promise<string[]>[] = [];
     for (let i = 0; i <= lastProposalId; i += chunkSize) {
-      promises.push(this.get_daos({ from_index: i, limit: chunkSize }));
+      promises.push(this.get_daos({ from_index: String(i), limit: chunkSize }));
     }
     return (await Promise.all(promises)).flat();
   }
