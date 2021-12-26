@@ -1,4 +1,8 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {
+  CacheModule,
+  ClassSerializerInterceptor,
+  Module,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -12,7 +16,7 @@ import configuration, {
 import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
-  API_WHITELIST,
+  CONTEXT_FREE_API_LIST,
   Contract,
   ContractContext,
   Receipt,
@@ -73,7 +77,7 @@ import { HttpCacheInterceptor } from './interceptors';
       useClass: ContractInterceptor,
     },
     {
-      provide: API_WHITELIST,
+      provide: CONTEXT_FREE_API_LIST,
       useValue: ['/api/v1/contracts'],
     },
   ],

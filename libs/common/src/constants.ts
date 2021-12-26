@@ -3,4 +3,4 @@ export const NEST_APP_API = 'api';
 
 export const EVENT_CACHE_CLEAR = 'clear_cache';
 
-export const API_WHITELIST = 'API_WHITELIST';
+export const CONTEXT_FREE_API_LIST = 'CONTEXT_FREE_API_LIST';
