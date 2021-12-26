@@ -11,7 +11,7 @@ import {
 import { ContractService } from '../contract/contract.service';
 import { RequestContext } from '@medibloc/nestjs-request-context';
 import {
-  CONTEXT_FREE_API_LIST,
+  CONTRACT_CONTEXT_FREE_API_LIST,
   DaoContractContext,
   DaoService,
 } from '@dao-stats/common';
@@ -21,7 +21,7 @@ export class ContractInterceptor implements NestInterceptor {
   constructor(
     private readonly contractService: ContractService,
     private readonly daoService: DaoService,
-    @Inject(CONTEXT_FREE_API_LIST)
+    @Inject(CONTRACT_CONTEXT_FREE_API_LIST)
     private readonly apiWhitelist,
   ) {}
 

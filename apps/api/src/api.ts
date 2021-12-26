@@ -4,7 +4,7 @@ import { Logger, LogLevel } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './api.module';
-import { CONTEXT_FREE_API_LIST } from '@dao-stats/common';
+import { CONTRACT_CONTEXT_FREE_API_LIST } from '@dao-stats/common';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);
@@ -16,7 +16,7 @@ export default class Api {
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1/:contractId', {
-      exclude: app.get(CONTEXT_FREE_API_LIST),
+      exclude: app.get(CONTRACT_CONTEXT_FREE_API_LIST),
     });
 
     if (process.env.NODE_ENV === 'development') {

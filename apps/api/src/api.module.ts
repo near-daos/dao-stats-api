@@ -17,7 +17,7 @@ import configuration, {
 import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
-  CONTEXT_FREE_API_LIST,
+  CONTRACT_CONTEXT_FREE_API_LIST,
   Contract,
   ContractContext,
   Receipt,
@@ -94,7 +94,7 @@ import { HttpCacheInterceptor } from './interceptors';
         }),
     },
     {
-      provide: CONTEXT_FREE_API_LIST,
+      provide: CONTRACT_CONTEXT_FREE_API_LIST,
       useValue: ['/api/v1/contracts'],
     },
   ],
