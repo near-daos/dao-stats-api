@@ -2,6 +2,7 @@ import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 import {
   Contract,
+  ContractContext,
   DaoContractContext,
   LeaderboardMetric,
   MetricQuery,
@@ -22,7 +23,7 @@ export class FlowService {
     private readonly contractService: ContractService,
   ) {}
 
-  async totals(context: DaoContractContext): Promise<FlowTotalResponse> {
+  async totals(context: ContractContext): Promise<FlowTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
 
     const contract = await this.contractService.findById(context.contractId);
@@ -119,7 +120,7 @@ export class FlowService {
   }
 
   async history(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
     metricQuery?: MetricQuery,
   ): Promise<FlowMetricResponse> {
@@ -179,7 +180,7 @@ export class FlowService {
   }
 
   async leaderboard(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
   ): Promise<FlowLeaderboardMetricResponse> {
     const weekAgo = moment().subtract(7, 'days');

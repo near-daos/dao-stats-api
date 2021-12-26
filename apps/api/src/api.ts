@@ -9,7 +9,6 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './api.module';
-import { CacheService } from '@dao-stats/cache';
 import { API_WHITELIST } from '@dao-stats/common';
 
 export default class Api {

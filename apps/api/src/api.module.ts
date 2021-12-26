@@ -15,7 +15,6 @@ import {
   API_WHITELIST,
   Contract,
   ContractContext,
-  HttpCacheInterceptor,
   Receipt,
   ReceiptAction,
   Transaction,
@@ -32,6 +31,7 @@ import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { HttpCacheInterceptor } from './interceptors';
 
 @Module({
   imports: [
