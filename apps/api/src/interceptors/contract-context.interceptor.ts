@@ -11,18 +11,16 @@ import {
 import { ContractService } from '../contract/contract.service';
 import { RequestContext } from '@medibloc/nestjs-request-context';
 import {
+  ContractContext,
   CONTRACT_CONTEXT_FREE_API_LIST,
-  DaoContractContext,
-  DaoService,
 } from '@dao-stats/common';
 
 @Injectable()
-export class ContractInterceptor implements NestInterceptor {
+export class ContractContextInterceptor implements NestInterceptor {
   constructor(
-    private readonly contractService: ContractService,
-    private readonly daoService: DaoService,
+    readonly contractService: ContractService,
     @Inject(CONTRACT_CONTEXT_FREE_API_LIST)
-    private readonly apiWhitelist,
+    readonly apiWhitelist,
   ) {}
 
   async intercept(
@@ -30,7 +28,7 @@ export class ContractInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Promise<Observable<any>> {
     const { route, params } = context.switchToHttp().getRequest();
-    const { contractId, dao } = params;
+    const { contractId } = params;
 
     if (this.apiWhitelist.includes(route.path)) {
       return next.handle();
@@ -50,22 +48,9 @@ export class ContractInterceptor implements NestInterceptor {
       );
     }
 
-    if (dao) {
-      const daoEntity = await this.daoService.findById(contractId, dao);
-      if (!daoEntity) {
-        return throwError(
-          () =>
-            new BadRequestException(
-              `DAO '${dao}' is not found in '${contractId}' contract.`,
-            ),
-        );
-      }
-    }
-
-    const ctx: DaoContractContext = RequestContext.get();
+    const ctx: ContractContext = RequestContext.get();
     ctx.contractId = contractId;
     ctx.contract = entity;
-    ctx.dao = dao;
 
     return next.handle();
   }

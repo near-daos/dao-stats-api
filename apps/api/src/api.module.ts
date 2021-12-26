@@ -26,7 +26,7 @@ import {
 } from '@dao-stats/common';
 import { RedisModule } from '@dao-stats/redis';
 
-import { ContractInterceptor } from './interceptors/contract-context.interceptor';
+import { ContractContextInterceptor } from './interceptors/contract-context.interceptor';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
@@ -37,6 +37,7 @@ import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { HttpCacheInterceptor } from './interceptors';
+import { DaoContractContextInterceptor } from './interceptors/dao-contract-context.interceptor';
 
 @Module({
   imports: [
@@ -75,11 +76,15 @@ import { HttpCacheInterceptor } from './interceptors';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ContractInterceptor,
+      useClass: ClassSerializerInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
+      useClass: ContractContextInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DaoContractContextInterceptor,
     },
     {
       provide: APP_PIPE,
