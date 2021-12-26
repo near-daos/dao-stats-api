@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
 import { NearHelperService } from '@dao-stats/near-helper';
+import { AstroService } from '../../astro.service';
 import {
   DaoContractMetricCurrentParams,
   DaoContractMetricHistoryParams,
@@ -10,7 +11,10 @@ import {
 
 @Injectable()
 export class NftsCountMetric implements DaoContractMetricInterface {
-  constructor(private readonly nearHelperService: NearHelperService) {}
+  constructor(
+    private readonly astroService: AstroService,
+    private readonly nearHelperService: NearHelperService,
+  ) {}
 
   getType(): DaoStatsMetric {
     return DaoStatsMetric.NftsCount;
@@ -19,8 +23,24 @@ export class NftsCountMetric implements DaoContractMetricInterface {
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return (await this.nearHelperService.getLikelyNFTs(contract.contractId))
-      .length;
+    const tokens = await this.nearHelperService.getLikelyNFTs(
+      contract.contractId,
+    );
+    const nfts = (
+      await Promise.all(
+        tokens.map(async (token) => {
+          const tokenContract = await this.astroService.getNfTokenContract(
+            token,
+          );
+          try {
+            return await tokenContract.getTokensForOwner(contract.contractId);
+          } catch (err) {
+            return [];
+          }
+        }),
+      )
+    ).flat();
+    return nfts.length;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
