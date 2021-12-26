@@ -2,6 +2,7 @@ import {
   CacheModule,
   ClassSerializerInterceptor,
   Module,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -34,7 +35,7 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { HttpCacheInterceptor } from './interceptors';
 
 @Module({
@@ -75,6 +76,22 @@ import { HttpCacheInterceptor } from './interceptors';
     {
       provide: APP_INTERCEPTOR,
       useClass: ContractInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          disableErrorMessages: false,
+          validationError: { target: false },
+          transformOptions: {
+            enableImplicitConversion: true,
+          },
+        }),
     },
     {
       provide: CONTEXT_FREE_API_LIST,
