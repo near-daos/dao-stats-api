@@ -40,11 +40,26 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/fts')
-  async ftTokens(
+  async fts(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.fts(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts-vl')
+  async ftsValueLocked(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tokensService.ftsValueLocked(context, metricQuery);
   }
 
   @ApiResponse({
@@ -55,10 +70,24 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/fts/leaderboard')
-  async ftTokensLeaderboard(
+  async ftsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tokensService.ftsLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts-vl/leaderboard')
+  async ftsValueLockedLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.tokensService.ftsValueLockedLeaderboard(context);
   }
 
   @ApiResponse({
@@ -69,7 +98,7 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/nfts')
-  async nftTokens(
+  async nfts(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -84,7 +113,7 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/nfts/leaderboard')
-  async nftTokensLeaderboard(
+  async nftsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tokensService.nftsLeaderboard(context);
@@ -112,7 +141,7 @@ export class TokensController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/:dao/fts')
-  async daoFtTokens(
+  async daoFts(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -126,8 +155,23 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @Get('/:dao/fts-vl')
+  async daoFtsValueLocked(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tokensService.ftsValueLocked(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
   @Get('/:dao/nfts')
-  async daoNftTokens(
+  async daoNfts(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {

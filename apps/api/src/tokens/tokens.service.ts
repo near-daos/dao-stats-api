@@ -28,7 +28,7 @@ export class TokensService {
 
     const dayAgo = moment().subtract(1, 'day');
 
-    const [ftsCount, ftsCountPrev, nftsCount, nftsCountPrev] =
+    const [ftsCount, ftsCountPrev, ftsVl, ftsVlPrev, nftsCount, nftsCountPrev] =
       await Promise.all([
         this.daoStatsService.getValue({
           contractId,
@@ -39,6 +39,17 @@ export class TokensService {
           contractId,
           dao,
           metric: DaoStatsMetric.FtsCount,
+          to: dayAgo.valueOf(),
+        }),
+        this.daoStatsService.getValue({
+          contractId,
+          dao,
+          metric: DaoStatsMetric.FtsValueLocked,
+        }),
+        this.daoStatsHistoryService.getValue({
+          contractId,
+          dao,
+          metric: DaoStatsMetric.FtsValueLocked,
           to: dayAgo.valueOf(),
         }),
         this.daoStatsService.getValue({
@@ -59,6 +70,10 @@ export class TokensService {
         count: ftsCount,
         growth: getGrowth(ftsCount, ftsCountPrev),
       },
+      ftsVl: {
+        count: ftsVl,
+        growth: getGrowth(ftsVl, ftsVlPrev),
+      },
       nfts: {
         count: nftsCount,
         growth: getGrowth(nftsCount, nftsCountPrev),
@@ -78,6 +93,34 @@ export class TokensService {
       contractId,
       dao,
       metric: DaoStatsMetric.FtsCount,
+      from,
+      to,
+    });
+
+    return {
+      metrics: patchMetricDays(
+        metricQuery,
+        history.map((row) => ({
+          timestamp: row.date.valueOf(),
+          count: row.value,
+        })),
+        MetricType.Total,
+      ),
+    };
+  }
+
+  async ftsValueLocked(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    const { contractId, dao } = context as DaoContractContext;
+
+    const { from, to } = metricQuery;
+
+    const history = await this.daoStatsHistoryService.getHistory({
+      contractId,
+      dao,
+      metric: DaoStatsMetric.FtsValueLocked,
       from,
       to,
     });
@@ -148,6 +191,53 @@ export class TokensService {
             contractId,
             dao,
             metric: DaoStatsMetric.FtsCount,
+            from: weekAgo.valueOf(),
+          }),
+        ]);
+
+        return {
+          dao,
+          activity: {
+            count: value,
+            growth: getGrowth(value, countPrev),
+          },
+          overview: countHistory.map((row) => ({
+            timestamp: row.date.valueOf(),
+            count: row.value,
+          })),
+        };
+      }),
+    );
+
+    return { metrics };
+  }
+
+  async ftsValueLockedLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    const { contractId } = context;
+
+    const leaderboard = await this.daoStatsService.getLeaderboard({
+      contractId,
+      metric: DaoStatsMetric.FtsValueLocked,
+    });
+
+    const dayAgo = moment().subtract(1, 'day');
+    const weekAgo = moment().subtract(1, 'week');
+
+    const metrics = await Promise.all(
+      leaderboard.map(async ({ dao, value }) => {
+        const [countPrev, countHistory] = await Promise.all([
+          this.daoStatsHistoryService.getValue({
+            contractId,
+            dao,
+            metric: DaoStatsMetric.FtsValueLocked,
+            to: dayAgo.valueOf(),
+          }),
+          this.daoStatsHistoryService.getHistory({
+            contractId,
+            dao,
+            metric: DaoStatsMetric.FtsValueLocked,
             from: weekAgo.valueOf(),
           }),
         ]);
