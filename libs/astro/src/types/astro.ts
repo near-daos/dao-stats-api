@@ -147,3 +147,74 @@ export interface Bounty {
 }
 
 export type BountiesResponse = Bounty[];
+
+export interface FTokenMetadata {
+  spec: string;
+  name: string;
+  symbol: string;
+  icon: string | null;
+  reference: string | null;
+  reference_hash: string | null;
+  decimals: number;
+}
+
+export type FTokenMetadataResponse = FTokenMetadata;
+
+export interface NfTokenMetadata {
+  spec: string;
+  name: string;
+  symbol: string;
+  icon: string | null;
+  base_uri: string | null;
+  reference: string | null;
+  reference_hash: string | null;
+}
+
+export type NfTokenMetadataResponse = NfTokenMetadata;
+
+export interface NfTokenForOwnerMetadata {
+  title: string;
+  description: string;
+  media: string;
+  media_hash: string;
+  copies: number;
+  issued_at: string | null;
+  expires_at: string | null;
+  starts_at: string | null;
+  updated_at: string | null;
+  extra: string | null;
+  reference: string;
+  reference_hash: string;
+}
+
+export interface NfTokenForOwnerMintbaseInterface {
+  id: number;
+  owner_id: Record<'Account', AccountId>;
+  approvals: Record<any, any>;
+  metadata: NfTokenForOwnerMetadata;
+  royalty: null | {
+    split_between: Record<AccountId, { numerator: number }>;
+    percentage: { numerator: number };
+  };
+  split_owners: null;
+  minter: AccountId;
+  loan: null;
+  composeable_stats: {
+    local_depth: number;
+    cross_contract_children: number;
+  };
+  origin_key: null;
+}
+
+export interface NfTokenForOwnerXParasInterface {
+  token_id: number;
+  owner_id: AccountId;
+  metadata: NfTokenForOwnerMetadata;
+  approved_accounts_ids: Record<any, any>;
+}
+
+export type NfTokenForOwnerInterface =
+  | NfTokenForOwnerMintbaseInterface
+  | NfTokenForOwnerXParasInterface;
+
+export type NfTokenForOwnerResponse = NfTokenForOwnerInterface[];

@@ -7,6 +7,7 @@ import {
   DaoContract,
   DaoFactoryContract,
   FTokenContract,
+  NfTokenContract,
   TokenFactoryContract,
 } from './contracts';
 
@@ -44,5 +45,10 @@ export class AstroService {
   async getFTokenContract(contractId: string): Promise<FTokenContract> {
     const account = await this.near.account(contractId);
     return new FTokenContract(account, contractId);
+  }
+
+  async getNfTokenContract(contractId: string): Promise<NfTokenContract> {
+    const account = await this.near.account(contractId);
+    return new NfTokenContract(account, contractId);
   }
 }

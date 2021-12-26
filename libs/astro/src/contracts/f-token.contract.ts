@@ -23,7 +23,7 @@ export class FTokenContract extends Base {
   @Cacheable({
     ttlSeconds: 300,
     cacheKey: ([accountId], context) =>
-      `balance:${context.contractId}:${accountId}`,
+      `ft-balance:${context.contractId}:${accountId}`,
   })
   async getBalance(accountId: string): Promise<string> {
     return this.ft_balance_of({ account_id: accountId });
@@ -31,7 +31,7 @@ export class FTokenContract extends Base {
 
   @Cacheable({
     ttlSeconds: 300,
-    cacheKey: (args, context) => `metadata:${context.contractId}`,
+    cacheKey: (args, context) => `ft-metadata:${context.contractId}`,
   })
   async getMetadata(): Promise<FTokenMetadata> {
     return this.ft_metadata();

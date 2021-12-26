@@ -9,7 +9,7 @@ indexer:
 near:
   env: mainnet
   credentials: '.near-credentials'
-  tokenApiUrl: https://www.sodaki.com/api
+  tokenApiUrl: 'https://www.sodaki.com/api'
 
 dao:
   contractName: 'sputnik-dao.near'
