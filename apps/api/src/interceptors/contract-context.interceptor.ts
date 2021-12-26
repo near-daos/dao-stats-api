@@ -10,12 +10,17 @@ import {
 
 import { ContractService } from '../contract/contract.service';
 import { RequestContext } from '@medibloc/nestjs-request-context';
-import { API_WHITELIST, DaoContractContext } from '@dao-stats/common';
+import {
+  API_WHITELIST,
+  DaoContractContext,
+  DaoService,
+} from '@dao-stats/common';
 
 @Injectable()
 export class ContractInterceptor implements NestInterceptor {
   constructor(
     private readonly contractService: ContractService,
+    private readonly daoService: DaoService,
     @Inject(API_WHITELIST)
     private readonly apiWhitelist,
   ) {}
@@ -43,6 +48,18 @@ export class ContractInterceptor implements NestInterceptor {
       return throwError(
         () => new BadRequestException(`Invalid contract name: ${contractId}`),
       );
+    }
+
+    if (dao) {
+      const daoEntity = await this.daoService.findById(contractId, dao);
+      if (!daoEntity) {
+        return throwError(
+          () =>
+            new BadRequestException(
+              `DAO '${dao}' is not found in '${contractId}' contract.`,
+            ),
+        );
+      }
     }
 
     const ctx: DaoContractContext = RequestContext.get();
