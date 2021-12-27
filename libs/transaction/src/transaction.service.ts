@@ -51,7 +51,7 @@ export class TransactionService {
     txType: TransactionType,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
     const { from, to } = metricQuery;
 
     const query = `
@@ -60,7 +60,7 @@ export class TransactionService {
             date_trunc('day', to_timestamp(block_timestamp / 1000 / 1000 / 1000)) as day,
             count(1)
           from transactions
-          where contract_id = '${contract}' and type = '${txType}'
+          where contract_id = '${contractId}' and type = '${txType}'
           ${dao ? `and receiver_account_id = '${dao}'` : ''}
           ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
           ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
@@ -202,7 +202,9 @@ export class TransactionService {
   ): SelectQueryBuilder<Transaction> {
     return this.getIntervalQueryBuilder(context, metricQuery).andWhere(
       'type != :type',
-      { type: TransactionType.CreateDao },
+      {
+        type: TransactionType.CreateDao,
+      },
     );
   }
 
@@ -210,12 +212,12 @@ export class TransactionService {
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): SelectQueryBuilder<Transaction> {
-    const { contract, dao } = context as DaoContractContext;
+    const { contractId, dao } = context as DaoContractContext;
     const { from, to } = metricQuery || {};
 
     const qb = this.transactionRepository.createQueryBuilder();
 
-    qb.where('contract_id = :contract', { contract });
+    qb.where('contract_id = :contractId', { contractId });
 
     if (dao) {
       qb.andWhere('receiver_account_id = :dao', { dao });

@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import {
+  ContractContext,
   DailyCountDto,
   DaoContractContext,
   MetricQuery,
@@ -22,7 +23,7 @@ export class ReceiptActionService {
   ) {}
 
   async getTotals(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
@@ -36,7 +37,7 @@ export class ReceiptActionService {
   }
 
   async getHistory(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
@@ -51,7 +52,7 @@ export class ReceiptActionService {
   }
 
   async getLeaderboard(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
@@ -148,28 +149,26 @@ export class ReceiptActionService {
   }
 
   private getTransferIntervalQueryBuilder(
-    context: DaoContractContext,
+    context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
   ): SelectQueryBuilder<ReceiptAction> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
+    const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
     const qb = this.receiptRepository
       .createQueryBuilder()
-      .where('contract_id = :contract', { contract })
+      .where('contract_id = :contractId', { contractId })
       .andWhere(`args_json->>'deposit' is not null`);
 
     if (transferType) {
       qb.andWhere(
         `receipt_${
           transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
-        }_account_id like :id`,
-        {
-          id: `%${dao}%`,
-        },
+        }_account_id ${dao ? `= '${dao}'` : `like '%${contractName}'`}`,
       );
     }
 

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Dao } from './entities';
-import { DaoResponse } from './dto';
+import { DaoDto } from './dto';
 
 @Injectable()
 export class DaoService {
@@ -12,11 +12,11 @@ export class DaoService {
     private readonly daoRepository: Repository<Dao>,
   ) {}
 
-  async find(contractId: string): Promise<DaoResponse[]> {
+  async find(contractId: string): Promise<DaoDto[]> {
     return this.daoRepository.find({ where: { contractId } });
   }
 
-  async findById(contractId: string, dao: string): Promise<DaoResponse> {
+  async findById(contractId: string, dao: string): Promise<DaoDto> {
     return this.daoRepository.findOne({ contractId, dao });
   }
 
@@ -24,10 +24,7 @@ export class DaoService {
     return this.daoRepository.save(dao);
   }
 
-  async autocomplete(
-    contractId: string,
-    input: string,
-  ): Promise<DaoResponse[]> {
+  async autocomplete(contractId: string, input: string): Promise<DaoDto[]> {
     return this.daoRepository
       .createQueryBuilder('dao')
       .where('contract_id = :contractId', { contractId })

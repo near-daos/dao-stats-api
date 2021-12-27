@@ -12,8 +12,8 @@ export class Dao extends BaseEntity {
   contractId: string;
 
   @Column({ nullable: true })
-  description: string;
+  description: string | null;
 
   @Column({ type: 'json', nullable: true })
-  metadata: Record<string, any>;
+  metadata: Record<string, any> | null;
 }
