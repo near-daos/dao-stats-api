@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 
 import { RequestContextModule } from '@medibloc/nestjs-request-context';
 
@@ -25,7 +26,11 @@ import {
 } from '@dao-stats/common';
 import { RedisModule } from '@dao-stats/redis';
 
-import { ContractContextInterceptor } from './interceptors/contract-context.interceptor';
+import {
+  ContractContextInterceptor,
+  DaoContractContextInterceptor,
+  HttpCacheInterceptor,
+} from './interceptors';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
@@ -34,9 +39,6 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
-import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { HttpCacheInterceptor } from './interceptors';
-import { DaoContractContextInterceptor } from './interceptors/dao-contract-context.interceptor';
 
 @Module({
   imports: [

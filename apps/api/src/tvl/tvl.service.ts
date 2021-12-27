@@ -8,54 +8,27 @@ import {
   DaoStatsMetric,
   DaoStatsService,
   MetricQuery,
-  MetricType,
+  MetricResponse,
 } from '@dao-stats/common';
 import { TvlTotalResponse } from './dto/tvl-total.dto';
-import { getGrowth, patchMetricDays } from '../utils';
 import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-response.dto';
+import { MetricService } from '../common/metric.service';
+import { getGrowth } from '../utils';
 
 @Injectable()
 export class TvlService {
   constructor(
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
+    private readonly metricService: MetricService,
   ) {}
 
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<TvlTotalResponse> {
-    const { contractId, dao } = context as DaoContractContext;
-
-    const dayAgo = moment().subtract(1, 'day');
-
-    const [
-      bountiesCount,
-      bountiesCountPrev,
-      bountiesValueLocked,
-      bountiesValueLockedPrev,
-    ] = await Promise.all([
-      this.daoStatsService.getValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.BountiesCount,
-      }),
-      this.daoStatsHistoryService.getValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.BountiesCount,
-        to: dayAgo.valueOf(),
-      }),
-      this.daoStatsService.getValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.BountiesValueLocked,
-      }),
-      this.daoStatsHistoryService.getValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.BountiesValueLocked,
-        to: dayAgo.valueOf(),
-      }),
+    const [bountiesNumber, bountiesValueLocked] = await Promise.all([
+      this.metricService.total(context, DaoStatsMetric.BountiesCount),
+      this.metricService.total(context, DaoStatsMetric.BountiesValueLocked),
     ]);
 
     return {
@@ -70,16 +43,9 @@ export class TvlService {
           growth: 0,
         },
       },
-      // TODO
       bounties: {
-        number: {
-          count: bountiesCount,
-          growth: getGrowth(bountiesCount, bountiesCountPrev),
-        },
-        vl: {
-          count: bountiesValueLocked,
-          growth: getGrowth(bountiesValueLocked, bountiesValueLockedPrev),
-        },
+        number: bountiesNumber,
+        vl: bountiesValueLocked,
       },
       // TODO
       tvl: {
@@ -92,57 +58,23 @@ export class TvlService {
   async bountiesNumber(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
-  ): Promise<any> {
-    const { contractId, dao } = context as DaoContractContext;
-
-    const { from, to } = metricQuery;
-
-    const history = await this.daoStatsHistoryService.getHistory({
-      contractId,
-      dao,
-      metric: DaoStatsMetric.BountiesCount,
-      from,
-      to,
-    });
-
-    return {
-      metrics: patchMetricDays(
-        metricQuery,
-        history.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
-        MetricType.Total,
-      ),
-    };
+  ): Promise<MetricResponse> {
+    return this.metricService.history(
+      context,
+      metricQuery,
+      DaoStatsMetric.BountiesCount,
+    );
   }
 
   async bountiesValueLocked(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
-  ): Promise<any> {
-    const { contractId, dao } = context as DaoContractContext;
-
-    const { from, to } = metricQuery;
-
-    const history = await this.daoStatsHistoryService.getHistory({
-      contractId,
-      dao,
-      metric: DaoStatsMetric.BountiesValueLocked,
-      from,
-      to,
-    });
-
-    return {
-      metrics: patchMetricDays(
-        metricQuery,
-        history.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
-        MetricType.Total,
-      ),
-    };
+  ): Promise<MetricResponse> {
+    return this.metricService.history(
+      context,
+      metricQuery,
+      DaoStatsMetric.BountiesValueLocked,
+    );
   }
 
   async bountiesLeaderboard(

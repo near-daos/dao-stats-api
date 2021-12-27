@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStatsHistory } from './entities';
-import { DaoStatsMetric } from './types';
+import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
 export interface DaoStatsHistoryValueParams {
   from?: number;
@@ -11,7 +11,7 @@ export interface DaoStatsHistoryValueParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric;
-  func?: 'AVG' | 'SUM' | 'COUNT';
+  func?: DaoStatsAggregateFunction;
 }
 
 export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
@@ -44,12 +44,12 @@ export class DaoStatsHistoryService {
   }
 
   async getValue({
-    from,
-    to,
     contractId,
     dao,
     metric,
-    func = 'SUM',
+    func = DaoStatsAggregateFunction.Sum,
+    from,
+    to,
   }: DaoStatsHistoryValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
@@ -88,12 +88,12 @@ export class DaoStatsHistoryService {
   }
 
   async getHistory({
-    func = 'SUM',
-    from,
-    to,
     contractId,
     dao,
     metric,
+    func = DaoStatsAggregateFunction.Sum,
+    from,
+    to,
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
     const query = this.repository
       .createQueryBuilder()
