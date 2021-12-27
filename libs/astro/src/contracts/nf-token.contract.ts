@@ -28,7 +28,7 @@ export class NfTokenContract extends Base {
   })
   async getTokensForOwner(
     accountId: string,
-    chunkSize = 100,
+    chunkSize = 50 /* bigger chunks may cause GasLimitExceeded error */,
   ): Promise<NfTokenForOwnerResponse> {
     let nfts = [];
     let chunk = [];
