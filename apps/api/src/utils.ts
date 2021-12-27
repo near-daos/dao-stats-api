@@ -24,7 +24,7 @@ export const getDailyIntervals = (
 ): { start: number; end: number }[] => {
   const days = [];
 
-  for (let time = from; time <= to; time += 86400000) {
+  for (let time = from; time <= to; time += 86400000 /* 1 day increment */) {
     days.push({
       start: moment(time).startOf('day').valueOf(),
       end: moment(time).endOf('day').valueOf(),
