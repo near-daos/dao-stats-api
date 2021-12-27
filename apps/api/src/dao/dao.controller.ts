@@ -6,6 +6,7 @@ import {
   DaoDto,
   DaoService,
 } from '@dao-stats/common';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('DAOs')
 @Controller('daos')
@@ -33,6 +34,7 @@ export class DaoController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async dao(@Param() context: DaoContractContext): Promise<DaoDto> {
     const { contractId, dao } = context;

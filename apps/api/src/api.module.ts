@@ -1,6 +1,12 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {
+  CacheModule,
+  ClassSerializerInterceptor,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 
 import { RequestContextModule } from '@medibloc/nestjs-request-context';
 
@@ -12,16 +18,19 @@ import configuration, {
 import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
-  API_WHITELIST,
   Contract,
-  ContractContext,
+  DaoContractContext,
   Receipt,
   ReceiptAction,
   Transaction,
 } from '@dao-stats/common';
 import { RedisModule } from '@dao-stats/redis';
 
-import { ContractInterceptor } from './interceptors/contract-context.interceptor';
+import {
+  ContractContextInterceptor,
+  DaoContractContextInterceptor,
+  HttpCacheInterceptor,
+} from './interceptors';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
@@ -30,8 +39,6 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { HttpCacheInterceptor } from './interceptors';
 
 @Module({
   imports: [
@@ -45,7 +52,7 @@ import { HttpCacheInterceptor } from './interceptors';
       envFilePath: ['.env.local', '.env'],
     }),
     RequestContextModule.forRoot({
-      contextClass: ContractContext,
+      contextClass: DaoContractContext,
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
@@ -70,11 +77,27 @@ import { HttpCacheInterceptor } from './interceptors';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ContractInterceptor,
+      useClass: ClassSerializerInterceptor,
     },
     {
-      provide: API_WHITELIST,
-      useValue: ['/api/v1/contracts'],
+      provide: APP_INTERCEPTOR,
+      useClass: ContractContextInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DaoContractContextInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          disableErrorMessages: false,
+          validationError: { target: false },
+          transformOptions: {
+            enableImplicitConversion: true,
+          },
+        }),
     },
   ],
 })

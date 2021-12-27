@@ -1,15 +1,9 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import {
-  ClassSerializerInterceptor,
-  Logger,
-  LogLevel,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Logger, LogLevel } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './api.module';
-import { API_WHITELIST } from '@dao-stats/common';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);
@@ -21,7 +15,7 @@ export default class Api {
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1/:contractId', {
-      exclude: app.get(API_WHITELIST),
+      exclude: ['/api/v1/contracts'],
     });
 
     if (process.env.NODE_ENV === 'development') {
@@ -36,21 +30,6 @@ export default class Api {
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('docs', app, document);
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        disableErrorMessages: false,
-        validationError: { target: false },
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
-      }),
-    );
-
-    app.useGlobalInterceptors(
-      new ClassSerializerInterceptor(app.get(Reflector)),
-    );
 
     const configService: ConfigService = app.get(ConfigService);
 

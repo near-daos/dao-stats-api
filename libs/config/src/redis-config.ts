@@ -2,7 +2,7 @@ import { registerAs } from '@nestjs/config';
 
 import { parseRedisUrl } from 'parse-redis-url-simple';
 
-export { default as validate } from './validationSchema';
+export { default as validate } from './validation-schema';
 export { TypeOrmConfigService } from './typeorm-config.service';
 export { CacheConfigService } from './cache';
 

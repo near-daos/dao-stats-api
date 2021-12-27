@@ -15,6 +15,7 @@ import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-res
 import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
 import { GovernanceService } from './governance.service';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('Governance')
 @Controller('governance')
@@ -129,6 +130,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -143,6 +145,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/proposals')
   async daoProposals(
     @Param() context: DaoContractContext,
@@ -158,6 +161,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/proposals-types')
   async daoProposalsTypes(
     @Param() context: DaoContractContext,
@@ -173,6 +177,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/vote-rate')
   async daoRate(
     @Param() context: DaoContractContext,

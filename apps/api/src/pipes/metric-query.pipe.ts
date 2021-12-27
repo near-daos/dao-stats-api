@@ -23,7 +23,7 @@ export class MetricQueryPipe implements PipeTransform {
     let { from, to } = query;
 
     if (from) {
-      from = moment(from);
+      from = moment(isNaN(from) ? from : parseInt(from));
 
       if (!from.isValid()) {
         throw new BadRequestException(`Invalid 'from' query parameter.`);

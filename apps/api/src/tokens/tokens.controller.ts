@@ -12,6 +12,7 @@ import {
 import { TokensTotalResponse } from './dto/tokens-total.dto';
 import { TokensService } from './tokens.service';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('Tokens')
 @Controller('tokens')
@@ -126,6 +127,7 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -140,6 +142,7 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/fts')
   async daoFts(
     @Param() context: DaoContractContext,
@@ -170,6 +173,7 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/nfts')
   async daoNfts(
     @Param() context: DaoContractContext,

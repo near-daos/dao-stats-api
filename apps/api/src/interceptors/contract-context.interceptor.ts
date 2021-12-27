@@ -3,33 +3,34 @@ import {
   BadRequestException,
   CallHandler,
   ExecutionContext,
-  Inject,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
 
 import { ContractService } from '../contract/contract.service';
 import { RequestContext } from '@medibloc/nestjs-request-context';
-import { API_WHITELIST, DaoContractContext } from '@dao-stats/common';
+import { ContractContext, NO_CONTRACT_CONTEXT } from '@dao-stats/common';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
-export class ContractInterceptor implements NestInterceptor {
+export class ContractContextInterceptor implements NestInterceptor {
   constructor(
-    private readonly contractService: ContractService,
-    @Inject(API_WHITELIST)
-    private readonly apiWhitelist,
+    readonly contractService: ContractService,
+    private readonly reflector: Reflector,
   ) {}
 
   async intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<any>> {
-    const { route, params } = context.switchToHttp().getRequest();
-    const { contractId, dao } = params;
-
-    if (this.apiWhitelist.includes(route.path)) {
+    if (
+      this.reflector.get<boolean>(NO_CONTRACT_CONTEXT, context.getHandler())
+    ) {
       return next.handle();
     }
+
+    const { params } = context.switchToHttp().getRequest();
+    const { contractId } = params;
 
     if (!contractId) {
       return throwError(
@@ -45,10 +46,9 @@ export class ContractInterceptor implements NestInterceptor {
       );
     }
 
-    const ctx: DaoContractContext = RequestContext.get();
+    const ctx: ContractContext = RequestContext.get();
     ctx.contractId = contractId;
     ctx.contract = entity;
-    ctx.dao = dao;
 
     return next.handle();
   }

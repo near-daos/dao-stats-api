@@ -3,23 +3,24 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
-  DaoStatsHistoryService,
+  ContractContext,
+  DaoContractContext,
   DaoStatsHistoryHistoryResponse,
+  DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
-  TransactionType,
   MetricType,
-  DaoContractContext,
-  ContractContext,
+  TransactionType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
 import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import { MetricService } from '../common/metric.service';
 import { getGrowth, getRate, patchMetricDays } from '../utils';
 
 @Injectable()
@@ -31,6 +32,7 @@ export class GovernanceService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
+    private readonly metricService: MetricService,
   ) {}
 
   async totals(
@@ -51,23 +53,23 @@ export class GovernanceService {
     ] = await Promise.all([
       this.daoStatsService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
       this.daoStatsHistoryService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsCount,
         to: dayAgo.valueOf(),
       }),
       this.daoStatsService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
       this.daoStatsHistoryService.getValue({
         contractId,
-        dao: null,
+        dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
         to: dayAgo.valueOf(),
       }),
@@ -152,48 +154,10 @@ export class GovernanceService {
   async proposalsLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId } = contractContext;
-
-    const weekAgo = moment().subtract(7, 'days');
-    const dayAgo = moment().subtract(1, 'days');
-
-    const leaderboard = await this.daoStatsService.getLeaderboard({
-      contractId,
-      metric: DaoStatsMetric.ProposalsCount,
-    });
-
-    const metrics = await Promise.all(
-      leaderboard.map(async ({ dao, value }) => {
-        const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getValue({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.ProposalsCount,
-            to: dayAgo.valueOf(),
-          }),
-          this.daoStatsHistoryService.getHistory({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.ProposalsCount,
-            from: weekAgo.valueOf(),
-          }),
-        ]);
-
-        return {
-          dao,
-          activity: {
-            count: value,
-            growth: getGrowth(value, prevValue),
-          },
-          overview: history.map((row) => ({
-            timestamp: row.date.valueOf(),
-            count: row.value,
-          })),
-        };
-      }),
+    return this.metricService.leaderboard(
+      contractContext,
+      DaoStatsMetric.ProposalsCount,
     );
-
-    return { metrics };
   }
 
   async proposalsTypes(

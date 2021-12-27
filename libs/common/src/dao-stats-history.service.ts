@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStatsHistory } from './entities';
-import { DaoStatsMetric } from './types';
+import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
 export interface DaoStatsHistoryValueParams {
   from?: number;
@@ -11,7 +11,7 @@ export interface DaoStatsHistoryValueParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric;
-  func?: 'AVG' | 'SUM' | 'COUNT';
+  func?: DaoStatsAggregateFunction;
 }
 
 export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
@@ -44,16 +44,16 @@ export class DaoStatsHistoryService {
   }
 
   async getValue({
-    from,
-    to,
     contractId,
     dao,
     metric,
-    func = 'SUM',
+    func = DaoStatsAggregateFunction.Sum,
+    from,
+    to,
   }: DaoStatsHistoryValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value)::int as value`);
+      .select(`${func}(value) as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -84,20 +84,20 @@ export class DaoStatsHistoryService {
       return 0;
     }
 
-    return result['value'];
+    return parseFloat(result['value']);
   }
 
   async getHistory({
-    func = 'SUM',
-    from,
-    to,
     contractId,
     dao,
     metric,
+    func = DaoStatsAggregateFunction.Sum,
+    from,
+    to,
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`date, ${func}(value)::int as value`);
+      .select(`date, ${func}(value) as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -117,10 +117,12 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    return query
+    const result = await query
       .andWhere('metric = :metric', { metric })
       .groupBy('date')
       .orderBy('date', 'ASC')
       .execute();
+
+    return result.map((data) => ({ ...data, value: parseFloat(data.value) }));
   }
 }

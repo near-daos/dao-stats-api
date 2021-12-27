@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -18,6 +18,7 @@ import {
   DaoModule,
 } from '@dao-stats/common';
 import { AggregatorService } from './aggregator.service';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -38,6 +39,12 @@ import { AggregatorService } from './aggregator.service';
     DaoStatsHistoryModule,
     HttpCacheModule,
   ],
-  providers: [AggregatorService],
+  providers: [
+    AggregatorService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
 })
 export class AggregatorModule {}

@@ -5,6 +5,7 @@ import PromisePool from '@supercharge/promise-pool';
 import {
   ContractContext,
   DaoContractContext,
+  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -307,7 +308,7 @@ export class UsersService {
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contractId,
       metric: DaoStatsMetric.CouncilSize,
-      func: 'AVG',
+      func: DaoStatsAggregateFunction.Average,
     });
 
     const metrics = await Promise.all(
@@ -317,14 +318,14 @@ export class UsersService {
             contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
-            func: 'AVG',
+            func: DaoStatsAggregateFunction.Average,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
-            func: 'AVG',
+            func: DaoStatsAggregateFunction.Average,
             from: weekAgo.valueOf(),
           }),
         ]);

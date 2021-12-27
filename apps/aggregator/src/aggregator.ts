@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
-import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, Logger, LogLevel } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { Logger, LogLevel } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import cacheManager from '@type-cacheable/core';
 import { useAdapter } from '@type-cacheable/lru-cache-adapter';
@@ -23,10 +23,6 @@ export default class Aggregator {
       transport: Transport.TCP,
       logger,
     });
-
-    app.useGlobalInterceptors(
-      new ClassSerializerInterceptor(app.get(Reflector)),
-    );
 
     await app.listen();
 
