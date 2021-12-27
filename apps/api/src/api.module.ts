@@ -29,6 +29,7 @@ import { RedisModule } from '@dao-stats/redis';
 
 import {
   ContractContextInterceptor,
+  DaoContractContextInterceptor,
   HttpCacheInterceptor,
 } from './interceptors';
 import { ContractModule } from './contract/contract.module';
@@ -39,7 +40,6 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
-import { DaoContractContextInterceptor } from './interceptors/dao-contract-context.interceptor';
 
 @Module({
   imports: [
