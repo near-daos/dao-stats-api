@@ -19,7 +19,7 @@ import { HttpCacheModule } from '@dao-stats/cache';
 import {
   CONTRACT_CONTEXT_FREE_API_LIST,
   Contract,
-  ContractContext,
+  DaoContractContext,
   Receipt,
   ReceiptAction,
   Transaction,
@@ -51,7 +51,7 @@ import { DaoContractContextInterceptor } from './interceptors/dao-contract-conte
       envFilePath: ['.env.local', '.env'],
     }),
     RequestContextModule.forRoot({
-      contextClass: ContractContext,
+      contextClass: DaoContractContext,
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
