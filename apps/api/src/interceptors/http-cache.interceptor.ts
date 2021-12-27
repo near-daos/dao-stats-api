@@ -20,4 +20,8 @@ export class HttpCacheInterceptor extends CacheInterceptor {
 
     return super.trackBy(context);
   }
+
+  isRequestCacheable(): boolean {
+    return !['dev', 'development', 'local'].includes(process.env.NODE_ENV);
+  }
 }
