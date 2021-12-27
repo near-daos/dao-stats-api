@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
 import { NearHelperService } from '@dao-stats/near-helper';
 import { AstroService } from '../../astro.service';
@@ -11,6 +11,8 @@ import {
 
 @Injectable()
 export class NftsValueLockedMetric implements DaoContractMetricInterface {
+  private readonly logger = new Logger(NftsValueLockedMetric.name);
+
   constructor(
     private readonly astroService: AstroService,
     private readonly nearHelperService: NearHelperService,
@@ -30,7 +32,21 @@ export class NftsValueLockedMetric implements DaoContractMetricInterface {
     const nftData = await Promise.all(
       tokens.map(async (token) => {
         const tokenContract = await this.astroService.getNfTokenContract(token);
-        const nfts = await tokenContract.getTokensForOwner(contract.contractId);
+        let nfts;
+        try {
+          nfts = await tokenContract.getTokensForOwner(contract.contractId);
+        } catch (err) {
+          if (err.type === 'UntypedError') {
+            this.logger.warn(
+              `Unable to get NFT for owner ${
+                contract.contractId
+              } and token ${token}: ${String(err)}`,
+            );
+            nfts = [];
+          } else {
+            throw err;
+          }
+        }
         return [token, tokenContract, nfts];
       }),
     );
