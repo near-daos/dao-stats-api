@@ -30,14 +30,8 @@ export class NftsValueLockedMetric implements DaoContractMetricInterface {
     const nftData = await Promise.all(
       tokens.map(async (token) => {
         const tokenContract = await this.astroService.getNfTokenContract(token);
-        try {
-          const nfts = await tokenContract.getTokensForOwner(
-            contract.contractId,
-          );
-          return [token, tokenContract, nfts];
-        } catch (err) {
-          return [];
-        }
+        const nfts = await tokenContract.getTokensForOwner(contract.contractId);
+        return [token, tokenContract, nfts];
       }),
     );
     // TODO: get prices of NFTs

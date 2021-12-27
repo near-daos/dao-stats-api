@@ -32,11 +32,7 @@ export class NftsCountMetric implements DaoContractMetricInterface {
           const tokenContract = await this.astroService.getNfTokenContract(
             token,
           );
-          try {
-            return await tokenContract.getTokensForOwner(contract.contractId);
-          } catch (err) {
-            return [];
-          }
+          return await tokenContract.getTokensForOwner(contract.contractId);
         }),
       )
     ).flat();
