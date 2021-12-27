@@ -1,20 +1,18 @@
+import { Reflector } from '@nestjs/core';
 import {
   CACHE_KEY_METADATA,
-  CACHE_MANAGER,
   CacheInterceptor,
   ExecutionContext,
-  Inject,
   Injectable,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-const REFLECTOR = 'Reflector';
+import { CacheService } from '@dao-stats/cache';
 
 @Injectable()
 export class HttpCacheInterceptor extends CacheInterceptor {
   constructor(
-    @Inject(CACHE_MANAGER) protected readonly cacheManager: any,
-    @Inject(REFLECTOR) protected readonly reflector: any,
+    protected readonly cacheManager: CacheService,
+    protected readonly reflector: Reflector,
     private readonly configService: ConfigService,
   ) {
     super(cacheManager, reflector);
