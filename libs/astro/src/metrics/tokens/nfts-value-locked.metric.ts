@@ -26,6 +26,7 @@ export class NftsValueLockedMetric implements DaoContractMetricInterface {
     const tokens = await this.nearHelperService.getLikelyNFTs(
       contract.contractId,
     );
+    // eslint-disable-next-line
     const nftData = await Promise.all(
       tokens.map(async (token) => {
         const tokenContract = await this.astroService.getNfTokenContract(token);

@@ -11,7 +11,7 @@ import {
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Users')
 @Controller('users')

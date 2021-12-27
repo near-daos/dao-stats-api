@@ -58,6 +58,12 @@
       "@dao-stats/near-indexer/*": [
         "libs/near-indexer/src/*"
       ],
+      "@dao-stats/receipt": [
+        "libs/receipt/src"
+      ],
+      "@dao-stats/receipt/*": [
+        "libs/receipt/src/*"
+      ],
       "@dao-stats/astro": [
         "libs/astro/src"
       ],

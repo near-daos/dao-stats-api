@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContractResponse } from './dto/contract.dto';
 import { ContractService } from './contract.service';
-import { NoContractContext } from '../decorators/no-contract-context.decorator';
+import { NoContractContext } from '../decorators';
 
 @ApiTags('Contracts')
 @Controller('/api/v1/contracts')

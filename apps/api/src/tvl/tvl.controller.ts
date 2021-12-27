@@ -12,7 +12,7 @@ import { TvlTotalResponse } from './dto/tvl-total.dto';
 import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-response.dto';
 import { TvlService } from './tvl.service';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('TVL')
 @Controller('tvl')

@@ -1,7 +1,8 @@
 import { Account, Contract } from 'near-api-js';
 import { ContractMethods } from 'near-api-js/lib/contract';
 import { Cacheable } from '@type-cacheable/core';
-import { FTokenContractInterface, FTokenMetadata } from '../interfaces';
+import { FTokenContractInterface } from '../interfaces';
+import { FTokenMetadataResponse } from '../types';
 
 // enable typings for dynamic methods
 const Base: {
@@ -33,7 +34,7 @@ export class FTokenContract extends Base {
     ttlSeconds: 300,
     cacheKey: (args, context) => `ft-metadata:${context.contractId}`,
   })
-  async getMetadata(): Promise<FTokenMetadata> {
+  async getMetadata(): Promise<FTokenMetadataResponse> {
     return this.ft_metadata();
   }
 }

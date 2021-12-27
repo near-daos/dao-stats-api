@@ -12,7 +12,7 @@ import {
 import { TokensTotalResponse } from './dto/tokens-total.dto';
 import { TokensService } from './tokens.service';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Tokens')
 @Controller('tokens')
