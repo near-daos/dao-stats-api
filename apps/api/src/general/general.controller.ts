@@ -11,6 +11,7 @@ import {
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { GeneralService } from './general.service';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('General')
 @Controller('general')
@@ -126,6 +127,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -140,6 +142,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/activity')
   async daoActivity(
     @Param() context: DaoContractContext,
@@ -155,6 +158,7 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/groups')
   async daoGroups(
     @Param() context: DaoContractContext,

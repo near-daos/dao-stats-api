@@ -11,6 +11,7 @@ import {
 import { UsersTotalResponse } from './dto/users-total.dto';
 import { UsersService } from './users.service';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -153,6 +154,7 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -167,6 +169,7 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/users')
   async daoUsers(
     @Param() context: DaoContractContext,
@@ -182,6 +185,7 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/members')
   async daoMembers(
     @Param() context: DaoContractContext,
@@ -197,6 +201,7 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/interactions')
   async daoInteractions(
     @Param() context: DaoContractContext,
