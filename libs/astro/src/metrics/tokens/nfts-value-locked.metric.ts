@@ -10,14 +10,14 @@ import {
 } from '../../interfaces';
 
 @Injectable()
-export class NftsCountMetric implements DaoContractMetricInterface {
+export class NftsValueLockedMetric implements DaoContractMetricInterface {
   constructor(
     private readonly astroService: AstroService,
     private readonly nearHelperService: NearHelperService,
   ) {}
 
   getType(): DaoStatsMetric {
-    return DaoStatsMetric.NftsCount;
+    return DaoStatsMetric.NftsValueLocked;
   }
 
   async getCurrentValue({
@@ -26,17 +26,16 @@ export class NftsCountMetric implements DaoContractMetricInterface {
     const tokens = await this.nearHelperService.getLikelyNFTs(
       contract.contractId,
     );
-    const nfts = (
-      await Promise.all(
-        tokens.map(async (token) => {
-          const tokenContract = await this.astroService.getNfTokenContract(
-            token,
-          );
-          return await tokenContract.getTokensForOwner(contract.contractId);
-        }),
-      )
-    ).flat();
-    return nfts.length;
+    // eslint-disable-next-line
+    const nftData = await Promise.all(
+      tokens.map(async (token) => {
+        const tokenContract = await this.astroService.getNfTokenContract(token);
+        const nfts = await tokenContract.getTokensForOwner(contract.contractId);
+        return [token, tokenContract, nfts];
+      }),
+    );
+    // TODO: get prices of NFTs
+    return 0;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {

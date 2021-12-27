@@ -4,7 +4,7 @@ export enum DaoStatsMetric {
   CouncilSize = 'COUNCIL_SIZE',
   MembersCount = 'MEMBERS_COUNT',
   ProposalsCount = 'PROPOSALS_COUNT',
-  ProposalsPayoutCount = 'PROPOSALS_PAYOUT_COUNT', // TODO: rename to PROPOSALS_TRANSFER_COUNT
+  ProposalsTransferCount = 'PROPOSALS_TRANSFER_COUNT',
   ProposalsCouncilMemberCount = 'PROPOSALS_COUNCIL_MEMBER_COUNT',
   ProposalsPolicyChangeCount = 'PROPOSALS_POLICY_CHANGE_COUNT',
   ProposalsInProgressCount = 'PROPOSALS_IN_PROGRESS_COUNT',
@@ -16,5 +16,7 @@ export enum DaoStatsMetric {
   BountiesCount = 'BOUNTIES_COUNT',
   BountiesValueLocked = 'BOUNTIES_VALUE_LOCKED',
   FtsCount = 'FTS_COUNT',
+  FtsValueLocked = 'FTS_VALUE_LOCKED',
   NftsCount = 'NFTS_COUNT',
+  NftsValueLocked = 'NFTS_VALUE_LOCKED',
 }

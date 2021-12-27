@@ -6,7 +6,7 @@ import {
   DaoDto,
   DaoService,
 } from '@dao-stats/common';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('DAOs')
 @Controller('daos')

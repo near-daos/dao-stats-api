@@ -15,7 +15,7 @@ import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-res
 import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
 import { GovernanceService } from './governance.service';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Governance')
 @Controller('governance')

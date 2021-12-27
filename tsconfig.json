@@ -58,11 +58,23 @@
       "@dao-stats/near-indexer/*": [
         "libs/near-indexer/src/*"
       ],
+      "@dao-stats/receipt": [
+        "libs/receipt/src"
+      ],
+      "@dao-stats/receipt/*": [
+        "libs/receipt/src/*"
+      ],
       "@dao-stats/astro": [
         "libs/astro/src"
       ],
       "@dao-stats/astro/*": [
         "libs/astro/src/*"
+      ],
+      "@dao-stats/sodaki": [
+        "libs/sodaki/src"
+      ],
+      "@dao-stats/sodaki/*": [
+        "libs/sodaki/src/*"
       ],
       "@dao-stats/sputnik-dao": [
         "libs/sputnik-dao/src"

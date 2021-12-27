@@ -21,3 +21,8 @@ export const findAllByKey = (obj: Record<string, any>, keyToFind: string) => {
     [],
   );
 };
+
+export const convertFunds = (
+  amount: string | number | bigint,
+  decimals = 0,
+): Decimal => new Decimal(String(amount)).div(Math.pow(10, decimals));

@@ -11,7 +11,7 @@ import {
 import { GeneralTotalResponse } from './dto/general-total.dto';
 import { GeneralService } from './general.service';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('General')
 @Controller('general')
