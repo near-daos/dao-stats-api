@@ -12,6 +12,7 @@ import { TvlTotalResponse } from './dto/tvl-total.dto';
 import { TvlBountiesLeaderboardResponse } from './dto/tvl-bounties-leaderboard-response.dto';
 import { TvlService } from './tvl.service';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('TVL')
 @Controller('tvl')
@@ -81,6 +82,7 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -95,6 +97,7 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/bounties/number')
   async daoBountiesNumber(
     @Param() context: DaoContractContext,
@@ -110,6 +113,7 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/bounties/vl')
   async daoBountiesValueLocked(
     @Param() context: DaoContractContext,

@@ -12,6 +12,7 @@ import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
 import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
 import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('Flow')
 @Controller('flow')
@@ -99,6 +100,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -113,6 +115,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/funds')
   async daoFunds(
     @Param() context: DaoContractContext,
@@ -128,6 +131,7 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao/transactions')
   async daoTransactions(
     @Param() context: DaoContractContext,
