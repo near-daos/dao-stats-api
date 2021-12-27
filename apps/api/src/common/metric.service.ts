@@ -47,8 +47,6 @@ export class MetricService {
       }),
     ]);
 
-    console.log(current, prev);
-
     return {
       count: current,
       growth: getGrowth(current, prev),
