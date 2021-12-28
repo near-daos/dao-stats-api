@@ -56,7 +56,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
@@ -67,7 +67,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
@@ -360,13 +360,13 @@ export class GovernanceService {
       leaderboard.map(async ({ dao, total, approved, rate }) => {
         const [dayAgoTotal, dayAgoApproved, totalHistory, approvedHistory] =
           await Promise.all([
-            this.daoStatsHistoryService.getValue({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
               to: dayAgo.valueOf(),
             }),
-            this.daoStatsHistoryService.getValue({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
