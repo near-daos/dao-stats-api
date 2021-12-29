@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { Migration } from '..';
+import { CacheService } from '@dao-stats/cache';
 import { Aggregator, DaoStatsHistoryService } from '@dao-stats/common';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class HistoricalAggregationMigration implements Migration {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {}
@@ -39,5 +41,7 @@ export class HistoricalAggregationMigration implements Migration {
 
       this.logger.log(`Finished processing contract: ${contractId}`);
     }
+
+    await this.cacheService.clearCache();
   }
 }

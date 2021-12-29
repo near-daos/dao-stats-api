@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
 } from '@dao-stats/config/aggregator-config';
+import { HttpCacheModule } from '@dao-stats/cache';
 import {
   Contract,
   Transaction,
@@ -26,6 +27,7 @@ import migrationScripts from './scripts';
     }),
     TypeOrmModule.forFeature([Contract, Transaction, Receipt, ReceiptAction]),
     DaoStatsHistoryModule,
+    HttpCacheModule,
   ],
   providers: [...migrationScripts],
 })
