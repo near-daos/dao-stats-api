@@ -17,13 +17,15 @@ export class TokensService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<TokensTotalResponse> {
-    const [fts, nfts] = await Promise.all([
+    const [fts, ftsVl, nfts] = await Promise.all([
       this.metricService.total(context, DaoStatsMetric.FtsCount),
+      this.metricService.total(context, DaoStatsMetric.FtsValueLocked),
       this.metricService.total(context, DaoStatsMetric.NftsCount),
     ]);
 
     return {
       fts,
+      ftsVl,
       nfts,
     };
   }
@@ -36,6 +38,17 @@ export class TokensService {
       context,
       metricQuery,
       DaoStatsMetric.FtsCount,
+    );
+  }
+
+  async ftsValueLocked(
+    context: ContractContext | DaoContractContext,
+    metricQuery: MetricQuery,
+  ): Promise<any> {
+    return this.metricService.history(
+      context,
+      metricQuery,
+      DaoStatsMetric.FtsValueLocked,
     );
   }
 
@@ -54,6 +67,15 @@ export class TokensService {
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.metricService.leaderboard(context, DaoStatsMetric.FtsCount);
+  }
+
+  async ftsValueLockedLeaderboard(
+    context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.metricService.leaderboard(
+      context,
+      DaoStatsMetric.FtsValueLocked,
+    );
   }
 
   async nftsLeaderboard(

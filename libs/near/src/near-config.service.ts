@@ -13,6 +13,16 @@ export type NearConfig = ConnectConfig & {
 export class NearConfigService {
   constructor(private readonly configService: ConfigService) {}
 
+  get env(): string {
+    const { env } = this.configService.get('near');
+    return env;
+  }
+
+  get tokenApiUrl(): string {
+    const { tokenApiUrl } = this.configService.get('near');
+    return tokenApiUrl;
+  }
+
   get connectConfig(): NearConfig {
     const { env } = this.configService.get('near');
 

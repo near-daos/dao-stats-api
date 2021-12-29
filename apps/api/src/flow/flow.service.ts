@@ -7,12 +7,14 @@ import {
   LeaderboardMetric,
   MetricQuery,
 } from '@dao-stats/common';
+import {
+  FlowMetricType,
+  ReceiptActionService,
+  TransferType,
+} from '@dao-stats/receipt';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import { ReceiptActionService } from 'libs/receipt/src/receipt-action.service';
-import { TransferType } from 'libs/receipt/src/types/transfer-type';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
-import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
 

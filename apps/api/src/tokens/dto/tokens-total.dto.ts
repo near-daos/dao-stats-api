@@ -6,5 +6,8 @@ export class TokensTotalResponse {
   fts: TotalMetric;
 
   @ApiProperty()
+  ftsVl: TotalMetric;
+
+  @ApiProperty()
   nfts: TotalMetric;
 }

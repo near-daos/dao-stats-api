@@ -24,7 +24,7 @@ export class MetricService {
 
   async total(
     context: DaoContractContext | ContractContext,
-    metric: DaoStatsMetric,
+    metric: DaoStatsMetric | DaoStatsMetric[],
     func = DaoStatsAggregateFunction.Sum,
   ): Promise<TotalMetric> {
     const { contractId, dao } = context as DaoContractContext;
@@ -38,7 +38,7 @@ export class MetricService {
         metric,
         func,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric,
@@ -46,8 +46,6 @@ export class MetricService {
         to: dayAgo.valueOf(),
       }),
     ]);
-
-    console.log(current, prev);
 
     return {
       count: current,
@@ -58,7 +56,7 @@ export class MetricService {
   async history(
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
-    metric: DaoStatsMetric,
+    metric: DaoStatsMetric | DaoStatsMetric[],
     func = DaoStatsAggregateFunction.Sum,
   ): Promise<MetricResponse> {
     const { contractId, dao } = context as DaoContractContext;
@@ -87,7 +85,7 @@ export class MetricService {
 
   async leaderboard(
     context: ContractContext,
-    metric: DaoStatsMetric,
+    metric: DaoStatsMetric | DaoStatsMetric[],
     func = DaoStatsAggregateFunction.Sum,
   ): Promise<LeaderboardMetricResponse> {
     const { contractId } = context;
@@ -104,7 +102,7 @@ export class MetricService {
     const metrics = await Promise.all(
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getValue({
+          this.daoStatsHistoryService.getLastValue({
             contractId,
             dao,
             metric,

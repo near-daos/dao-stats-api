@@ -6,13 +6,13 @@ import {
   DaoContractContext,
   MetricQuery,
 } from '@dao-stats/common';
+import { FlowMetricType } from '@dao-stats/receipt';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowService } from './flow.service';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
 import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
-import { FlowMetricType } from 'libs/receipt/src/types/flow-metric-type';
+import { FlowService } from './flow.service';
+import { HasDaoContractContext } from '../decorators';
 import { MetricQueryPipe } from '../pipes';
-import { HasDaoContractContext } from '../decorators/dao-contract-context.decorator';
 
 @ApiTags('Flow')
 @Controller('flow')

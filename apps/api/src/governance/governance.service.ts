@@ -47,7 +47,7 @@ export class GovernanceService {
       dayAgoProposalsCount,
       proposalsApprovedCount,
       dayAgoProposalsApprovedCount,
-      proposalsPayoutCount,
+      proposalsTransferCount,
       proposalsBountyCount,
       proposalsMemberCount,
     ] = await Promise.all([
@@ -56,7 +56,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
@@ -67,7 +67,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
@@ -76,7 +76,7 @@ export class GovernanceService {
       this.daoStatsService.getValue({
         contractId,
         dao,
-        metric: DaoStatsMetric.ProposalsPayoutCount,
+        metric: DaoStatsMetric.ProposalsTransferCount,
       }),
       this.daoStatsService.getValue({
         contractId,
@@ -98,8 +98,10 @@ export class GovernanceService {
       proposalsByType: {
         governance:
           proposalsCount -
-          (proposalsPayoutCount + proposalsBountyCount + proposalsMemberCount),
-        financial: proposalsPayoutCount,
+          (proposalsTransferCount +
+            proposalsBountyCount +
+            proposalsMemberCount),
+        financial: proposalsTransferCount,
         bounties: proposalsBountyCount,
         members: proposalsMemberCount,
       },
@@ -178,7 +180,7 @@ export class GovernanceService {
       this.daoStatsHistoryService.getHistory({
         contractId,
         dao,
-        metric: DaoStatsMetric.ProposalsPayoutCount,
+        metric: DaoStatsMetric.ProposalsTransferCount,
         from,
         to,
       }),
@@ -247,7 +249,7 @@ export class GovernanceService {
           this.daoStatsService.getValue({
             contractId,
             dao,
-            metric: DaoStatsMetric.ProposalsPayoutCount,
+            metric: DaoStatsMetric.ProposalsTransferCount,
           }),
           this.daoStatsService.getValue({
             contractId,
@@ -358,13 +360,13 @@ export class GovernanceService {
       leaderboard.map(async ({ dao, total, approved, rate }) => {
         const [dayAgoTotal, dayAgoApproved, totalHistory, approvedHistory] =
           await Promise.all([
-            this.daoStatsHistoryService.getValue({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
               to: dayAgo.valueOf(),
             }),
-            this.daoStatsHistoryService.getValue({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,

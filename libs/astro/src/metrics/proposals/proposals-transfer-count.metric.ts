@@ -13,7 +13,7 @@ export class ProposalsTransferCountMetric
   implements DaoContractMetricInterface
 {
   getType(): DaoStatsMetric {
-    return DaoStatsMetric.ProposalsPayoutCount;
+    return DaoStatsMetric.ProposalsTransferCount;
   }
 
   async getCurrentValue({

@@ -19,9 +19,7 @@ export class BountiesValueLockedMetric implements DaoContractMetricInterface {
   }: DaoContractMetricCurrentParams): Promise<number> {
     const bounties = await contract.getBounties();
     return bounties.reduce(
-      (acc, bounty) =>
-        // TODO confirm bounty VL formula
-        acc + yoctoToNear(bounty.amount) * bounty.times,
+      (acc, bounty) => acc + yoctoToNear(bounty.amount),
       0,
     );
   }

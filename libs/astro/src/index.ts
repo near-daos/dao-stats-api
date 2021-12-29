@@ -2,3 +2,8 @@ export * from './aggregation.module';
 export * from './aggregation.service';
 export * from './astro.module';
 export * from './astro.service';
+export * from './contracts';
+export * from './interfaces';
+export * from './metrics';
+export * from './types';
+export * from './utils';

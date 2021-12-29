@@ -2,7 +2,7 @@ import { Connection, SelectQueryBuilder } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
-import { Transaction } from './entities';
+import { ReceiptAction, Transaction } from './entities';
 
 @Injectable()
 export class NearIndexerService {
@@ -76,5 +76,88 @@ export class NearIndexerService {
     }
 
     return queryBuilder;
+  }
+
+  buildReceiptActionsQuery({
+    predecessorAccountId,
+    receiverAccountId,
+    isDeposit,
+    actionKind,
+  }: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+    isDeposit?: boolean;
+    actionKind?: string;
+  }): SelectQueryBuilder<ReceiptAction> {
+    const query = this.connection
+      .getRepository(ReceiptAction)
+      .createQueryBuilder();
+
+    if (actionKind) {
+      query.andWhere('action_kind = :actionKind', { actionKind });
+    }
+
+    if (predecessorAccountId) {
+      query.andWhere('receipt_predecessor_account_id = :predecessorAccountId', {
+        predecessorAccountId,
+      });
+    }
+
+    if (receiverAccountId) {
+      query.andWhere('receipt_receiver_account_id = :receiverAccountId', {
+        receiverAccountId,
+      });
+    }
+
+    if (isDeposit) {
+      query.andWhere(`args -> 'deposit' is not null`);
+    }
+
+    return query;
+  }
+
+  async getReceiptActionsCount(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<number> {
+    return this.buildReceiptActionsQuery(params).getCount();
+  }
+
+  async getReceiptActionsFunctionCallCount(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<number> {
+    return this.buildReceiptActionsQuery({
+      ...params,
+      actionKind: 'FUNCTION_CALL',
+    }).getCount();
+  }
+
+  async getReceiptActionsDepositCount(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<number> {
+    return this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+    }).getCount();
+  }
+
+  async getReceiptActionsDepositAmount(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<string> {
+    const [result] = await this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+    })
+      .select(`sum((args ->> 'deposit')::decimal)`)
+      .execute();
+
+    if (!result || !result['sum']) {
+      return '0';
+    }
+
+    return result['sum'];
   }
 }

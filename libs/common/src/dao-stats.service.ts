@@ -8,7 +8,7 @@ import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 export interface DaoStatsValueParams {
   contractId: string;
   dao?: string;
-  metric: DaoStatsMetric;
+  metric: DaoStatsMetric | DaoStatsMetric[];
   func?: DaoStatsAggregateFunction;
 }
 
@@ -59,10 +59,13 @@ export class DaoStatsService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const [result] = await query
-      .andWhere('metric = :metric', { metric })
-      .take(1)
-      .execute();
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
+    const [result] = await query.execute();
 
     if (!result || !result['value']) {
       return 0;
@@ -87,8 +90,13 @@ export class DaoStatsService {
       query.andWhere('dao = :dao', { dao });
     }
 
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
     const result = await query
-      .andWhere('metric = :metric', { metric })
       .groupBy('dao')
       .orderBy('value', 'DESC')
       .take(limit)

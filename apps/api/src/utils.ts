@@ -22,23 +22,13 @@ export const getDailyIntervals = (
   from: number,
   to: number,
 ): { start: number; end: number }[] => {
-  let timestamp = from;
-
   const days = [];
-  while (true) {
-    const dayStart = timestamp;
-    const dayEnd = moment(timestamp).add(1, 'days').valueOf();
 
-    if (moment(dayEnd).isAfter(moment(to), 'day')) {
-      break;
-    }
-
+  for (let time = from; time <= to; time += 86400000 /* 1 day increment */) {
     days.push({
-      start: dayStart,
-      end: dayEnd,
+      start: moment(time).startOf('day').valueOf(),
+      end: moment(time).endOf('day').valueOf(),
     });
-
-    timestamp = dayEnd;
   }
 
   return days;

@@ -10,7 +10,7 @@ export interface DaoStatsHistoryValueParams {
   to?: number;
   contractId: string;
   dao?: string;
-  metric: DaoStatsMetric;
+  metric: DaoStatsMetric | DaoStatsMetric[];
   func?: DaoStatsAggregateFunction;
 }
 
@@ -43,7 +43,7 @@ export class DaoStatsHistoryService {
       .execute();
   }
 
-  async getValue({
+  async getLastValue({
     contractId,
     dao,
     metric,
@@ -73,8 +73,13 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
     const [result] = await query
-      .andWhere('metric = :metric', { metric })
       .groupBy('date')
       .orderBy('date', 'DESC')
       .take(1)
@@ -117,11 +122,13 @@ export class DaoStatsHistoryService {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const result = await query
-      .andWhere('metric = :metric', { metric })
-      .groupBy('date')
-      .orderBy('date', 'ASC')
-      .execute();
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
+    const result = await query.groupBy('date').orderBy('date', 'ASC').execute();
 
     return result.map((data) => ({ ...data, value: parseFloat(data.value) }));
   }
