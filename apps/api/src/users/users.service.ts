@@ -73,7 +73,7 @@ export class UsersService {
         dao,
         metric: DaoStatsMetric.MembersCount,
       }),
-      this.daoStatsHistoryService.getValue({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.MembersCount,
@@ -243,7 +243,7 @@ export class UsersService {
     const metrics = await Promise.all(
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getValue({
+          this.daoStatsHistoryService.getLastValue({
             contractId,
             dao,
             metric: DaoStatsMetric.MembersCount,
@@ -314,7 +314,7 @@ export class UsersService {
     const metrics = await Promise.all(
       leaderboard.map(async ({ dao, value }) => {
         const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getValue({
+          this.daoStatsHistoryService.getLastValue({
             contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
