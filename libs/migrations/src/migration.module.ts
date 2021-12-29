@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+
 import configuration, {
   TypeOrmConfigService,
 } from '@dao-stats/config/aggregator-config';
@@ -9,6 +10,7 @@ import {
   Transaction,
   Receipt,
   ReceiptAction,
+  DaoStatsHistoryModule,
 } from '@dao-stats/common';
 import migrationScripts from './scripts';
 
@@ -23,6 +25,7 @@ import migrationScripts from './scripts';
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forFeature([Contract, Transaction, Receipt, ReceiptAction]),
+    DaoStatsHistoryModule,
   ],
   providers: [...migrationScripts],
 })

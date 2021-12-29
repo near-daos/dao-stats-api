@@ -160,4 +160,30 @@ export class NearIndexerService {
 
     return result['sum'];
   }
+
+  async getDaoCountDaily(
+    contractId: string,
+  ): Promise<{ date: string; value: number }[]> {
+    return this.connection.query(
+      `
+      with data as (
+        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as count
+        from action_receipt_actions ara
+        left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+        where
+              ara.action_kind = 'FUNCTION_CALL'
+          and ara.args ->> 'method_name' = 'new'
+          and ara.receipt_predecessor_account_id = $1
+          and ara.receipt_receiver_account_id like $2
+          and eo.status = 'SUCCESS_VALUE'
+        group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+      )
+      select
+          date,
+          sum(count) over (order by date rows between unbounded preceding and current row)::int as value
+      from data
+    `,
+      [contractId, `%.${contractId}`],
+    );
+  }
 }

@@ -8,6 +8,7 @@ import {
   Aggregator,
   DaoDto,
   DaoStatsDto,
+  DaoStatsHistoryDto,
   findAllByKey,
   millisToNanos,
   nanosToMillis,
@@ -17,7 +18,12 @@ import {
 } from '@dao-stats/common';
 import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
 import { AstroService } from './astro.service';
-import { DAO_METRICS, FACTORY_METRICS } from './metrics';
+import {
+  DAO_HISTORICAL_METRICS,
+  DAO_METRICS,
+  FACTORY_HISTORICAL_METRICS,
+  FACTORY_METRICS,
+} from './metrics';
 
 const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
 
@@ -186,5 +192,85 @@ export class AggregationService implements Aggregator {
     }
 
     this.logger.log('Finished aggregating Astro metrics.');
+  }
+
+  async *aggregateHistoricalMetrics(
+    contractId: string,
+  ): AsyncGenerator<DaoStatsHistoryDto> {
+    const { contractName } = this.configService.get('dao');
+
+    this.logger.log('Staring aggregating Astro historical metrics...');
+
+    const factoryContract = await this.astroService.getDaoFactoryContract();
+
+    for (const metricClass of FACTORY_HISTORICAL_METRICS) {
+      const metric = await this.moduleRef.create(metricClass);
+      const type = metric.getType();
+      let data;
+
+      try {
+        data = await metric.getHistoricalValues({
+          contract: factoryContract,
+        });
+      } catch (err) {
+        this.logger.error(
+          `Aggregation error for DAO factory "${contractName}", metric "${type}": ${err}`,
+        );
+        continue;
+      }
+
+      for (const { date, value } of data) {
+        this.logger.log(
+          `Aggregated DAO Factory (${contractName}) metric (${type}) for date (${date}): ${value}`,
+        );
+
+        yield {
+          date,
+          contractId,
+          dao: contractName, // TODO: make optional
+          metric: type,
+          value,
+        };
+      }
+    }
+
+    const daoContracts = await this.astroService.getDaoContracts();
+
+    for (const [i, daoContract] of daoContracts.entries()) {
+      for (const metricClass of DAO_HISTORICAL_METRICS) {
+        const metric = await this.moduleRef.create(metricClass);
+        const type = metric.getType();
+        let data;
+
+        try {
+          data = await metric.getHistoricalValues({
+            contract: daoContract,
+          });
+        } catch (err) {
+          this.logger.error(
+            `Aggregation error for contract "${daoContract.contractId}", metric "${type}": ${err}`,
+          );
+          continue;
+        }
+
+        for (const { date, value } of data) {
+          this.logger.log(
+            `Aggregated (${i + 1}/${daoContracts.length}) DAO (${
+              daoContract.contractId
+            }) metric (${type}) for date (${date}): ${value}`,
+          );
+
+          yield {
+            date,
+            contractId,
+            dao: daoContract.contractId,
+            metric: type,
+            value,
+          };
+        }
+      }
+    }
+
+    this.logger.log('Finished aggregating Astro historical metrics.');
   }
 }

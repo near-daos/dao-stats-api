@@ -1,4 +1,9 @@
-import { DaoDto, DaoStatsDto, TransactionDto } from '@dao-stats/common';
+import {
+  DaoDto,
+  DaoStatsDto,
+  DaoStatsHistoryDto,
+  TransactionDto,
+} from '@dao-stats/common';
 
 export declare class Aggregator {
   /**
@@ -13,4 +18,8 @@ export declare class Aggregator {
   getDaos(contractId: string): Promise<DaoDto[]>;
 
   aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto>;
+
+  aggregateHistoricalMetrics(
+    contractId: string,
+  ): AsyncGenerator<DaoStatsHistoryDto>;
 }

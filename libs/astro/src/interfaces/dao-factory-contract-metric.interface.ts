@@ -7,16 +7,19 @@ export interface DaoFactoryContractMetricCurrentParams {
 
 export interface DaoFactoryContractMetricHistoryParams
   extends DaoFactoryContractMetricCurrentParams {
-  from: number;
-  to: number;
+  from?: number;
+  to?: number;
 }
 
-export type DaoFactoryContractMetricHistoryResponse = Record<number, number>;
+export type DaoFactoryContractMetricHistoryResponse = {
+  date: string;
+  value: number;
+};
 
 export interface DaoFactoryContractMetricInterface {
   getType(): DaoStatsMetric;
   getCurrentValue(args: DaoFactoryContractMetricCurrentParams): Promise<number>;
   getHistoricalValues(
     args: DaoFactoryContractMetricHistoryParams,
-  ): Promise<DaoFactoryContractMetricHistoryResponse>;
+  ): Promise<DaoFactoryContractMetricHistoryResponse[]>;
 }

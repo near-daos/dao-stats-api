@@ -39,6 +39,8 @@ export * from './tokens';
 
 export const FACTORY_METRICS = [DaoCountMetric];
 
+export const FACTORY_HISTORICAL_METRICS = [DaoCountMetric];
+
 export const DAO_METRICS = [
   ActionsInCountMetric,
   ActionsOutCountMetric,
@@ -67,3 +69,5 @@ export const DAO_METRICS = [
   FtsValueLockedMetric,
   NftsCountMetric,
 ];
+
+export const DAO_HISTORICAL_METRICS = [];

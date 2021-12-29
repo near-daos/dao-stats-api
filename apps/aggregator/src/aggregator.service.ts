@@ -41,6 +41,8 @@ export class AggregatorService {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {
+      this.logger.log(`Processing contract: ${contractId}...`);
+
       const { AggregationModule, AggregationService } = await import(
         '../../../libs/' + contractId + '/'
       );
@@ -108,6 +110,8 @@ export class AggregatorService {
         await this.daoStatsService.createOrUpdate(metric);
         await this.daoStatsHistoryService.createOrUpdate(metric);
       }
+
+      this.logger.log(`Finished processing contract: ${contractId}`);
     }
 
     await this.cacheService.clearCache();

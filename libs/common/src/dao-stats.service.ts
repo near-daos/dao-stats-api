@@ -2,6 +2,7 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
+import { DaoStatsDto } from './dto';
 import { DaoStats } from './entities';
 import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
@@ -30,7 +31,7 @@ export class DaoStatsService {
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DaoStats): Promise<InsertResult> {
+  async createOrUpdate(data: DaoStatsDto): Promise<InsertResult> {
     return await this.connection
       .createQueryBuilder()
       .insert()
