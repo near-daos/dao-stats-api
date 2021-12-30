@@ -1,4 +1,4 @@
-import { Connection, SelectQueryBuilder } from 'typeorm';
+import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
@@ -12,18 +12,15 @@ export class NearIndexerService {
     private connection: Connection,
   ) {}
 
-  /** Pass either single accountId or array of accountIds */
-  async findLastTransactionByAccountIds(
+  async findFirstTransactionByAccountIds(
     accountIds: string | string[],
-    fromBlockTimestamp?: bigint,
   ): Promise<Transaction> {
-    return this.buildAggregationTransactionQuery(accountIds, fromBlockTimestamp)
+    return this.buildAggregationTransactionQuery(accountIds)
       .select('transaction.transactionHash')
       .orderBy('transaction.block_timestamp', 'ASC')
       .getOne();
   }
 
-  /** Pass either single accountId or array of accountIds */
   async findTransactionsByAccountIds(
     accountIds: string | string[],
     fromBlockTimestamp?: bigint,
@@ -73,6 +70,70 @@ export class NearIndexerService {
       queryBuilder.andWhere('transaction.block_timestamp <= :to', {
         to: String(toBlockTimestamp),
       });
+    }
+
+    return queryBuilder;
+  }
+
+  buildAggregationReceiptActionQuery(
+    accountIds: string | string[],
+    fromBlockTimestamp?: bigint,
+    toBlockTimestamp?: bigint,
+  ): SelectQueryBuilder<ReceiptAction> {
+    const queryBuilder = this.connection
+      .getRepository(ReceiptAction)
+      .createQueryBuilder('receipt_action')
+      .leftJoinAndSelect('receipt_action.receipt', 'receipt')
+      .leftJoinAndSelect('receipt.originatedFromTransaction', 'transaction');
+
+    if (Array.isArray(accountIds)) {
+      queryBuilder.where(
+        new Brackets((qb) =>
+          qb
+            .where(
+              `receipt_action.receipt_predecessor_account_id IN (:...ids)`,
+              {
+                ids: accountIds,
+              },
+            )
+            .orWhere(
+              `receipt_action.receipt_receiver_account_id IN (:...ids)`,
+              {
+                ids: accountIds,
+              },
+            ),
+        ),
+      );
+    } else {
+      queryBuilder.where(
+        new Brackets((qb) =>
+          qb
+            .where(`receipt_action.receipt_predecessor_account_id LIKE :id`, {
+              id: `%${accountIds}`,
+            })
+            .orWhere(`receipt_action.receipt_receiver_account_id LIKE :id`, {
+              id: `%${accountIds}`,
+            }),
+        ),
+      );
+    }
+
+    if (fromBlockTimestamp) {
+      queryBuilder.andWhere(
+        'receipt_action.receipt_included_in_block_timestamp >= :from',
+        {
+          from: String(fromBlockTimestamp),
+        },
+      );
+    }
+
+    if (toBlockTimestamp) {
+      queryBuilder.andWhere(
+        'receipt_action.receipt_included_in_block_timestamp <= :to',
+        {
+          to: String(toBlockTimestamp),
+        },
+      );
     }
 
     return queryBuilder;

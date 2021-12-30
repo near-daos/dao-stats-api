@@ -1,3 +1,5 @@
+import { ReceiptDto } from '.';
+
 export class ReceiptActionDto {
   receiptId: string;
   indexInActionReceipt: number;
@@ -5,4 +7,6 @@ export class ReceiptActionDto {
   receiptReceiverAccountId: string;
   actionKind: string;
   args: Record<string, unknown>;
+  receipt: ReceiptDto;
+  receiptIncludedInBlockTimestamp: number;
 }

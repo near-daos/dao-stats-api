@@ -19,6 +19,7 @@ import {
 } from '@dao-stats/common';
 import { AggregatorService } from './aggregator.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ReceiptModule } from '@dao-stats/receipt';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     ScheduleModule.forRoot(),
     RedisModule,
     TransactionModule,
+    ReceiptModule,
     DaoModule,
     DaoStatsModule,
     DaoStatsHistoryModule,

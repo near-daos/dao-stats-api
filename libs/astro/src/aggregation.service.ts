@@ -11,15 +11,17 @@ import {
   findAllByKey,
   millisToNanos,
   nanosToMillis,
-  TransactionDto,
+  ReceiptActionDto,
   TransactionType,
   VoteType,
 } from '@dao-stats/common';
-import { NearIndexerService, Transaction } from '@dao-stats/near-indexer';
+import { NearIndexerService, ReceiptAction } from '@dao-stats/near-indexer';
 import { AstroService } from './astro.service';
 import { DAO_METRICS, FACTORY_METRICS } from './metrics';
 
 const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
+
+const RETRY_COUNT_THRESHOLD = 10;
 
 @Injectable()
 export class AggregationService implements Aggregator {
@@ -36,41 +38,74 @@ export class AggregationService implements Aggregator {
    * TODO remove transaction collection logic when all transaction queries are converted to dao stats.
    * @deprecated
    */
-  async *aggregateTransactions(
+  async *aggregateReceiptActions(
     fromTimestamp?: bigint | null,
     toTimestamp?: bigint,
-  ): AsyncGenerator<TransactionDto[]> {
+  ): AsyncGenerator<ReceiptActionDto[]> {
     const { contractName } = this.configService.get('dao');
 
-    const chunkSize = millisToNanos(3 * 24 * 60 * 60 * 1000); // 3 days
+    const chunkSize = millisToNanos(12 * 60 * 60 * 1000); // 12 hours
 
     let from = fromTimestamp || FIRST_BLOCK_TIMESTAMP;
 
     this.logger.log('Starting aggregating Astro transactions...');
 
+    let retryCount = 0;
     while (true) {
       const to = BigInt(
         Decimal.min(String(from + chunkSize), String(toTimestamp)).toString(),
       );
 
       this.logger.log(
-        `Querying transactions from: ${moment(
+        `Querying receipt actions from: ${moment(
           nanosToMillis(from),
         )} to: ${moment(nanosToMillis(to))}...`,
       );
 
-      const transactions =
-        await this.nearIndexerService.findTransactionsByAccountIds(
-          contractName,
-          from,
-          to,
+      let receiptActions: ReceiptAction[] = [];
+      try {
+        receiptActions = await this.nearIndexerService
+          .buildAggregationReceiptActionQuery(contractName, from, to)
+          .getMany();
+
+        retryCount = 0;
+      } catch (e) {
+        this.logger.error(e);
+
+        if (retryCount <= RETRY_COUNT_THRESHOLD) {
+          ++retryCount;
+
+          this.logger.log(
+            `#${retryCount} - Retrying action receipts retrieval from: ${moment(
+              nanosToMillis(from),
+            )} to: ${moment(nanosToMillis(to))}...`,
+          );
+
+          await new Promise((f) => setTimeout(f, 5000));
+
+          continue;
+        }
+
+        this.logger.warn(
+          `Reached MAX attempts count ${RETRY_COUNT_THRESHOLD} for request from: ${moment(
+            nanosToMillis(from),
+          )} to: ${moment(nanosToMillis(to))}`,
         );
 
-      if (transactions.length) {
-        yield transactions.flat().map((tx) => ({
-          ...tx,
-          type: this.getTransactionType(tx),
-          voteType: this.getVoteType(tx),
+        retryCount = 0;
+      }
+
+      if (receiptActions.length) {
+        yield receiptActions.map((receiptAction) => ({
+          ...receiptAction,
+          receipt: {
+            ...receiptAction.receipt,
+            originatedFromTransaction: {
+              ...receiptAction.receipt.originatedFromTransaction,
+              type: this.getTransactionType(receiptAction),
+              voteType: this.getVoteType(receiptAction),
+            },
+          },
         }));
       }
 
@@ -85,8 +120,8 @@ export class AggregationService implements Aggregator {
   }
 
   // TODO: a raw casting - revisit this
-  private getTransactionType(tx: Transaction): TransactionType {
-    const methods = findAllByKey(tx, 'method_name');
+  private getTransactionType(receiptAction: ReceiptAction): TransactionType {
+    const methods = findAllByKey(receiptAction, 'method_name');
 
     return methods.includes('create')
       ? TransactionType.CreateDao
@@ -97,8 +132,8 @@ export class AggregationService implements Aggregator {
       : null;
   }
 
-  private getVoteType(tx: Transaction): VoteType {
-    const actions = findAllByKey(tx, 'action');
+  private getVoteType(receiptAction: ReceiptAction): VoteType {
+    const actions = findAllByKey(receiptAction, 'action');
 
     return actions.includes('VoteApprove')
       ? VoteType.VoteApprove

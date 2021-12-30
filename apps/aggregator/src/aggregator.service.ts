@@ -13,6 +13,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
+import { ReceiptActionService } from '@dao-stats/receipt';
 
 @Injectable()
 export class AggregatorService {
@@ -24,6 +25,7 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
+    private readonly receiptActionService: ReceiptActionService,
     private readonly daoService: DaoService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
@@ -72,28 +74,30 @@ export class AggregatorService {
         to = millisToNanos(moment().valueOf());
       }
 
-      for await (const transactions of aggregationService.aggregateTransactions(
+      for await (const receiptActions of aggregationService.aggregateReceiptActions(
         from,
         to,
       )) {
-        await this.transactionService.create(
-          transactions.map((tx) => ({
-            ...tx,
+        await this.receiptActionService.create(
+          receiptActions.flat().map((receiptAction) => ({
+            ...receiptAction,
+            includedInBlockTimestamp:
+              receiptAction.receiptIncludedInBlockTimestamp,
             contractId,
-            receipts: tx.receipts.map((receipt) => ({
-              ...receipt,
+            argsJson: receiptAction.args,
+            receipt: {
+              ...receiptAction.receipt,
+              receiptActions: [],
               contractId,
-              receiptActions: receipt.receiptActions.map((receiptAction) => ({
-                ...receiptAction,
+              originatedFromTransaction: {
+                ...receiptAction.receipt.originatedFromTransaction,
                 contractId,
-                argsJson: receiptAction.args,
-                includedInBlockTimestamp: receipt.includedInBlockTimestamp,
-              })),
-            })),
+              },
+            },
           })),
         );
 
-        this.logger.log(`Stored ${transactions.length} transaction(s)`);
+        this.logger.log(`Stored ${receiptActions.length} receipt action(s)`);
       }
 
       const daos = await aggregationService.getDaos(contractId);
