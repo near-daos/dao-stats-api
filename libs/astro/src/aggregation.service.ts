@@ -188,9 +188,12 @@ export class AggregationService implements Aggregator {
 
     const daoContracts = await this.astroService.getDaoContracts();
 
+    const metrics = DAO_METRICS.map((metricClass) =>
+      this.moduleRef.get(metricClass),
+    );
+
     for (const [i, daoContract] of daoContracts.entries()) {
-      for (const metricClass of DAO_METRICS) {
-        const metric = await this.moduleRef.create(metricClass);
+      for (const metric of metrics) {
         const type = metric.getType();
         let value;
 

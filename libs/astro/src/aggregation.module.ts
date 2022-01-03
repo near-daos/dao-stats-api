@@ -5,7 +5,7 @@ import { NearHelperModule } from '@dao-stats/near-helper';
 import { NearIndexerModule } from '@dao-stats/near-indexer';
 import { SodakiModule } from '@dao-stats/sodaki';
 
-import { AggregationService } from '.';
+import { AggregationService, DAO_METRICS } from '.';
 import { AstroModule } from './astro.module';
 import configuration from './config/configuration';
 
@@ -21,7 +21,7 @@ import configuration from './config/configuration';
     NearHelperModule,
     SodakiModule,
   ],
-  providers: [AggregationService],
+  providers: [AggregationService, ...DAO_METRICS],
   exports: [AggregationService],
 })
 export class AggregationModule {}
