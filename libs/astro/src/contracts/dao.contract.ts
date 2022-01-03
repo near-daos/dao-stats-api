@@ -9,6 +9,7 @@ import {
   ProposalsResponse,
   ProposalStatus,
   Role,
+  Config,
 } from '../types';
 import { DaoContractInterface } from '../interfaces';
 import { isRoleGroup } from '../utils';
@@ -45,6 +46,10 @@ export class DaoContract extends Base {
 
   async getPolicy(): Promise<Policy> {
     return this.get_policy();
+  }
+
+  async getConfig(): Promise<Config> {
+    return this.get_config();
   }
 
   @Cacheable({

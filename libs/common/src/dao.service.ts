@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { DeleteResult, In, Not, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -20,8 +20,18 @@ export class DaoService {
     return this.daoRepository.findOne({ contractId, dao });
   }
 
-  async create(dao: Partial<Dao>[]): Promise<Dao[]> {
+  async create(dao: Partial<Dao>): Promise<Dao> {
     return this.daoRepository.save(dao);
+  }
+
+  async purgeInactive(
+    contractId: string,
+    activeDaos: string[],
+  ): Promise<DeleteResult> {
+    return this.daoRepository.delete({
+      contractId,
+      dao: Not(In(activeDaos)),
+    });
   }
 
   async autocomplete(contractId: string, input: string): Promise<DaoDto[]> {

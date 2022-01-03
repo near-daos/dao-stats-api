@@ -8,8 +8,5 @@ export class DaoDto {
   contractId: string;
 
   @ApiProperty()
-  description?: string | null;
-
-  @ApiProperty()
   metadata?: Record<string, any> | null;
 }

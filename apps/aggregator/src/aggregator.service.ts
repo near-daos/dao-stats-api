@@ -100,11 +100,24 @@ export class AggregatorService {
         this.logger.log(`Stored ${receiptActions.length} receipt action(s)`);
       }
 
-      const daos = await aggregationService.getDaos(contractId);
+      const daos = [];
+      for await (const dao of aggregationService.aggregateDaos(contractId)) {
+        await this.daoService.create(dao);
 
-      await this.daoService.create(daos);
+        daos.push(dao);
+      }
 
       this.logger.log(`Stored ${daos.length} DAO(s)`);
+
+      // Purging DAOs that were removed from contract
+      const { affected } = await this.daoService.purgeInactive(
+        contractId,
+        daos.map(({ dao }) => dao),
+      );
+
+      if (affected) {
+        this.logger.log(`Purged ${affected} inactive DAO(s)`);
+      }
 
       for await (const metric of aggregationService.aggregateMetrics(
         contractId,
