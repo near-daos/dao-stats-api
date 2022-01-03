@@ -62,8 +62,6 @@ export class TransactionService {
           from transactions
           where contract_id = '${contractId}' and type = '${txType}'
           ${dao ? `and receiver_account_id = '${dao}'` : ''}
-          ${from ? `and block_timestamp >= ${millisToNanos(from)}` : ''}
-          ${to ? `and block_timestamp <= ${millisToNanos(to)}` : ''}
           group by 1
         )
         
@@ -71,6 +69,8 @@ export class TransactionService {
           day,
           sum(count) over (order by day asc rows between unbounded preceding and current row)::int as count
         from data
+        ${from ? `where day >= to_timestamp(${from})` : ''}
+        ${to ? `${from ? ' and' : ' where'} day <= to_timestamp(${to})` : ''}
     `;
 
     return this.connection.query(query);
