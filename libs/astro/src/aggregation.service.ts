@@ -8,6 +8,7 @@ import {
   Aggregator,
   DaoDto,
   DaoStatsDto,
+  decodeBase64,
   findAllByKey,
   millisToNanos,
   nanosToMillis,
@@ -142,10 +143,33 @@ export class AggregationService implements Aggregator {
       : null;
   }
 
-  async getDaos(contractId: string): Promise<DaoDto[]> {
-    const factoryContract = await this.astroService.getDaoFactoryContract();
-    const daos = await factoryContract.getDaoList();
-    return daos.map((dao) => ({
+  async *aggregateDaos(contractId: string): AsyncGenerator<DaoDto> {
+    const daoContracts = await this.astroService.getDaoContracts();
+
+    this.logger.log('Staring aggregating Astro DAOs...');
+
+    for (const daoContract of daoContracts.values()) {
+      let metadata: any;
+      try {
+        const config = await daoContract.getConfig();
+
+        metadata = JSON.parse(decodeBase64(config.metadata));
+      } catch (err) {
+        if ('SyntaxError' !== err.name) {
+          this.logger.error(
+            `Aggregation error for contract "${daoContract.contractId}" entity: ${err}`,
+          );
+        }
+      }
+
+      yield {
+        dao: daoContract.contractId,
+        metadata,
+        contractId,
+      };
+    }
+
+    return daoContracts.map((dao) => ({
       dao,
       contractId,
     }));

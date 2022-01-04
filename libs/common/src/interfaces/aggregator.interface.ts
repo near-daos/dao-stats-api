@@ -11,7 +11,7 @@ export declare class Aggregator {
     to?: bigint,
   ): AsyncGenerator<ReceiptActionDto[]>;
 
-  getDaos(contractId: string): Promise<DaoDto[]>;
+  aggregateDaos(contractId: string): AsyncGenerator<DaoDto>;
 
   aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto>;
 }

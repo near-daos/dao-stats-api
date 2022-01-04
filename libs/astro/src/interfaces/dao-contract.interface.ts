@@ -1,5 +1,10 @@
 import { Contract } from 'near-api-js';
-import { BountiesResponse, PolicyResponse, ProposalsResponse } from '../types';
+import {
+  BountiesResponse,
+  PolicyResponse,
+  ProposalsResponse,
+  ConfigResponse,
+} from '../types';
 
 export interface DaoContractInterface extends Contract {
   get_policy(): Promise<PolicyResponse>;
@@ -13,4 +18,5 @@ export interface DaoContractInterface extends Contract {
     limit?: number;
   }): Promise<BountiesResponse>;
   get_last_bounty_id(): Promise<number>;
+  get_config(): Promise<ConfigResponse>;
 }
