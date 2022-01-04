@@ -26,3 +26,7 @@ export const convertFunds = (
   amount: string | number | bigint,
   decimals = 0,
 ): Decimal => new Decimal(String(amount)).div(Math.pow(10, decimals));
+
+export const decodeBase64 = (b: string) => {
+  return Buffer.from(b, 'base64').toString('utf-8');
+};

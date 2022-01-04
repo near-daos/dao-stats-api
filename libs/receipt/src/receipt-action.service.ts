@@ -19,8 +19,12 @@ export class ReceiptActionService {
 
   constructor(
     @InjectRepository(ReceiptAction)
-    private readonly receiptRepository: Repository<ReceiptAction>,
+    private readonly receiptActionRepository: Repository<ReceiptAction>,
   ) {}
+
+  create(actions: ReceiptAction[]): Promise<ReceiptAction[]> {
+    return this.receiptActionRepository.save(actions);
+  }
 
   async getTotals(
     context: DaoContractContext | ContractContext,
@@ -159,7 +163,7 @@ export class ReceiptActionService {
     const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
-    const qb = this.receiptRepository
+    const qb = this.receiptActionRepository
       .createQueryBuilder()
       .where('contract_id = :contractId', { contractId })
       .andWhere(`args_json->>'deposit' is not null`);

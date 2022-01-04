@@ -12,7 +12,6 @@ export class ReceiptAction {
 
   @ManyToOne(() => Receipt, (receipt) => receipt.receiptActions, {
     nullable: true,
-    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'receipt_id' })
   receipt: Receipt;
@@ -28,4 +27,7 @@ export class ReceiptAction {
 
   @Column({ type: 'simple-json' })
   args: Record<string, unknown>;
+
+  @Column({ type: 'bigint' })
+  receiptIncludedInBlockTimestamp: number;
 }
