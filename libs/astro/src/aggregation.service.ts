@@ -146,10 +146,12 @@ export class AggregationService implements Aggregator {
   async *aggregateDaos(contractId: string): AsyncGenerator<DaoDto> {
     const daoContracts = await this.astroService.getDaoContracts();
 
+    this.logger.log('Staring aggregating Astro DAOs...');
+
     for (const daoContract of daoContracts.values()) {
       let metadata: any;
       try {
-        const config = await daoContract.get_config();
+        const config = await daoContract.getConfig();
 
         metadata = JSON.parse(decodeBase64(config.metadata));
       } catch (err) {
