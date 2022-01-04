@@ -26,11 +26,11 @@ export class DaoService {
 
   async purgeInactive(
     contractId: string,
-    activeDaos: string[],
+    activeDaoIds: string[],
   ): Promise<DeleteResult> {
     return this.daoRepository.delete({
       contractId,
-      dao: Not(In(activeDaos)),
+      dao: Not(In(activeDaoIds)),
     });
   }
 
