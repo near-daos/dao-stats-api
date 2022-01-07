@@ -12,7 +12,6 @@ import {
   MetricQuery,
   MetricResponse,
   MetricType,
-  TransactionType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto/general-total.dto';
@@ -65,35 +64,11 @@ export class GeneralService {
     context: ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId } = context;
-
-    const [daoCountHistory, metrics] = await Promise.all([
-      this.daoStatsHistoryService.getHistory({
-        contractId,
-        metric: DaoStatsMetric.DaoCount,
-      }),
-      this.transactionService.getTotalCountDaily(
-        context,
-        TransactionType.CreateDao,
-        {
-          to: metricQuery.to,
-        },
-      ),
-    ]);
-
-    return {
-      metrics: patchMetricDays(
-        metricQuery,
-        metrics.map(({ day, count }) => ({
-          timestamp: moment(day).valueOf(),
-          count:
-            daoCountHistory.find(({ date }) =>
-              moment(date).isSame(moment(day), 'day'),
-            )?.value || count,
-        })),
-        MetricType.Total,
-      ),
-    };
+    return this.metricService.history(
+      context,
+      metricQuery,
+      DaoStatsMetric.DaoCount,
+    );
   }
 
   async active(
