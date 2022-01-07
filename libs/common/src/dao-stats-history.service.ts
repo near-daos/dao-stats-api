@@ -2,6 +2,7 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
+import { DaoStatsDto } from './dto';
 import { DaoStatsHistory } from './entities';
 import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
@@ -30,7 +31,7 @@ export class DaoStatsHistoryService {
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DaoStatsHistory): Promise<InsertResult> {
+  async createOrUpdate(data: DaoStatsDto): Promise<InsertResult> {
     return await this.connection
       .createQueryBuilder()
       .insert()
@@ -40,6 +41,16 @@ export class DaoStatsHistoryService {
         conflict_target: ['date', 'contract_id', 'dao', 'metric'],
         overwrite: ['value'],
       })
+      .execute();
+  }
+
+  async createIgnore(data: DaoStatsDto): Promise<InsertResult> {
+    return await this.connection
+      .createQueryBuilder()
+      .insert()
+      .into(DaoStatsHistory)
+      .values(data)
+      .onConflict('DO NOTHING')
       .execute();
   }
 

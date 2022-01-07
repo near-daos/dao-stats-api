@@ -7,8 +7,8 @@ export interface DaoContractMetricCurrentParams {
 
 export interface DaoContractMetricHistoryParams
   extends DaoContractMetricCurrentParams {
-  from: number;
-  to: number;
+  from?: number;
+  to?: number;
 }
 
 export type DaoContractMetricHistoryResponse = Record<number, number>;

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import {
   DaoFactoryContractMetricCurrentParams,
   DaoFactoryContractMetricHistoryParams,
@@ -9,6 +10,8 @@ import {
 
 @Injectable()
 export class DaoCountMetric implements DaoFactoryContractMetricInterface {
+  constructor(private readonly nearIndexerService: NearIndexerService) {}
+
   getType(): DaoStatsMetric {
     return DaoStatsMetric.DaoCount;
   }
@@ -19,8 +22,11 @@ export class DaoCountMetric implements DaoFactoryContractMetricInterface {
     return (await contract.getDaoList()).length;
   }
 
-  async getHistoricalValues({}: DaoFactoryContractMetricHistoryParams): Promise<DaoFactoryContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistoricalValues({
+    contract,
+  }: DaoFactoryContractMetricHistoryParams): Promise<
+    DaoFactoryContractMetricHistoryResponse[]
+  > {
+    return this.nearIndexerService.getDaoCountDaily(contract.contractId);
   }
 }
