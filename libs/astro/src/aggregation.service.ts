@@ -213,12 +213,12 @@ export class AggregationService implements Aggregator {
 
     const daoContracts = await this.astroService.getDaoContracts();
 
-    const metrics = DAO_METRICS.map((metricClass) =>
+    const daoMetrics = DAO_METRICS.map((metricClass) =>
       this.moduleRef.get(metricClass),
     );
 
     for (const [i, daoContract] of daoContracts.entries()) {
-      for (const metric of metrics) {
+      for (const metric of daoMetrics) {
         const type = metric.getType();
         let value;
 
@@ -293,9 +293,12 @@ export class AggregationService implements Aggregator {
 
     const daoContracts = await this.astroService.getDaoContracts();
 
+    const daoHistoricalMetrics = DAO_HISTORICAL_METRICS.map((metricClass) =>
+      this.moduleRef.get(metricClass),
+    );
+
     for (const [i, daoContract] of daoContracts.entries()) {
-      for (const metricClass of DAO_HISTORICAL_METRICS) {
-        const metric = await this.moduleRef.create(metricClass);
+      for (const metric of daoHistoricalMetrics) {
         const type = metric.getType();
         let data;
 
