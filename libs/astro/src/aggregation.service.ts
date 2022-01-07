@@ -13,6 +13,7 @@ import {
   millisToNanos,
   nanosToMillis,
   ReceiptActionDto,
+  ReceiptDto,
   TransactionType,
   VoteType,
 } from '@dao-stats/common';
@@ -21,7 +22,6 @@ import { AstroService } from './astro.service';
 import { DAO_METRICS, FACTORY_METRICS } from './metrics';
 
 const FIRST_BLOCK_TIMESTAMP = BigInt('1622560541482025354'); // first astro TX
-
 const RETRY_COUNT_THRESHOLD = 10;
 
 @Injectable()
@@ -100,7 +100,7 @@ export class AggregationService implements Aggregator {
         yield receiptActions.map((receiptAction) => ({
           ...receiptAction,
           receipt: {
-            ...receiptAction.receipt,
+            ...(receiptAction.receipt as unknown as ReceiptDto),
             originatedFromTransaction: {
               ...receiptAction.receipt.originatedFromTransaction,
               type: this.getTransactionType(receiptAction),
@@ -168,11 +168,6 @@ export class AggregationService implements Aggregator {
         contractId,
       };
     }
-
-    return daoContracts.map((dao) => ({
-      dao,
-      contractId,
-    }));
   }
 
   async *aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto> {
