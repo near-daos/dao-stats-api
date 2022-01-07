@@ -2,16 +2,29 @@ import moment from 'moment';
 import Decimal from 'decimal.js';
 import { Metric, MetricQuery, MetricType } from '@dao-stats/common';
 
-export const getGrowth = (current: number, prev: number) =>
-  Math.round(((current - prev) / (current || 1)) * 10000) / 100;
+export const getGrowth = (
+  current: number,
+  prev: number,
+  decimals: number = 2,
+) => roundToDecimals((current - prev) / (current || 1), decimals);
 
-export const getRate = (current: number, prev: number) =>
-  Math.round((current / (prev || 1)) * 10000) / 100;
+export const getRate = (current: number, prev: number, decimals: number = 2) =>
+  roundToDecimals(current / (prev || 1), decimals);
 
-export const getAverage = (values: number[]) =>
+export const getAverage = (values: number[], decimals: number = 2) =>
   values?.length
-    ? Math.round(values.reduce((acc, value) => acc + value, 0) / values.length)
+    ? roundToDecimals(
+        values.reduce((acc, value) => acc + value, 0) / values.length,
+        decimals,
+      )
     : 0;
+
+export const roundToDecimals = (value: number, decimals: number = 0) => {
+  return (
+    Math.round((value + Number.EPSILON) * Math.pow(10, decimals)) /
+    Math.pow(10, decimals)
+  );
+};
 
 export const convertFunds = (
   amount: string | number | bigint,
