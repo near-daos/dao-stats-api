@@ -52,7 +52,10 @@ export const patchMetricDays = (
     );
 
     if (metric) {
-      return metric;
+      return {
+        ...metric,
+        timestamp: moment(metric.timestamp).endOf('day').valueOf(),
+      };
     }
 
     switch (type) {

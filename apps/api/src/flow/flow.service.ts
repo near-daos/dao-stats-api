@@ -167,7 +167,7 @@ export class FlowService {
             ?.count || 0;
 
         return {
-          timestamp: day,
+          timestamp: moment(day).endOf('day').valueOf(),
           incoming:
             metricType == FlowMetricType.Fund
               ? convertFunds(inc, conversionFactor).toNumber()

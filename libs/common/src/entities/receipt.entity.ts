@@ -31,16 +31,19 @@ export class Receipt implements HasContract {
   @Column()
   originatedFromTransactionHash: string;
 
-  @ManyToOne(() => Transaction, (transaction) => transaction.receipts)
+  @ManyToOne(() => Transaction, (transaction) => transaction.receipts, {
+    cascade: ['insert', 'update'],
+  })
   @JoinColumn({ name: 'originated_from_transaction_hash' })
-  originatedFromTransaction?: Transaction;
+  originatedFromTransaction: Transaction;
 
   @Column({ type: 'bigint' })
   includedInBlockTimestamp: number;
 
   @OneToMany(() => ReceiptAction, (receiptAction) => receiptAction.receipt, {
-    cascade: true,
+    cascade: ['insert', 'update'],
     nullable: true,
+    persistence: false,
   })
   @JoinColumn({ name: 'receipt_id' })
   receiptActions: ReceiptAction[];

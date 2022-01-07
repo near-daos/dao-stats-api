@@ -24,8 +24,9 @@ export class Transaction extends BaseEntity implements HasContract {
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
     cascade: true,
     createForeignKeyConstraints: false,
+    persistence: false,
   })
-  receipts: Receipt[];
+  receipts?: Receipt[];
 
   @Column()
   receiverAccountId: string;

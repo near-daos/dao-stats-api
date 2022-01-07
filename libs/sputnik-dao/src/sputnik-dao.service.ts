@@ -3,7 +3,7 @@ import {
   Aggregator,
   DaoDto,
   DaoStatsDto,
-  TransactionDto,
+  ReceiptActionDto,
 } from '@dao-stats/common';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class AggregationService implements Aggregator {
     return [];
   }
 
-  aggregateTransactions(): AsyncGenerator<TransactionDto[]> {
+  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
     return undefined;
   }
 }

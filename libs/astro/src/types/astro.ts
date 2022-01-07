@@ -46,6 +46,14 @@ export interface Policy {
 
 export type PolicyResponse = Policy;
 
+export interface Config {
+  name: string;
+  purpose: string;
+  metadata: string;
+}
+
+export type ConfigResponse = Config;
+
 export enum ProposalStatus {
   InProgress = 'InProgress',
   Approved = 'Approved',
