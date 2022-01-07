@@ -1,5 +1,4 @@
-import { DaoDto, DaoStatsDto } from '@dao-stats/common';
-import { ReceiptActionDto } from '../dto';
+import { DaoDto, DaoStatsDto, ReceiptActionDto } from '../dto';
 
 export declare class Aggregator {
   /**

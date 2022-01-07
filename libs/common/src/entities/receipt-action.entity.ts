@@ -21,7 +21,7 @@ export class ReceiptAction implements HasContract {
     nullable: true,
     eager: true,
     cascade: ['insert', 'update'],
-    persistence: false
+    persistence: false,
   })
   @JoinColumn({ name: 'receipt_id' })
   receipt?: Receipt;
