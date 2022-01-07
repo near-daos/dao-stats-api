@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { filter, map, Observable, Observer } from 'rxjs';
 import {
   REDIS_PUBLISHER_CLIENT,
@@ -12,7 +12,7 @@ export interface RedisSubscribeMessage {
 }
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleDestroy {
   public constructor(
     @Inject(REDIS_SUBSCRIBER_CLIENT)
     private readonly redisSubscriberClient: RedisClient,
@@ -47,5 +47,10 @@ export class RedisService {
         },
       );
     });
+  }
+
+  onModuleDestroy() {
+    this.redisSubscriberClient.disconnect();
+    this.redisPublisherClient.disconnect();
   }
 }

@@ -1,11 +1,17 @@
 import { tap } from 'rxjs';
 import { Cache } from 'cache-manager';
 import { EVENT_CACHE_CLEAR } from '@dao-stats/common';
-import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { RedisService } from '@dao-stats/redis';
 
 @Injectable()
-export class CacheService {
+export class CacheService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
 
   constructor(
@@ -23,5 +29,13 @@ export class CacheService {
     this.logger.log('Clearing cache...');
 
     return this.cacheManager.reset();
+  }
+
+  onModuleDestroy(): any {
+    const store = this.cacheManager.store as any;
+
+    if (store.name === 'redis') {
+      store.getClient().end(true);
+    }
   }
 }
