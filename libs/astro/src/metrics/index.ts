@@ -10,8 +10,11 @@ import {
 } from './actions';
 import { BountiesCountMetric, BountiesValueLockedMetric } from './bounties';
 import { DaoCountMetric } from './factory';
-import { CouncilSizeMetric, MembersCountMetric } from './members';
-import { GroupsCountMetric } from './groups';
+import {
+  CouncilSizeMetric,
+  GroupsCountMetric,
+  MembersCountMetric,
+} from './groups';
 import {
   ProposalsApprovedCountMetric,
   ProposalsBountyCountMetric,
@@ -33,7 +36,6 @@ import {
 export * from './actions';
 export * from './bounties';
 export * from './factory';
-export * from './members';
 export * from './proposals';
 export * from './tokens';
 
