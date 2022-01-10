@@ -3,7 +3,7 @@ image: node:14.16.0
 definitions:
   services:
     docker:
-      memory: 4096
+      memory: 3072
   caches:
     docker-cache: docker-cache
 
@@ -64,7 +64,6 @@ definitions:
 
     - parallel: &docker-build-publish
       - step:
-          size: 2x
           conditions: *aggregator-condition
           name: Docker - Build and Publish aggregator
           <<: &docker-service
