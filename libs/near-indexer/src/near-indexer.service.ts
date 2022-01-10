@@ -113,12 +113,12 @@ export class NearIndexerService {
       });
     }
 
+    query.andWhere(`eo.status != 'FAILURE'`);
+
     if (isDeposit) {
       query.andWhere(`ara.args -> 'deposit' is not null`);
       query.andWhere(`ara.args ->> 'deposit' != '0'`);
     }
-
-    query.andWhere(`eo.status != 'FAILURE'`);
 
     if (daily) {
       query.select(
@@ -191,10 +191,10 @@ export class NearIndexerService {
 
     return this.connection.query(
       `
-      with data as (${query})
-      select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
-      from data
-    `,
+          with data as (${query})
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
       parameters,
     );
   }
@@ -213,10 +213,10 @@ export class NearIndexerService {
 
     return this.connection.query(
       `
-      with data as (${query})
-      select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
-      from data
-    `,
+          with data as (${query})
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
       parameters,
     );
   }
@@ -226,23 +226,64 @@ export class NearIndexerService {
   ): Promise<{ date: Date; value: number }[]> {
     return this.connection.query(
       `
-      with data as (
-        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
-        from action_receipt_actions ara
-        left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-        where ara.action_kind = 'FUNCTION_CALL'
-          and ara.args ->> 'method_name' = 'new'
-          and ara.receipt_predecessor_account_id = $1
-          and ara.receipt_receiver_account_id like $2
-          and eo.status != 'FAILURE'
-        group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
-      )
-      select
-          date,
-          sum(value) over (order by date rows between unbounded preceding and current row) as value
-      from data
-    `,
+          with data as (
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
+              from action_receipt_actions ara
+              left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+              where ara.action_kind = 'FUNCTION_CALL'
+                and ara.args ->> 'method_name' = 'new'
+                and ara.receipt_predecessor_account_id = $1
+                and ara.receipt_receiver_account_id like $2
+                and eo.status != 'FAILURE'
+              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+          )
+          select date,
+                 sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
       [contractId, `%.${contractId}`],
+    );
+  }
+
+  // This method returns balance slightly different from state
+  // TODO: find cause and fix query
+  async getAccountBalanceDaily(
+    accountId: string,
+  ): Promise<{ date: Date; value: number }[]> {
+    return this.connection.query(
+      `
+          with deposits as (
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
+                     sum((args ->> 'deposit')::decimal)                                as value
+              from action_receipt_actions ara
+              left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+              where receipt_receiver_account_id = $1
+                and eo.status != 'FAILURE'
+                and args -> 'deposit' is not null
+                and args ->> 'deposit' != '0'
+              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+          ),
+               withdrawals as (
+                   select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
+                          -sum((args ->> 'deposit')::decimal)                                as value
+                   from action_receipt_actions ara
+                   left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+                   where receipt_predecessor_account_id = $1
+                     and eo.status != 'FAILURE'
+                     and args -> 'deposit' is not null
+                     and args ->> 'deposit' != '0'
+                   group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+               ),
+               balance as (
+                   select date,
+                          coalesce(deposits.value, 0) + coalesce(withdrawals.value, 0) as value
+                   from deposits
+                   full outer join withdrawals using (date)
+               )
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from balance;
+      `,
+      [accountId],
     );
   }
 }
