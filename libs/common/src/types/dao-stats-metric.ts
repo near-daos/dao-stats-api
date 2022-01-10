@@ -1,5 +1,6 @@
 export enum DaoStatsMetric {
   DaoCount = 'DAO_COUNT' /* total count of DAOs on platform */,
+  AccountBalance = 'ACCOUNT_BALANCE' /* contract's account balance */,
   ActionsInCount = 'ACTIONS_IN_COUNT' /* total count of incoming receipt actions */,
   ActionsOutCount = 'ACTIONS_OUT_COUNT' /* total count of outgoing receipt actions */,
   ActionsFunctionCallInCount = 'ACTIONS_FUNCTION_CALL_IN_COUNT' /* total count of incoming receipt actions with action_kind = FUNCTION_CALL */,
