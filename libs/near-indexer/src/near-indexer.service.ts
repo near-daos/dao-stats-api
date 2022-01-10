@@ -81,39 +81,53 @@ export class NearIndexerService {
     receiverAccountId,
     isDeposit,
     actionKind,
+    daily,
   }: {
     predecessorAccountId?: string;
     receiverAccountId?: string;
     isDeposit?: boolean;
     actionKind?: string;
+    daily?: boolean;
   }): SelectQueryBuilder<ReceiptAction> {
     const query = this.connection
       .getRepository(ReceiptAction)
-      .createQueryBuilder('ra')
-      .leftJoin('execution_outcomes', 'eo', 'ra.receipt_id = eo.receipt_id');
+      .createQueryBuilder('ara')
+      .leftJoin('execution_outcomes', 'eo', 'ara.receipt_id = eo.receipt_id');
 
     if (actionKind) {
       query.andWhere('action_kind = :actionKind', { actionKind });
     }
 
     if (predecessorAccountId) {
-      query.andWhere('receipt_predecessor_account_id = :predecessorAccountId', {
-        predecessorAccountId,
-      });
+      query.andWhere(
+        'ara.receipt_predecessor_account_id = :predecessorAccountId',
+        {
+          predecessorAccountId,
+        },
+      );
     }
 
     if (receiverAccountId) {
-      query.andWhere('receipt_receiver_account_id = :receiverAccountId', {
+      query.andWhere('ara.receipt_receiver_account_id = :receiverAccountId', {
         receiverAccountId,
       });
     }
 
     if (isDeposit) {
-      query.andWhere(`args -> 'deposit' is not null`);
-      query.andWhere(`args ->> 'deposit' != '0'`);
+      query.andWhere(`ara.args -> 'deposit' is not null`);
+      query.andWhere(`ara.args ->> 'deposit' != '0'`);
     }
 
     query.andWhere(`eo.status != 'FAILURE'`);
+
+    if (daily) {
+      query.select(
+        'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date',
+      );
+      query.groupBy(
+        'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))',
+      );
+    }
 
     return query;
   }
@@ -153,7 +167,7 @@ export class NearIndexerService {
       ...params,
       isDeposit: true,
     })
-      .select(`sum((ra.args ->> 'deposit')::decimal)`)
+      .select(`sum((ara.args ->> 'deposit')::decimal)`)
       .execute();
 
     if (!result || !result['sum']) {
@@ -163,17 +177,60 @@ export class NearIndexerService {
     return result['sum'];
   }
 
+  async getReceiptActionsDepositCountDaily(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<{ date: Date; value: number }[]> {
+    const [query, parameters] = this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+      daily: true,
+    })
+      .addSelect(`count(1) as value`)
+      .getQueryAndParameters();
+
+    return this.connection.query(
+      `
+      with data as (${query})
+      select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+      from data
+    `,
+      parameters,
+    );
+  }
+
+  async getReceiptActionsDepositAmountDaily(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<{ date: Date; value: string }[]> {
+    const [query, parameters] = this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+      daily: true,
+    })
+      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as value`)
+      .getQueryAndParameters();
+
+    return this.connection.query(
+      `
+      with data as (${query})
+      select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+      from data
+    `,
+      parameters,
+    );
+  }
+
   async getDaoCountDaily(
     contractId: string,
-  ): Promise<{ date: string; value: number }[]> {
+  ): Promise<{ date: Date; value: number }[]> {
     return this.connection.query(
       `
       with data as (
-        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as count
+        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
         from action_receipt_actions ara
         left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-        where
-              ara.action_kind = 'FUNCTION_CALL'
+        where ara.action_kind = 'FUNCTION_CALL'
           and ara.args ->> 'method_name' = 'new'
           and ara.receipt_predecessor_account_id = $1
           and ara.receipt_receiver_account_id like $2
@@ -182,7 +239,7 @@ export class NearIndexerService {
       )
       select
           date,
-          sum(count) over (order by date rows between unbounded preceding and current row)::int as value
+          sum(value) over (order by date rows between unbounded preceding and current row) as value
       from data
     `,
       [contractId, `%.${contractId}`],

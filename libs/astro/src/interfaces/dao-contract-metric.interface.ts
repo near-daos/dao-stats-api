@@ -11,7 +11,12 @@ export interface DaoContractMetricHistoryParams
   to?: number;
 }
 
-export type DaoContractMetricHistoryResponse = Record<number, number>;
+export interface DaoContractMetricHistory {
+  date: Date;
+  value: number;
+}
+
+export type DaoContractMetricHistoryResponse = DaoContractMetricHistory[];
 
 export interface DaoContractMetricInterface {
   getType(): DaoStatsMetric;
