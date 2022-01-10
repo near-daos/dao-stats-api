@@ -16,6 +16,7 @@ export const DaoStatsMetricGroup = {
   ],
   BountiesAndGrantsValueLocked: [DaoStatsMetric.BountiesValueLocked],
   TotalValueLocked: [
+    DaoStatsMetric.AccountBalance,
     DaoStatsMetric.BountiesValueLocked,
     DaoStatsMetric.FtsValueLocked,
   ],
