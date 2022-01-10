@@ -2,7 +2,7 @@ import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
-import { ReceiptAction, Transaction } from './entities';
+import { ReceiptAction } from './entities';
 
 @Injectable()
 export class NearIndexerService {
@@ -11,69 +11,6 @@ export class NearIndexerService {
     @Inject(NEAR_INDEXER_DB_CONNECTION)
     private connection: Connection,
   ) {}
-
-  async findFirstTransactionByAccountIds(
-    accountIds: string | string[],
-  ): Promise<Transaction> {
-    return this.buildAggregationTransactionQuery(accountIds)
-      .select('transaction.transactionHash')
-      .orderBy('transaction.block_timestamp', 'ASC')
-      .getOne();
-  }
-
-  async findTransactionsByAccountIds(
-    accountIds: string | string[],
-    fromBlockTimestamp?: bigint,
-    toBlockTimestamp?: bigint,
-  ): Promise<Transaction[]> {
-    return this.buildAggregationTransactionQuery(
-      accountIds,
-      fromBlockTimestamp,
-      toBlockTimestamp,
-    )
-      .orderBy('transaction.block_timestamp', 'ASC')
-      .getMany();
-  }
-
-  async findTransaction(transactionHash: string): Promise<Transaction> {
-    return this.connection.getRepository(Transaction).findOne(transactionHash);
-  }
-
-  private buildAggregationTransactionQuery(
-    accountIds: string | string[],
-    fromBlockTimestamp?: bigint,
-    toBlockTimestamp?: bigint,
-  ): SelectQueryBuilder<Transaction> {
-    const queryBuilder = this.connection
-      .getRepository(Transaction)
-      .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.receipts', 'receipts')
-      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions');
-
-    if (Array.isArray(accountIds)) {
-      queryBuilder.where('transaction.receiver_account_id IN (:...ids)', {
-        ids: accountIds,
-      });
-    } else {
-      queryBuilder.where('transaction.receiver_account_id LIKE :id', {
-        id: `%${accountIds}`,
-      });
-    }
-
-    if (fromBlockTimestamp) {
-      queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-        from: String(fromBlockTimestamp),
-      });
-    }
-
-    if (toBlockTimestamp) {
-      queryBuilder.andWhere('transaction.block_timestamp <= :to', {
-        to: String(toBlockTimestamp),
-      });
-    }
-
-    return queryBuilder;
-  }
 
   buildAggregationReceiptActionQuery(
     accountIds: string | string[],
@@ -152,7 +89,8 @@ export class NearIndexerService {
   }): SelectQueryBuilder<ReceiptAction> {
     const query = this.connection
       .getRepository(ReceiptAction)
-      .createQueryBuilder();
+      .createQueryBuilder('ra')
+      .leftJoin('execution_outcomes', 'eo', 'ra.receipt_id = eo.receipt_id');
 
     if (actionKind) {
       query.andWhere('action_kind = :actionKind', { actionKind });
@@ -172,7 +110,10 @@ export class NearIndexerService {
 
     if (isDeposit) {
       query.andWhere(`args -> 'deposit' is not null`);
+      query.andWhere(`args ->> 'deposit' != '0'`);
     }
+
+    query.andWhere(`eo.status != 'FAILURE'`);
 
     return query;
   }
@@ -212,7 +153,7 @@ export class NearIndexerService {
       ...params,
       isDeposit: true,
     })
-      .select(`sum((args ->> 'deposit')::decimal)`)
+      .select(`sum((ra.args ->> 'deposit')::decimal)`)
       .execute();
 
     if (!result || !result['sum']) {
@@ -236,7 +177,7 @@ export class NearIndexerService {
           and ara.args ->> 'method_name' = 'new'
           and ara.receipt_predecessor_account_id = $1
           and ara.receipt_receiver_account_id like $2
-          and eo.status = 'SUCCESS_VALUE'
+          and eo.status != 'FAILURE'
         group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
       )
       select
