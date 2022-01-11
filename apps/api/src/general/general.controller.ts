@@ -8,7 +8,7 @@ import {
   MetricQuery,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
-import { GeneralTotalResponse } from './dto/general-total.dto';
+import { GeneralTotalResponse } from './dto';
 import { GeneralService } from './general.service';
 import { MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';

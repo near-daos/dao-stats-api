@@ -16,7 +16,7 @@ import {
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { MetricService } from '../common/metric.service';
-import { UsersTotalResponse } from './dto/users-total.dto';
+import { UsersTotalResponse } from './dto';
 import {
   getAverage,
   getDailyIntervals,

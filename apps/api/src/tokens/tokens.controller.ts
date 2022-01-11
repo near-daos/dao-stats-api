@@ -9,7 +9,7 @@ import {
   MetricResponse,
 } from '@dao-stats/common';
 
-import { TokensTotalResponse } from './dto/tokens-total.dto';
+import { TokensTotalResponse } from './dto';
 import { TokensService } from './tokens.service';
 import { MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';

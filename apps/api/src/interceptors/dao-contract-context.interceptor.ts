@@ -1,4 +1,5 @@
 import { Observable, throwError } from 'rxjs';
+import { Reflector } from '@nestjs/core';
 import {
   BadRequestException,
   CallHandler,
@@ -6,14 +7,13 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-
 import { RequestContext } from '@medibloc/nestjs-request-context';
+
 import {
   DaoContractContext,
   DaoService,
   DAO_CONTRACT_CONTEXT,
 } from '@dao-stats/common';
-import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class DaoContractContextInterceptor implements NestInterceptor {

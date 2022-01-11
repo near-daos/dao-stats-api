@@ -9,10 +9,12 @@ import {
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
 
-import { GovernanceTotalResponse } from './dto/governance-total.dto';
-import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
-import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import {
+  GovernanceTotalResponse,
+  ProposalsTypesLeaderboardResponse,
+  ProposalsTypesHistoryResponse,
+  VoteRateLeaderboardResponse,
+} from './dto';
 import { GovernanceService } from './governance.service';
 import { MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';

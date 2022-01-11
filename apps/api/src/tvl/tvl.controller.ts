@@ -9,8 +9,7 @@ import {
   MetricResponse,
 } from '@dao-stats/common';
 
-import { TvlTotalResponse } from './dto/tvl-total.dto';
-import { TvlDaoTotalResponse } from './dto/tvl-dao-total.dto';
+import { TvlTotalResponse, TvlDaoTotalResponse } from './dto';
 import { TvlService } from './tvl.service';
 import { MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';

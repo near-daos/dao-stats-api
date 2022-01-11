@@ -13,7 +13,7 @@ import {
   MetricType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { GeneralTotalResponse } from './dto/general-total.dto';
+import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 import { getDailyIntervals, getGrowth, patchMetricDays } from '../utils';
 
