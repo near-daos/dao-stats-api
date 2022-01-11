@@ -96,7 +96,7 @@ export class UsersController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/average-users')
-  async council(
+  async averageUsers(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {

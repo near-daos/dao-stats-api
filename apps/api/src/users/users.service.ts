@@ -15,6 +15,7 @@ import {
   MetricType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
+import { MetricService } from '../common/metric.service';
 import { UsersTotalResponse } from './dto/users-total.dto';
 import {
   getAverage,
@@ -31,12 +32,12 @@ export class UsersService {
     private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
+    private readonly metricService: MetricService,
   ) {}
 
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<UsersTotalResponse> {
-    const { contractId, dao } = context as DaoContractContext;
     const dayAgo = moment().subtract(1, 'days');
 
     const [
@@ -48,8 +49,7 @@ export class UsersService {
       dayAgoInteractions,
       daoInteractions,
       dayAgoDaoInteractions,
-      membersCount,
-      dayAgoMembersCount,
+      members,
     ] = await Promise.all([
       this.transactionService.getUsersTotalCount(context),
       this.transactionService.getUsersTotalCount(context, {
@@ -67,17 +67,7 @@ export class UsersService {
       this.transactionService.getDaoInteractions(context, {
         to: dayAgo.valueOf(),
       }),
-      this.daoStatsService.getValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.MembersCount,
-      }),
-      this.daoStatsHistoryService.getLastValue({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.MembersCount,
-        to: dayAgo.valueOf(),
-      }),
+      this.metricService.total(context, DaoStatsMetric.MembersCount),
     ]);
 
     const avgDaoUsers = getAverage(daoUsers.map(({ count }) => count));
@@ -97,10 +87,7 @@ export class UsersService {
         count: usersCount.count,
         growth: getGrowth(usersCount.count, dayAgoUsersCount.count),
       },
-      members: {
-        count: membersCount,
-        growth: getGrowth(membersCount, dayAgoMembersCount),
-      },
+      members,
       averageUsers: {
         count: avgDaoUsers,
         growth: getGrowth(avgDaoUsers, dayAgoAvgDaoUsers),
@@ -202,75 +189,20 @@ export class UsersService {
     contractContext: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId, dao } = contractContext as DaoContractContext;
-
-    const { from, to } = metricQuery;
-
-    const history = await this.daoStatsHistoryService.getHistory({
-      contractId,
-      dao,
-      metric: DaoStatsMetric.MembersCount,
-      from,
-      to,
-    });
-
-    return {
-      metrics: patchMetricDays(
-        metricQuery,
-        history.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
-        })),
-        MetricType.Total,
-      ),
-    };
+    return this.metricService.history(
+      contractContext,
+      metricQuery,
+      DaoStatsMetric.MembersCount,
+    );
   }
 
   async membersLeaderboard(
     contractContext: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const { contractId } = contractContext;
-
-    const dayAgo = moment().subtract(1, 'day');
-    const weekAgo = moment().subtract(1, 'week');
-
-    const leaderboard = await this.daoStatsService.getLeaderboard({
-      contractId,
-      metric: DaoStatsMetric.MembersCount,
-    });
-
-    const metrics = await Promise.all(
-      leaderboard.map(async ({ dao, value }) => {
-        const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getLastValue({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.MembersCount,
-            to: dayAgo.valueOf(),
-          }),
-          this.daoStatsHistoryService.getHistory({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.MembersCount,
-            from: weekAgo.valueOf(),
-          }),
-        ]);
-
-        return {
-          dao,
-          activity: {
-            count: value,
-            growth: getGrowth(value, prevValue),
-          },
-          overview: history.map((row) => ({
-            timestamp: row.date.valueOf(),
-            count: row.value,
-          })),
-        };
-      }),
+    return this.metricService.leaderboard(
+      contractContext,
+      DaoStatsMetric.MembersCount,
     );
-
-    return { metrics };
   }
 
   async averageUsers(
@@ -294,53 +226,6 @@ export class UsersService {
       });
 
     return this.combineDailyMetrics(byDays);
-  }
-
-  async councilLeaderboard(
-    contractContext: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    const { contractId } = contractContext;
-
-    const dayAgo = moment().subtract(1, 'day');
-    const weekAgo = moment().subtract(1, 'week');
-
-    const leaderboard = await this.daoStatsService.getLeaderboard({
-      contractId,
-      metric: DaoStatsMetric.CouncilSize,
-    });
-
-    const metrics = await Promise.all(
-      leaderboard.map(async ({ dao, value }) => {
-        const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getLastValue({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.CouncilSize,
-            to: dayAgo.valueOf(),
-          }),
-          this.daoStatsHistoryService.getHistory({
-            contractId,
-            dao,
-            metric: DaoStatsMetric.CouncilSize,
-            from: weekAgo.valueOf(),
-          }),
-        ]);
-
-        return {
-          dao,
-          activity: {
-            count: value,
-            growth: getGrowth(value, prevValue),
-          },
-          overview: history.map((row) => ({
-            timestamp: row.date.valueOf(),
-            count: row.value,
-          })),
-        };
-      }),
-    );
-
-    return { metrics };
   }
 
   async interactions(
