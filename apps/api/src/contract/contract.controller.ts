@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ContractResponse } from './dto/contract.dto';
+import { ContractResponse } from './dto';
 import { ContractService } from './contract.service';
 import { NoContractContext } from '../decorators';
 

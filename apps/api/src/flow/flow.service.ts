@@ -12,9 +12,11 @@ import {
   ReceiptActionService,
   TransferType,
 } from '@dao-stats/receipt';
-import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowMetricResponse } from './dto/flow-metric-response.dto';
-import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import {
+  FlowTotalResponse,
+  FlowMetricResponse,
+  FlowLeaderboardMetricResponse,
+} from './dto';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
 

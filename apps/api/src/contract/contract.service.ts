@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Contract } from '@dao-stats/common';
-import { ContractResponse } from './dto/contract.dto';
+import { ContractResponse } from './dto';
 
 @Injectable()
 export class ContractService {

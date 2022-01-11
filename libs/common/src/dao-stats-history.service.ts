@@ -2,9 +2,7 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { DaoStatsDto } from './dto';
-import { DaoStatsHistory } from './entities';
-import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
+import { DaoStatsDto, DaoStatsHistory, DaoStatsMetric } from '.';
 
 export interface DaoStatsHistoryValueParams {
   from?: number;
@@ -12,15 +10,17 @@ export interface DaoStatsHistoryValueParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
-  func?: DaoStatsAggregateFunction;
+  daoAverage?: boolean;
 }
 
 export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
 
-export interface DaoStatsHistoryHistoryResponse {
+export interface DaoStatsHistoryHistory {
   date: Date;
   value: number;
 }
+
+export type DaoStatsHistoryHistoryResponse = DaoStatsHistoryHistory[];
 
 @Injectable()
 export class DaoStatsHistoryService {
@@ -58,13 +58,13 @@ export class DaoStatsHistoryService {
     contractId,
     dao,
     metric,
-    func = DaoStatsAggregateFunction.Sum,
+    daoAverage,
     from,
     to,
   }: DaoStatsHistoryValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value) as value`);
+      .select(`date, dao, sum(value) as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -80,21 +80,33 @@ export class DaoStatsHistoryService {
 
     query.andWhere('contract_id = :contractId', { contractId });
 
-    if (dao) {
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
     if (Array.isArray(metric)) {
-      query.andWhere('metric IN (:...metric)', { metric });
+      query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
     }
 
-    const [result] = await query
-      .groupBy('date')
-      .orderBy('date', 'DESC')
-      .take(1)
-      .execute();
+    query.groupBy('date, dao');
+
+    const [subQuery, params] = query.getQueryAndParameters();
+
+    const [result] = await this.connection.query(
+      `
+          with data as (${subQuery})
+          select ${daoAverage ? 'avg' : 'sum'}(value) as value
+          from data
+          group by date
+          order by date desc
+          limit 1
+      `,
+      params,
+    );
 
     if (!result || !result['value']) {
       return 0;
@@ -107,13 +119,13 @@ export class DaoStatsHistoryService {
     contractId,
     dao,
     metric,
-    func = DaoStatsAggregateFunction.Sum,
+    daoAverage,
     from,
     to,
-  }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse[]> {
+  }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`date, ${func}(value) as value`);
+      .select(`date, sum(value) as value`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -129,18 +141,36 @@ export class DaoStatsHistoryService {
 
     query.andWhere('contract_id = :contractId', { contractId });
 
-    if (dao) {
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
     if (Array.isArray(metric)) {
-      query.andWhere('metric IN (:...metric)', { metric });
+      query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
     }
 
-    const result = await query.groupBy('date').orderBy('date', 'ASC').execute();
+    query.groupBy('date, dao');
 
-    return result.map((data) => ({ ...data, value: parseFloat(data.value) }));
+    const [subQuery, params] = query.getQueryAndParameters();
+
+    const result = await this.connection.query(
+      `
+          with data as (${subQuery})
+          select date, ${daoAverage ? 'avg' : 'sum'}(value) as value
+          from data
+          group by date
+          order by date
+      `,
+      params,
+    );
+
+    return result.map(({ date, value }) => ({
+      date,
+      value: parseFloat(value),
+    }));
   }
 }

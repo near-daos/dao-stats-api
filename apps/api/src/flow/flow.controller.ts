@@ -7,9 +7,11 @@ import {
   MetricQuery,
 } from '@dao-stats/common';
 import { FlowMetricType } from '@dao-stats/receipt';
-import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowMetricResponse } from './dto/flow-metric-response.dto';
-import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import {
+  FlowTotalResponse,
+  FlowMetricResponse,
+  FlowLeaderboardMetricResponse,
+} from './dto';
 import { FlowService } from './flow.service';
 import { HasDaoContractContext } from '../decorators';
 import { MetricQueryPipe } from '../pipes';
