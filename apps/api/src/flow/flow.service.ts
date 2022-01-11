@@ -27,15 +27,9 @@ export class FlowService {
 
   async totals(context: ContractContext): Promise<FlowTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contractId);
-
-    const { conversionFactor } = contract;
-
-    const contractContext = {
-      ...context,
-      contract,
-    };
+    const {
+      contract: { conversionFactor },
+    } = context;
 
     const [
       txInCount,
@@ -48,12 +42,12 @@ export class FlowService {
       dayAgoTotalOut,
     ] = await Promise.all([
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
         {
@@ -61,12 +55,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
         {
@@ -74,12 +68,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
         {
@@ -87,12 +81,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
         {

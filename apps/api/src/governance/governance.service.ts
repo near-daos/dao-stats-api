@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -25,8 +25,6 @@ import { getGrowth, getRate, patchMetricDays } from '../utils';
 
 @Injectable()
 export class GovernanceService {
-  private readonly logger = new Logger(GovernanceService.name);
-
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
@@ -152,10 +150,10 @@ export class GovernanceService {
   }
 
   async proposalsLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.metricService.leaderboard(
-      contractContext,
+      context,
       DaoStatsMetric.ProposalsCount,
     );
   }
@@ -234,9 +232,9 @@ export class GovernanceService {
   }
 
   async proposalsTypesLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
-    const { contractId } = contractContext;
+    const { contractId } = context;
 
     const daos = await this.daoStatsService.getLeaderboard({
       contractId,

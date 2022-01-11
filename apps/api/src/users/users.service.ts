@@ -186,23 +186,20 @@ export class UsersService {
   }
 
   async members(
-    contractContext: ContractContext | DaoContractContext,
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.metricService.history(
-      contractContext,
+      context,
       metricQuery,
       DaoStatsMetric.MembersCount,
     );
   }
 
   async membersLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.metricService.leaderboard(
-      contractContext,
-      DaoStatsMetric.MembersCount,
-    );
+    return this.metricService.leaderboard(context, DaoStatsMetric.MembersCount);
   }
 
   async averageUsers(

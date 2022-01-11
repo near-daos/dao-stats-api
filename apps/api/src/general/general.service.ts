@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -19,8 +19,6 @@ import { getDailyIntervals, getGrowth, patchMetricDays } from '../utils';
 
 @Injectable()
 export class GeneralService {
-  private readonly logger = new Logger(GeneralService.name);
-
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
@@ -145,31 +143,28 @@ export class GeneralService {
   }
 
   async groups(
-    contractContext: ContractContext | DaoContractContext,
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.metricService.history(
-      contractContext,
+      context,
       metricQuery,
       DaoStatsMetric.GroupsCount,
     );
   }
 
   async groupsLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    return this.metricService.leaderboard(
-      contractContext,
-      DaoStatsMetric.GroupsCount,
-    );
+    return this.metricService.leaderboard(context, DaoStatsMetric.GroupsCount);
   }
 
   async averageGroups(
-    contractContext: ContractContext | DaoContractContext,
+    context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.metricService.history(
-      contractContext,
+      context,
       metricQuery,
       DaoStatsMetric.GroupsCount,
       true,
