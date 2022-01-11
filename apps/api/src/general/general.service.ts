@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   LeaderboardMetricResponse,
@@ -38,11 +37,7 @@ export class GeneralService {
       await Promise.all([
         this.metricService.total(context, DaoStatsMetric.DaoCount),
         this.metricService.total(context, DaoStatsMetric.GroupsCount),
-        this.metricService.total(
-          context,
-          DaoStatsMetric.GroupsCount,
-          DaoStatsAggregateFunction.Average,
-        ),
+        this.metricService.total(context, DaoStatsMetric.GroupsCount, true),
         this.transactionService.getContractActivityCount(context, {
           to: dayAgo.valueOf(),
         }),
@@ -177,7 +172,7 @@ export class GeneralService {
       contractContext,
       metricQuery,
       DaoStatsMetric.GroupsCount,
-      DaoStatsAggregateFunction.Average,
+      true,
     );
   }
 }

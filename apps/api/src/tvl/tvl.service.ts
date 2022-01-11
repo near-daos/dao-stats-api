@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsMetricGroup,
@@ -32,7 +31,7 @@ export class TvlService {
       this.metricService.total(
         context,
         DaoStatsMetricGroup.TotalValueLocked,
-        DaoStatsAggregateFunction.Average,
+        true,
       ),
       this.metricService.total(
         context,
@@ -106,7 +105,7 @@ export class TvlService {
       context,
       metricQuery,
       DaoStatsMetricGroup.TotalValueLocked,
-      DaoStatsAggregateFunction.Average,
+      true,
     );
   }
 

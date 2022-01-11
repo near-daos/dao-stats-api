@@ -2,25 +2,28 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { DaoStatsDto } from './dto';
-import { DaoStats } from './entities';
-import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
+import { DaoStats, DaoStatsDto, DaoStatsMetric } from '.';
 
 export interface DaoStatsValueParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
-  func?: DaoStatsAggregateFunction;
+  daoAverage?: boolean;
 }
 
-export interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
+export interface DaoStatsLeaderboardParams {
+  contractId: string;
+  dao?: string;
+  metric: DaoStatsMetric | DaoStatsMetric[];
   limit?: number;
 }
 
-export interface DaoStatsLeaderboardResponse {
+export interface DaoStatsLeaderboard {
   dao: string;
   value: number;
 }
+
+export type DaoStatsLeaderboardResponse = DaoStatsLeaderboard[];
 
 @Injectable()
 export class DaoStatsService {
@@ -48,25 +51,37 @@ export class DaoStatsService {
     contractId,
     dao,
     metric,
-    func = DaoStatsAggregateFunction.Sum,
+    daoAverage,
   }: DaoStatsValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value) as value`);
+      .select(`sum(value) as value`);
 
     query.andWhere('contract_id = :contractId', { contractId });
 
-    if (dao) {
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
     if (Array.isArray(metric)) {
-      query.andWhere('metric IN (:...metric)', { metric });
+      query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
     }
 
-    const [result] = await query.execute();
+    query.groupBy('dao');
+
+    const [subQuery, params] = query.getQueryAndParameters();
+
+    const [result] = await this.connection.query(
+      `
+          with data as (${subQuery})
+          select ${daoAverage ? 'avg' : 'sum'}(value) as value
+          from data`,
+      params,
+    );
 
     if (!result || !result['value']) {
       return 0;
@@ -79,20 +94,21 @@ export class DaoStatsService {
     contractId,
     dao,
     metric,
-    func = DaoStatsAggregateFunction.Sum,
     limit = 10,
-  }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
+  }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`dao, ${func}(value) as value`)
+      .select(`dao, sum(value) as value`)
       .where('contract_id = :contractId', { contractId });
 
-    if (dao) {
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
     if (Array.isArray(metric)) {
-      query.andWhere('metric IN (:...metric)', { metric });
+      query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
     }
@@ -103,6 +119,9 @@ export class DaoStatsService {
       .take(limit)
       .execute();
 
-    return result.map((data) => ({ ...data, value: parseFloat(data.value) }));
+    return result.map(({ date, value }) => ({
+      date,
+      value: parseFloat(value),
+    }));
   }
 }

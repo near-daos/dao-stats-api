@@ -4,8 +4,8 @@ import PromisePool from '@supercharge/promise-pool';
 
 import {
   ContractContext,
+  DailyMetric,
   DaoContractContext,
-  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -22,7 +22,6 @@ import {
   getGrowth,
   patchMetricDays,
 } from '../utils';
-import { DailyMetric } from '@dao-stats/common/dto/daily-metric.dto';
 
 @Injectable()
 export class UsersService {
@@ -308,7 +307,6 @@ export class UsersService {
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contractId,
       metric: DaoStatsMetric.CouncilSize,
-      func: DaoStatsAggregateFunction.Average,
     });
 
     const metrics = await Promise.all(
@@ -318,14 +316,12 @@ export class UsersService {
             contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
-            func: DaoStatsAggregateFunction.Average,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contractId,
             dao,
             metric: DaoStatsMetric.CouncilSize,
-            func: DaoStatsAggregateFunction.Average,
             from: weekAgo.valueOf(),
           }),
         ]);

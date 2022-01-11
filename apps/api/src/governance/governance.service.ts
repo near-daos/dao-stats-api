@@ -200,7 +200,7 @@ export class GovernanceService {
       }),
     ]);
 
-    const toResponse = (data: DaoStatsHistoryHistoryResponse[]) =>
+    const toResponse = (data: DaoStatsHistoryHistoryResponse) =>
       data.map((row) => ({
         timestamp: row.date.valueOf(),
         count: row.value,
