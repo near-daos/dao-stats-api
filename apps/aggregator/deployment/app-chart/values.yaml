@@ -86,4 +86,4 @@ version:
   branch: develop
 
 environment:
-  aggregator_polling_interval: "43200000"
+  aggregator_polling_schedule: "0 * * * *"

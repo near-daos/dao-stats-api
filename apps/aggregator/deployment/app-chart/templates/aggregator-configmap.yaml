@@ -5,5 +5,5 @@ metadata:
 data:
   PORT: "3000"
   NEST_APP_TYPE: aggregator
-  AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
+  AGGREGATOR_POLLING_SCHEDULE: "{{ .Values.environment.aggregator_polling_schedule }}"
   SMART_CONTRACTS: astro

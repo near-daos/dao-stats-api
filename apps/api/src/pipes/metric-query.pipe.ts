@@ -43,9 +43,6 @@ export class MetricQueryPipe implements PipeTransform {
       throw new BadRequestException(`Invalid 'to' query parameter.`);
     }
 
-    const prevDay = moment().subtract(1, 'day').endOf('day');
-    to = prevDay.isBefore(to) ? prevDay : to;
-
     return {
       from: from.valueOf(),
       to: to.valueOf(),
