@@ -74,4 +74,10 @@ export const DAO_METRICS = [
   NftsCountMetric,
 ];
 
-export const DAO_HISTORICAL_METRICS = [];
+export const DAO_HISTORICAL_METRICS = [
+  AccountBalanceMetric,
+  ActionsDepositInCountMetric,
+  ActionsDepositInValueMetric,
+  ActionsDepositOutCountMetric,
+  ActionsDepositOutValueMetric,
+];

@@ -26,8 +26,11 @@ export class ActionsDepositOutCountMetric
     });
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistoricalValues({
+    contract,
+  }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+    return this.nearIndexerService.getReceiptActionsDepositCountDaily({
+      predecessorAccountId: contract.contractId,
+    });
   }
 }

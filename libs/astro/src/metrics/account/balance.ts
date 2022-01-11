@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import {
   DaoContractMetricCurrentParams,
   DaoContractMetricHistoryParams,
   DaoContractMetricHistoryResponse,
   DaoContractMetricInterface,
 } from '../../interfaces';
-import { yoctoToNear } from '@dao-stats/astro';
+import { yoctoToNear } from '../../utils';
 
 @Injectable()
 export class AccountBalanceMetric implements DaoContractMetricInterface {
+  constructor(private readonly nearIndexerService: NearIndexerService) {}
+
   getType(): DaoStatsMetric {
     return DaoStatsMetric.AccountBalance;
   }
@@ -21,8 +24,15 @@ export class AccountBalanceMetric implements DaoContractMetricInterface {
     return yoctoToNear(state.amount);
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistoricalValues({
+    contract,
+  }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+    const result = await this.nearIndexerService.getAccountBalanceDaily(
+      contract.contractId,
+    );
+    return result.map(({ date, value }) => ({
+      date,
+      value: yoctoToNear(value),
+    }));
   }
 }
