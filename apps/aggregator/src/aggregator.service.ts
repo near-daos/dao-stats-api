@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 import {
   Aggregator,
   DaoService,
@@ -10,6 +11,7 @@ import {
   DaoStatsHistoryService,
   millisToNanos,
   nanosToMillis,
+  AGGREGATOR_POLLING_CRON_JOB,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
@@ -30,13 +32,12 @@ export class AggregatorService {
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {
-    const { pollingInterval } = this.configService.get('aggregator');
+    const { pollingSchedule } = this.configService.get('aggregator');
 
-    const interval = setInterval(
-      () => this.scheduleAggregation(),
-      pollingInterval,
+    this.schedulerRegistry.addCronJob(
+      AGGREGATOR_POLLING_CRON_JOB,
+      new CronJob(pollingSchedule),
     );
-    schedulerRegistry.addInterval('polling', interval);
   }
 
   public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
