@@ -12,9 +12,11 @@ import {
   ReceiptActionService,
   TransferType,
 } from '@dao-stats/receipt';
-import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowMetricResponse } from './dto/flow-metric-response.dto';
-import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import {
+  FlowTotalResponse,
+  FlowMetricResponse,
+  FlowLeaderboardMetricResponse,
+} from './dto';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
 import { ContractService } from '../contract/contract.service';
 
@@ -27,9 +29,15 @@ export class FlowService {
 
   async totals(context: ContractContext): Promise<FlowTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
-    const {
-      contract: { conversionFactor },
-    } = context;
+
+    const contract = await this.contractService.findById(context.contractId);
+
+    const { conversionFactor } = contract;
+
+    const contractContext = {
+      ...context,
+      contract,
+    };
 
     const [
       txInCount,
@@ -42,12 +50,12 @@ export class FlowService {
       dayAgoTotalOut,
     ] = await Promise.all([
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Transaction,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Transaction,
         TransferType.Incoming,
         {
@@ -55,12 +63,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
         {
@@ -68,12 +76,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Fund,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Fund,
         TransferType.Incoming,
         {
@@ -81,12 +89,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Fund,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        context,
+        contractContext,
         FlowMetricType.Fund,
         TransferType.Outgoing,
         {

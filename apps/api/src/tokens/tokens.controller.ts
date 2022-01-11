@@ -50,6 +50,20 @@ export class TokensController {
 
   @ApiResponse({
     status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts/leaderboard')
+  async ftsLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.tokensService.ftsLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: MetricResponse,
   })
   @ApiBadRequestResponse({
@@ -61,20 +75,6 @@ export class TokensController {
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.ftsValueLocked(context, metricQuery);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: LeaderboardMetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @Get('/fts/leaderboard')
-  async ftsLeaderboard(
-    @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.ftsLeaderboard(context);
   }
 
   @ApiResponse({

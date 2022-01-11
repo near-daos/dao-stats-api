@@ -119,8 +119,8 @@ export class DaoStatsService {
       .take(limit)
       .execute();
 
-    return result.map(({ date, value }) => ({
-      date,
+    return result.map(({ dao, value }) => ({
+      dao,
       value: parseFloat(value),
     }));
   }
