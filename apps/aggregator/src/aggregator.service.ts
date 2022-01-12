@@ -34,10 +34,11 @@ export class AggregatorService {
   ) {
     const { pollingSchedule } = this.configService.get('aggregator');
 
-    this.schedulerRegistry.addCronJob(
-      AGGREGATOR_POLLING_CRON_JOB,
-      new CronJob(pollingSchedule),
-    );
+    const job = new CronJob(pollingSchedule);
+
+    this.schedulerRegistry.addCronJob(AGGREGATOR_POLLING_CRON_JOB, job);
+
+    job.start();
   }
 
   public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
