@@ -34,7 +34,7 @@ export class AggregatorService {
   ) {
     const { pollingSchedule } = this.configService.get('aggregator');
 
-    const job = new CronJob(pollingSchedule);
+    const job = new CronJob(pollingSchedule, () => this.scheduleAggregation());
 
     this.schedulerRegistry.addCronJob(AGGREGATOR_POLLING_CRON_JOB, job);
 
