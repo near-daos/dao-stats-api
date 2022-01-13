@@ -4,7 +4,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats, DaoStatsDto, DaoStatsMetric } from '.';
 
-export interface DaoStatsValueParams {
+export interface DaoStatsTotalParams {
   contractId: string;
   dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
@@ -20,7 +20,7 @@ export interface DaoStatsLeaderboardParams {
 
 export interface DaoStatsLeaderboard {
   dao: string;
-  value: number;
+  total: number;
 }
 
 export type DaoStatsLeaderboardResponse = DaoStatsLeaderboard[];
@@ -41,21 +41,21 @@ export class DaoStatsService {
       .into(DaoStats)
       .values(data)
       .orUpdate({
-        conflict_target: ['contract_id', 'dao', 'metric'],
-        overwrite: ['value'],
+        conflict_target: ['contract_id', 'metric', 'dao'],
+        overwrite: ['total'],
       })
       .execute();
   }
 
-  async getValue({
+  async getTotal({
     contractId,
     dao,
     metric,
     daoAverage,
-  }: DaoStatsValueParams): Promise<number> {
+  }: DaoStatsTotalParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`sum(value) as value`);
+      .select(`sum(total) as total`);
 
     query.andWhere('contract_id = :contractId', { contractId });
 
@@ -78,16 +78,16 @@ export class DaoStatsService {
     const [result] = await this.connection.query(
       `
           with data as (${subQuery})
-          select ${daoAverage ? 'avg' : 'sum'}(value) as value
+          select ${daoAverage ? 'avg' : 'sum'}(total) as total
           from data`,
       params,
     );
 
-    if (!result || !result['value']) {
-      return 0;
+    if (result) {
+      return parseFloat(result.total);
     }
 
-    return parseFloat(result['value']);
+    return 0;
   }
 
   async getLeaderboard({
@@ -98,7 +98,7 @@ export class DaoStatsService {
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`dao, sum(value) as value`)
+      .select(`dao, sum(total) as total`)
       .where('contract_id = :contractId', { contractId });
 
     if (Array.isArray(metric)) {
@@ -115,13 +115,13 @@ export class DaoStatsService {
 
     const result = await query
       .groupBy('dao')
-      .orderBy('value', 'DESC')
+      .orderBy('total', 'DESC')
       .take(limit)
       .execute();
 
-    return result.map(({ dao, value }) => ({
+    return result.map(({ dao, total }) => ({
       dao,
-      value: parseFloat(value),
+      total: parseFloat(total),
     }));
   }
 }

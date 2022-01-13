@@ -4,7 +4,7 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStatsDto, DaoStatsHistory, DaoStatsMetric } from '.';
 
-export interface DaoStatsHistoryValueParams {
+export interface DaoStatsHistoryTotalParams {
   from?: number;
   to?: number;
   contractId: string;
@@ -13,11 +13,11 @@ export interface DaoStatsHistoryValueParams {
   daoAverage?: boolean;
 }
 
-export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
+export type DaoStatsHistoryHistoryParams = DaoStatsHistoryTotalParams;
 
 export interface DaoStatsHistoryHistory {
   date: Date;
-  value: number;
+  total: number;
 }
 
 export type DaoStatsHistoryHistoryResponse = DaoStatsHistoryHistory[];
@@ -38,8 +38,8 @@ export class DaoStatsHistoryService {
       .into(DaoStatsHistory)
       .values(data)
       .orUpdate({
-        conflict_target: ['date', 'contract_id', 'dao', 'metric'],
-        overwrite: ['value'],
+        conflict_target: ['date', 'contract_id', 'metric', 'dao'],
+        overwrite: ['total'],
       })
       .execute();
   }
@@ -54,17 +54,17 @@ export class DaoStatsHistoryService {
       .execute();
   }
 
-  async getLastValue({
+  async getLastTotal({
     contractId,
     dao,
     metric,
     daoAverage,
     from,
     to,
-  }: DaoStatsHistoryValueParams): Promise<number> {
+  }: DaoStatsHistoryTotalParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`date, dao, sum(value) as value`);
+      .select(`date, dao, sum(total) as total`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -99,7 +99,7 @@ export class DaoStatsHistoryService {
     const [result] = await this.connection.query(
       `
           with data as (${subQuery})
-          select ${daoAverage ? 'avg' : 'sum'}(value) as value
+          select ${daoAverage ? 'avg' : 'sum'}(total) as total
           from data
           group by date
           order by date desc
@@ -108,11 +108,11 @@ export class DaoStatsHistoryService {
       params,
     );
 
-    if (!result || !result['value']) {
-      return 0;
+    if (result) {
+      return parseFloat(result.total);
     }
 
-    return parseFloat(result['value']);
+    return 0;
   }
 
   async getHistory({
@@ -125,7 +125,7 @@ export class DaoStatsHistoryService {
   }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`date, sum(value) as value`);
+      .select(`date, sum(total) as total`);
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -160,7 +160,7 @@ export class DaoStatsHistoryService {
     const result = await this.connection.query(
       `
           with data as (${subQuery})
-          select date, ${daoAverage ? 'avg' : 'sum'}(value) as value
+          select date, ${daoAverage ? 'avg' : 'sum'}(total) as total
           from data
           group by date
           order by date
@@ -168,9 +168,9 @@ export class DaoStatsHistoryService {
       params,
     );
 
-    return result.map(({ date, value }) => ({
+    return result.map(({ date, total }) => ({
       date,
-      value: parseFloat(value),
+      total: parseFloat(total),
     }));
   }
 }

@@ -31,13 +31,13 @@ export class MetricService {
     const dayAgo = moment().subtract(1, 'days');
 
     const [current, prev] = await Promise.all([
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric,
         daoAverage,
       }),
-      this.daoStatsHistoryService.getLastValue({
+      this.daoStatsHistoryService.getLastTotal({
         contractId,
         dao,
         metric,
@@ -73,9 +73,9 @@ export class MetricService {
     return {
       metrics: patchMetricDays(
         metricQuery,
-        history.map((row) => ({
-          timestamp: row.date.valueOf(),
-          count: row.value,
+        history.map(({ date, total }) => ({
+          timestamp: date.valueOf(),
+          count: total,
         })),
         MetricType.Total,
       ),
@@ -97,9 +97,9 @@ export class MetricService {
     });
 
     const metrics = await Promise.all(
-      leaderboard.map(async ({ dao, value }) => {
+      leaderboard.map(async ({ dao, total }) => {
         const [prevValue, history] = await Promise.all([
-          this.daoStatsHistoryService.getLastValue({
+          this.daoStatsHistoryService.getLastTotal({
             contractId,
             dao,
             metric,
@@ -116,12 +116,12 @@ export class MetricService {
         return {
           dao,
           activity: {
-            count: value,
-            growth: getGrowth(value, prevValue),
+            count: total,
+            growth: getGrowth(total, prevValue),
           },
-          overview: history.map((row) => ({
-            timestamp: row.date.valueOf(),
-            count: row.value,
+          overview: history.map(({ date, total }) => ({
+            timestamp: date.valueOf(),
+            count: total,
           })),
         };
       }),

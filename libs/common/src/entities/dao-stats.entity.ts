@@ -18,5 +18,5 @@ export class DaoStats implements HasContract {
   dao: string;
 
   @Column({ type: 'double precision', default: 0 })
-  value: number;
+  total: number;
 }
