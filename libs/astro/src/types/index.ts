@@ -1,1 +1,1 @@
-export * from './astro-dao';
+export * from './astro';

@@ -1,6 +1,14 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {
+  CacheModule,
+  ClassSerializerInterceptor,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+
+import { RequestContextModule } from '@medibloc/nestjs-request-context';
 
 import configuration, {
   CacheConfigService,
@@ -11,13 +19,18 @@ import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
   Contract,
+  DaoContractContext,
   Receipt,
   ReceiptAction,
   Transaction,
 } from '@dao-stats/common';
 import { RedisModule } from '@dao-stats/redis';
 
-import { ContractInterceptor } from './interceptors/contract.interceptor';
+import {
+  ContractContextInterceptor,
+  DaoContractContextInterceptor,
+  HttpCacheInterceptor,
+} from './interceptors';
 import { ContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
@@ -38,6 +51,10 @@ import { TokensModule } from './tokens/tokens.module';
       validate: (config) => validate(ApiValidationSchema, config),
       envFilePath: ['.env.local', '.env'],
     }),
+    RequestContextModule.forRoot({
+      contextClass: DaoContractContext,
+      isGlobal: true,
+    }),
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
@@ -53,6 +70,35 @@ import { TokensModule } from './tokens/tokens.module';
     TvlModule,
     TokensModule,
   ],
-  providers: [ContractInterceptor],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpCacheInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ContractContextInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DaoContractContextInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          disableErrorMessages: false,
+          validationError: { target: false },
+          transformOptions: {
+            enableImplicitConversion: true,
+          },
+        }),
+    },
+  ],
 })
 export class AppModule {}

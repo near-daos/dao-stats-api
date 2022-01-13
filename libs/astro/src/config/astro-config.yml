@@ -7,10 +7,13 @@ indexer:
     password: 'nearprotocol'
 
 near:
-  env: testnet
+  env: mainnet
   credentials: '.near-credentials'
 
 dao:
   contractName: 'sputnik-dao.near'
   tokenFactoryContractName: 'tkn.near'
   bridgeTokenFactoryContractName: 'factory.bridge.near'
+
+sodaki:
+  baseUri: 'https://www.sodaki.com/api'

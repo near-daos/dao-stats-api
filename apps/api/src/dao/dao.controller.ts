@@ -1,11 +1,12 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   ContractContext,
   DaoContractContext,
-  DaoResponse,
+  DaoDto,
   DaoService,
 } from '@dao-stats/common';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('DAOs')
 @Controller('daos')
@@ -14,34 +15,42 @@ export class DaoController {
 
   @ApiResponse({
     status: 200,
-    type: [DaoResponse],
+    type: [DaoDto],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
   @Get()
-  async daos(@Param() context: ContractContext): Promise<DaoResponse[]> {
-    const { contract } = context;
+  async daos(@Param() context: ContractContext): Promise<DaoDto[]> {
+    const { contractId } = context;
 
-    return this.daoService.find(contract);
+    return this.daoService.find(contractId);
   }
 
   @ApiResponse({
     status: 200,
-    type: DaoResponse,
+    type: DaoDto,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @HasDaoContractContext()
   @Get('/:dao')
-  async dao(@Param() context: DaoContractContext): Promise<DaoResponse> {
-    const { contract, dao } = context;
-    return this.daoService.findById(contract, dao);
+  async dao(@Param() context: DaoContractContext): Promise<DaoDto> {
+    const { contractId, dao } = context;
+
+    const daoEntity = await this.daoService.findById(contractId, dao);
+
+    if (!daoEntity) {
+      throw new BadRequestException('Invalid Dao ID');
+    }
+
+    return daoEntity;
   }
 
   @ApiResponse({
     status: 200,
-    type: [DaoResponse],
+    type: [DaoDto],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -50,8 +59,8 @@ export class DaoController {
   async autocomplete(
     @Param() context: ContractContext,
     @Param('input') input: string,
-  ): Promise<DaoResponse[]> {
-    const { contract } = context;
-    return this.daoService.autocomplete(contract, input);
+  ): Promise<DaoDto[]> {
+    const { contractId } = context;
+    return this.daoService.autocomplete(contractId, input);
   }
 }

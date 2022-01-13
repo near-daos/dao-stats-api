@@ -24,8 +24,9 @@ export class Transaction extends BaseEntity implements HasContract {
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
     cascade: true,
     createForeignKeyConstraints: false,
+    persistence: false,
   })
-  receipts: Receipt[];
+  receipts?: Receipt[];
 
   @Column()
   receiverAccountId: string;
@@ -45,8 +46,14 @@ export class Transaction extends BaseEntity implements HasContract {
   @Column()
   receiptConversionTokensBurnt: string;
 
-  @Column({ type: 'bigint' })
-  blockTimestamp: number;
+  @Column({
+    type: 'bigint',
+    transformer: {
+      from: (value: string) => BigInt(value),
+      to: (value: bigint) => String(value),
+    },
+  })
+  blockTimestamp: bigint;
 
   @Column({ nullable: true, type: 'enum', enum: TransactionType })
   type: TransactionType;

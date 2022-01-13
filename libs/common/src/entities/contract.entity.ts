@@ -12,4 +12,7 @@ export class Contract extends BaseEntity {
 
   @Column({ nullable: true })
   description: string;
+
+  @Column({ type: 'decimal', nullable: true })
+  conversionFactor: number;
 }

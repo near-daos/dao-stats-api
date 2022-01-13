@@ -1,15 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
 import moment from 'moment';
 
-export class MetricQuery {
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsOptional()
-  from?: number;
+const METRIC_RANGE_FORMAT_DESCRIPTION =
+  'Please refer to <a href="https://momentjs.com/docs/#/parsing/">MomentJS</a>' +
+  ' docs for supported formats reference. E.g: ```12/01/2021 or 1638309600000.```';
 
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsOptional()
-  to: number = moment().valueOf();
+export class MetricQuery {
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: `Metric Range Start. ${METRIC_RANGE_FORMAT_DESCRIPTION}`,
+  })
+  from?: number | any;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: `Metric Range End. ${METRIC_RANGE_FORMAT_DESCRIPTION}`,
+  })
+  to?: number | any = moment().subtract(1, 'day').endOf('day').valueOf();
 }

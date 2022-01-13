@@ -1,18 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Aggregator, DaoStatsDto, TransactionDto } from '@dao-stats/common';
+import { Injectable } from '@nestjs/common';
+import {
+  Aggregator,
+  DaoDto,
+  DaoStatsDto,
+  ReceiptActionDto,
+} from '@dao-stats/common';
 
 @Injectable()
 export class AggregationService implements Aggregator {
-  private readonly logger = new Logger(AggregationService.name);
-
-  aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto[]> {
+  aggregateMetrics(): AsyncGenerator<DaoStatsDto> {
     return undefined;
   }
 
-  aggregateTransactions(
-    from?: number,
-    to?: number,
-  ): AsyncGenerator<TransactionDto[]> {
+  async getDaos(): Promise<DaoDto[]> {
+    return [];
+  }
+
+  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
     return undefined;
   }
 }

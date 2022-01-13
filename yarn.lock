@@ -782,6 +782,11 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@medibloc/nestjs-request-context@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@medibloc/nestjs-request-context/-/nestjs-request-context-1.0.0.tgz#d11608ff0d6831b78abb0a82cbc693f310a2ff3c"
+  integrity sha512-PLyMVjh/t+Hvd2Ck7EJF8m7Ww5wJ7qNfDLpJ533gHWonlpMJRu5g0MVgaBl4RpUkrxpetg2PTJGU6NCFReCktA==
+
 "@nestjs/axios@^0.0.3":
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@nestjs/axios/-/axios-0.0.3.tgz#f53ba265e15687b9acb036642ed5f29998695bd1"
@@ -1065,6 +1070,18 @@
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
+
+"@type-cacheable/core@^10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@type-cacheable/core/-/core-10.0.2.tgz#f3eca3584c3ac6a0f62a3779207ac4dfd439a2f2"
+  integrity sha512-Gaq9SqCbnMbeX2AJHMwRK0hYtpLQ0cXxxALl0dOfs0xUO7RFy4lTk0wejO9NzPirrQyMPD9JrfG4DG0UvY3yoQ==
+  dependencies:
+    serialize-javascript "^6.0.0"
+
+"@type-cacheable/lru-cache-adapter@^10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@type-cacheable/lru-cache-adapter/-/lru-cache-adapter-10.0.2.tgz#e31a14410d7c28f0f6a304b2c02c3aaec80f8a63"
+  integrity sha512-VUyZl5caXwKKozn4cyssu6hrxSToSmHBjjuzK4fKYDzlKDzmGC/tB9ld5qqEFI2AtNws6xjvgAIzCUbsvEbHsQ==
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.16"
@@ -2800,7 +2817,7 @@ dotenv-expand@5.1.0:
   resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-5.1.0.tgz#3fbaf020bfd794884072ea26b1e9791d45a629f0"
   integrity sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==
 
-dotenv@10.0.0:
+dotenv@10.0.0, dotenv@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==

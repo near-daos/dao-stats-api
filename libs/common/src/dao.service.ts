@@ -1,9 +1,9 @@
-import { Repository } from 'typeorm';
+import { DeleteResult, In, Not, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Dao } from './entities';
-import { DaoResponse } from './dto';
+import { DaoDto } from './dto';
 
 @Injectable()
 export class DaoService {
@@ -12,22 +12,29 @@ export class DaoService {
     private readonly daoRepository: Repository<Dao>,
   ) {}
 
-  async find(contractId: string): Promise<DaoResponse[]> {
+  async find(contractId: string): Promise<DaoDto[]> {
     return this.daoRepository.find({ where: { contractId } });
   }
 
-  async findById(contractId: string, dao: string): Promise<DaoResponse> {
+  async findById(contractId: string, dao: string): Promise<DaoDto> {
     return this.daoRepository.findOne({ contractId, dao });
   }
 
-  async create(dao: Partial<Dao>[]): Promise<Dao[]> {
+  async create(dao: Partial<Dao>): Promise<Dao> {
     return this.daoRepository.save(dao);
   }
 
-  async autocomplete(
+  async purgeInactive(
     contractId: string,
-    input: string,
-  ): Promise<DaoResponse[]> {
+    activeDaoIds: string[],
+  ): Promise<DeleteResult> {
+    return this.daoRepository.delete({
+      contractId,
+      dao: Not(In(activeDaoIds)),
+    });
+  }
+
+  async autocomplete(contractId: string, input: string): Promise<DaoDto[]> {
     return this.daoRepository
       .createQueryBuilder('dao')
       .where('contract_id = :contractId', { contractId })

@@ -1,10 +1,25 @@
-import { DaoStatsDto, TransactionDto } from '@dao-stats/common';
+import {
+  DaoDto,
+  DaoStatsDto,
+  DaoStatsHistoryDto,
+  ReceiptActionDto,
+} from '../dto';
 
 export declare class Aggregator {
-  aggregateTransactions(
-    from?: number,
-    to?: number,
-  ): AsyncGenerator<TransactionDto[]>;
+  /**
+   * TODO remove transaction collection logic when all transaction queries are converted to dao stats.
+   * @deprecated
+   */
+  aggregateReceiptActions(
+    from?: bigint,
+    to?: bigint,
+  ): AsyncGenerator<ReceiptActionDto[]>;
 
-  aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto[]>;
+  aggregateDaos(contractId: string): AsyncGenerator<DaoDto>;
+
+  aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto>;
+
+  aggregateHistoricalMetrics(
+    contractId: string,
+  ): AsyncGenerator<DaoStatsHistoryDto>;
 }

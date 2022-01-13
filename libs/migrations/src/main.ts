@@ -25,6 +25,8 @@ export default class MigrationRunner {
 
       await app.get(script).migrate();
     }
+
+    await app.close();
   }
 }
 

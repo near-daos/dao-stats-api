@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
@@ -6,13 +6,13 @@ import {
   DaoContractContext,
   LeaderboardMetricResponse,
   MetricQuery,
-  MetricQueryPipe,
   MetricResponse,
 } from '@dao-stats/common';
 
 import { TokensTotalResponse } from './dto/tokens-total.dto';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { TokensService } from './tokens.service';
+import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Tokens')
 @Controller('tokens')
@@ -26,7 +26,6 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -41,28 +40,12 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/fts')
-  async ftTokens(
+  async fts(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.fts(context, metricQuery);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: LeaderboardMetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(ContractInterceptor)
-  @Get('/fts/leaderboard')
-  async ftTokensLeaderboard(
-    @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.ftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -72,9 +55,51 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @Get('/fts-vl')
+  async ftsValueLocked(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tokensService.ftsValueLocked(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts/leaderboard')
+  async ftsLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.tokensService.ftsLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts-vl/leaderboard')
+  async ftsValueLockedLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.tokensService.ftsValueLockedLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
   @Get('/nfts')
-  async nftTokens(
+  async nfts(
     @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -88,9 +113,8 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/nfts/leaderboard')
-  async nftTokensLeaderboard(
+  async nftsLeaderboard(
     @Param() context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tokensService.nftsLeaderboard(context);
@@ -103,7 +127,7 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -118,9 +142,9 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/fts')
-  async daoFtTokens(
+  async daoFts(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
@@ -134,9 +158,24 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @Get('/:dao/fts-vl')
+  async daoFtsValueLocked(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tokensService.ftsValueLocked(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @HasDaoContractContext()
   @Get('/:dao/nfts')
-  async daoNftTokens(
+  async daoNfts(
     @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {

@@ -1,12 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import {
-  NearIndexerDBProvider,
-  NearIndexerService,
-} from '@dao-stats/near-indexer';
-import { NearHelperModule } from '@dao-stats/near-helper';
-import { AggregationService } from '.';
-import { AstroDaoModule } from './astro-dao.module';
+import { NearModule } from '@dao-stats/near';
+
+import { AstroService } from './astro.service';
 import configuration from './config/configuration';
 
 @Module({
@@ -14,10 +10,9 @@ import configuration from './config/configuration';
     ConfigModule.forRoot({
       load: [configuration],
     }),
-    AstroDaoModule,
-    NearHelperModule,
+    NearModule,
   ],
-  providers: [AggregationService, NearIndexerService, NearIndexerDBProvider],
-  exports: [AggregationService],
+  providers: [AstroService],
+  exports: [AstroService],
 })
-export class AggregationModule {}
+export class AstroModule {}

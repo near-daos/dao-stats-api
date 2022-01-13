@@ -2,14 +2,15 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
+import { DaoStatsDto } from './dto';
 import { DaoStats } from './entities';
-import { DaoStatsMetric } from './types';
+import { DaoStatsAggregateFunction, DaoStatsMetric } from './types';
 
 export interface DaoStatsValueParams {
-  contract: string;
+  contractId: string;
   dao?: string;
-  metric: DaoStatsMetric;
-  func?: 'AVG' | 'SUM' | 'COUNT';
+  metric: DaoStatsMetric | DaoStatsMetric[];
+  func?: DaoStatsAggregateFunction;
 }
 
 export interface DaoStatsLeaderboardParams extends DaoStatsValueParams {
@@ -30,7 +31,7 @@ export class DaoStatsService {
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DaoStats): Promise<InsertResult> {
+  async createOrUpdate(data: DaoStatsDto): Promise<InsertResult> {
     return await this.connection
       .createQueryBuilder()
       .insert()
@@ -44,54 +45,64 @@ export class DaoStatsService {
   }
 
   async getValue({
-    contract,
+    contractId,
     dao,
     metric,
-    func = 'SUM',
+    func = DaoStatsAggregateFunction.Sum,
   }: DaoStatsValueParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`${func}(value)::int as value`);
+      .select(`${func}(value) as value`);
 
-    query.andWhere('contract_id = :contract', { contract });
+    query.andWhere('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
-    const [result] = await query
-      .andWhere('metric = :metric', { metric })
-      .take(1)
-      .execute();
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
+    const [result] = await query.execute();
 
     if (!result || !result['value']) {
       return 0;
     }
 
-    return result['value'];
+    return parseFloat(result['value']);
   }
 
   async getLeaderboard({
-    contract,
-    metric,
+    contractId,
     dao,
-    func = 'SUM',
+    metric,
+    func = DaoStatsAggregateFunction.Sum,
     limit = 10,
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse[]> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`dao, ${func}(value)::int as value`)
-      .where('contract_id = :contract', { contract });
+      .select(`dao, ${func}(value) as value`)
+      .where('contract_id = :contractId', { contractId });
 
     if (dao) {
       query.andWhere('dao = :dao', { dao });
     }
 
-    return query
-      .andWhere('metric = :metric', { metric })
+    if (Array.isArray(metric)) {
+      query.andWhere('metric IN (:...metric)', { metric });
+    } else {
+      query.andWhere('metric = :metric', { metric });
+    }
+
+    const result = await query
       .groupBy('dao')
       .orderBy('value', 'DESC')
       .take(limit)
       .execute();
+
+    return result.map((data) => ({ ...data, value: parseFloat(data.value) }));
   }
 }

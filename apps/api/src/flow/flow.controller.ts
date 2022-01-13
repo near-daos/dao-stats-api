@@ -1,16 +1,18 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
+  ContractContext,
   DaoContractContext,
   MetricQuery,
-  MetricQueryPipe,
 } from '@dao-stats/common';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
+import { FlowMetricType } from '@dao-stats/receipt';
 import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowService } from './flow.service';
 import { FlowMetricResponse } from './dto/flow-metric-response.dto';
-import { FlowContractContextQueryPipe } from 'libs/receipt/src/pipes/flow-contract-context-query.pipe';
+import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import { FlowService } from './flow.service';
+import { HasDaoContractContext } from '../decorators';
+import { MetricQueryPipe } from '../pipes';
 
 @ApiTags('Flow')
 @Controller('flow')
@@ -24,11 +26,8 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/')
-  async totals(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
-  ): Promise<FlowTotalResponse> {
+  async totals(@Param() context: ContractContext): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);
   }
 
@@ -39,13 +38,26 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/funds')
   async funds(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+    @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.funds(context, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: FlowLeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/funds/leaderboard')
+  async fundsLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<FlowLeaderboardMetricResponse> {
+    return this.flowService.leaderboard(context, FlowMetricType.Fund);
   }
 
   @ApiResponse({
@@ -55,13 +67,30 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/transactions')
   async transactions(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+    @Param() context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.transactions(context, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: FlowLeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/transactions/leaderboard')
+  async transactionsLeaderboard(
+    @Param() context: ContractContext,
+  ): Promise<FlowLeaderboardMetricResponse> {
+    return this.flowService.leaderboard(context, FlowMetricType.Transaction);
   }
 
   @ApiResponse({
@@ -71,10 +100,10 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+    @Param() context: DaoContractContext,
   ): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);
   }
@@ -86,13 +115,13 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/funds')
   async daoFunds(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+    @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.funds(context, metricQuery);
+    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
   }
 
   @ApiResponse({
@@ -102,12 +131,16 @@ export class FlowController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/transactions')
   async daoTransactions(
-    @Param(FlowContractContextQueryPipe) context: DaoContractContext,
+    @Param() context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.transactions(context, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Transaction,
+      metricQuery,
+    );
   }
 }

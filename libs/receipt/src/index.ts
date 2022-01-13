@@ -1,2 +1,3 @@
+export * from './types';
 export * from './receipt.module';
-export * from './receipt.service';
+export * from './receipt-action.service';

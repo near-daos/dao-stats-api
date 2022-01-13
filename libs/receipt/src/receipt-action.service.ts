@@ -3,12 +3,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import {
+  ContractContext,
   DailyCountDto,
   DaoContractContext,
   MetricQuery,
+  millisToNanos,
   ReceiptAction,
 } from '@dao-stats/common';
 import { TransferType } from './types/transfer-type';
+import { FlowMetricType } from './types/flow-metric-type';
 
 @Injectable()
 export class ReceiptActionService {
@@ -16,34 +19,65 @@ export class ReceiptActionService {
 
   constructor(
     @InjectRepository(ReceiptAction)
-    private readonly receiptRepository: Repository<ReceiptAction>,
+    private readonly receiptActionRepository: Repository<ReceiptAction>,
   ) {}
 
-  async getTransfers(
-    context: DaoContractContext,
-    transferType?: TransferType,
-    metricQuery?: MetricQuery,
-  ): Promise<number> {
-    return this.getTransferIntervalQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-    ).getCount();
+  create(actions: ReceiptAction[]): Promise<ReceiptAction[]> {
+    return this.receiptActionRepository.save(actions);
   }
 
-  async getTransfersHistory(
-    context: DaoContractContext,
+  async getTotals(
+    context: DaoContractContext | ContractContext,
+    metricType: FlowMetricType,
+    transferType?: TransferType,
+    metricQuery?: MetricQuery,
+  ): Promise<{ count: number }> {
+    return this.getTransferIntervalQueryBuilder(
+      context,
+      metricType,
+      transferType,
+      metricQuery,
+    ).getRawOne();
+  }
+
+  async getHistory(
+    context: DaoContractContext | ContractContext,
+    metricType: FlowMetricType,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
     return this.getTransferIntervalQueryBuilder(
       context,
+      metricType,
       transferType,
       metricQuery,
       true,
+    ).execute();
+  }
+
+  async getLeaderboard(
+    context: DaoContractContext | ContractContext,
+    metricType: FlowMetricType,
+    transferType?: TransferType,
+    metricQuery?: MetricQuery,
+    daily?: boolean,
+  ): Promise<any[]> {
+    const qb = this.getTransferIntervalQueryBuilder(
+      context,
+      metricType,
+      transferType,
+      metricQuery,
+      daily,
     )
-      .addSelect(`count(*) as count`, '')
-      .execute();
+      .addSelect('receipt_receiver_account_id', 'receiver_account_id')
+      .addGroupBy('receiver_account_id')
+      .addOrderBy('count', 'DESC');
+
+    if (!daily) {
+      qb.limit(10);
+    }
+
+    return qb.execute();
   }
 
   async getFunds(
@@ -51,13 +85,11 @@ export class ReceiptActionService {
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<{ count: number }> {
-    return this.getTransferIntervalQueryBuilder(
+    return this.getFundsQueryBuilder(
       context,
       transferType,
       metricQuery,
-    )
-      .select(`sum((args_json->>'deposit')::numeric) as count`, '')
-      .getRawOne();
+    ).getRawOne();
   }
 
   async getFundsHistory(
@@ -65,55 +97,109 @@ export class ReceiptActionService {
     transferType?: TransferType,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
-    return this.getTransferIntervalQueryBuilder(
+    return this.getFundsQueryBuilder(
       context,
       transferType,
       metricQuery,
       true,
-    )
-      .addSelect(`sum((args_json->>'deposit')::numeric) as count`, '')
-      .execute();
+    ).execute();
   }
 
-  private getTransferIntervalQueryBuilder(
+  async getFundsLeaderboard(
     context: DaoContractContext,
     transferType?: TransferType,
     metricQuery?: MetricQuery,
     daily?: boolean,
+  ): Promise<any[]> {
+    const qb = this.getFundsQueryBuilder(
+      context,
+      transferType,
+      metricQuery,
+      daily,
+    )
+      .addSelect('receipt_receiver_account_id', 'receiver_account_id')
+      .addGroupBy('receiver_account_id')
+      .addOrderBy('count', 'DESC');
+
+    if (!daily) {
+      qb.limit(10);
+    }
+
+    return qb.execute();
+  }
+
+  private getFundsQueryBuilder(
+    context: DaoContractContext,
+    transferType?: TransferType,
+    metricQuery?: MetricQuery,
+    daily?: boolean,
+  ) {
+    const qb = this.getTransferIntervalQueryBuilder(
+      context,
+      null,
+      transferType,
+      metricQuery,
+      daily,
+    );
+
+    const selection = `sum((args_json->>'deposit')::numeric) as count`;
+    if (daily) {
+      qb.addSelect(selection);
+    } else {
+      qb.select(selection);
+    }
+
+    return qb;
+  }
+
+  private getTransferIntervalQueryBuilder(
+    context: DaoContractContext | ContractContext,
+    metricType: FlowMetricType,
+    transferType?: TransferType,
+    metricQuery?: MetricQuery,
+    daily?: boolean,
   ): SelectQueryBuilder<ReceiptAction> {
-    const { contract, dao } = context;
+    const { contract, dao } = context as DaoContractContext;
+    const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
-    const qb = this.receiptRepository
+    const qb = this.receiptActionRepository
       .createQueryBuilder()
-      .where('contract_id = :contract', { contract })
+      .where('contract_id = :contractId', { contractId })
       .andWhere(`args_json->>'deposit' is not null`);
 
     if (transferType) {
       qb.andWhere(
         `receipt_${
           transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
-        }_account_id like :id`,
-        {
-          id: `%${dao}%`,
-        },
+        }_account_id ${dao ? `= '${dao}'` : `like '%${contractName}'`}`,
       );
     }
 
     if (from) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) > :from', {
-        from,
+      qb.andWhere('included_in_block_timestamp >= :from', {
+        from: String(millisToNanos(from)),
       });
     }
 
     if (to) {
-      qb.andWhere('(included_in_block_timestamp / 1000 / 1000) < :to', { to });
+      qb.andWhere('included_in_block_timestamp <= :to', {
+        to: String(millisToNanos(to)),
+      });
     }
+
+    const baseSelection =
+      metricType === FlowMetricType.Transaction
+        ? `count(*)::int as count`
+        : `sum((args_json->>'deposit')::numeric) as count`;
+
+    qb.select(baseSelection);
 
     if (daily) {
       qb.select(
         `date_trunc('day', to_timestamp(included_in_block_timestamp / 1000 / 1000 / 1000)) as day`,
       )
+        .addSelect(baseSelection)
         .groupBy('day')
         .orderBy('day', 'ASC');
     }

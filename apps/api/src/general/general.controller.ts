@@ -1,17 +1,17 @@
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import {
   ContractContext,
   DaoContractContext,
   MetricResponse,
   MetricQuery,
-  MetricQueryPipe,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
 import { GeneralTotalResponse } from './dto/general-total.dto';
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GeneralService } from './general.service';
+import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('General')
 @Controller('general')
@@ -25,7 +25,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -40,7 +39,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/daos')
   async daos(
     @Param() context: ContractContext,
@@ -56,7 +54,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/active')
   async active(
     @Param() context: ContractContext,
@@ -72,7 +69,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/active/leaderboard')
   async activeLeaderboard(
     @Param() context: ContractContext,
@@ -87,7 +83,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/groups')
   async groups(
     @Param() context: ContractContext,
@@ -103,7 +98,6 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/groups/leaderboard')
   async groupsLeaderboard(
     @Param() context: ContractContext,
@@ -113,12 +107,27 @@ export class GeneralController {
 
   @ApiResponse({
     status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/average-groups')
+  async averageGroups(
+    @Param() context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.generalService.averageGroups(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
     type: GeneralTotalResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -133,7 +142,23 @@ export class GeneralController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
+  @Get('/:dao/activity')
+  async daoActivity(
+    @Param() context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.generalService.active(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @HasDaoContractContext()
   @Get('/:dao/groups')
   async daoGroups(
     @Param() context: DaoContractContext,

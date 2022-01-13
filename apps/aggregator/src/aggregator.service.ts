@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import PromisePool from '@supercharge/promise-pool';
 import {
   Aggregator,
   DaoService,
@@ -13,8 +12,8 @@ import {
   nanosToMillis,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-
-const FIRST_BLOCK_TIMESTAMP = 1639221725422048960; // in NEAR indexer
+import { CacheService } from '@dao-stats/cache';
+import { ReceiptActionService } from '@dao-stats/receipt';
 
 @Injectable()
 export class AggregatorService {
@@ -22,9 +21,11 @@ export class AggregatorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lazyModuleLoader: LazyModuleLoader,
     private readonly transactionService: TransactionService,
+    private readonly receiptActionService: ReceiptActionService,
     private readonly daoService: DaoService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
@@ -38,10 +39,12 @@ export class AggregatorService {
     schedulerRegistry.addInterval('polling', interval);
   }
 
-  public async scheduleAggregation(from?: number, to?: number): Promise<void> {
+  public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
     const { smartContracts } = this.configService.get('aggregator');
 
     for (const contractId of smartContracts) {
+      this.logger.log(`Processing contract: ${contractId}...`);
+
       const { AggregationModule, AggregationService } = await import(
         '../../../libs/' + contractId + '/'
       );
@@ -66,59 +69,68 @@ export class AggregatorService {
           );
         }
 
-        from = lastTx?.blockTimestamp || FIRST_BLOCK_TIMESTAMP;
+        from = lastTx?.blockTimestamp;
       }
 
       if (!to) {
         to = millisToNanos(moment().valueOf());
       }
 
-      for await (const transactions of aggregationService.aggregateTransactions(
+      for await (const receiptActions of aggregationService.aggregateReceiptActions(
         from,
         to,
       )) {
-        await this.transactionService.create(
-          transactions.map((tx) => ({
-            ...tx,
+        await this.receiptActionService.create(
+          receiptActions.flat().map((receiptAction) => ({
+            ...receiptAction,
+            includedInBlockTimestamp:
+              receiptAction.receiptIncludedInBlockTimestamp,
             contractId,
-            receipts: tx.receipts.map((receipt) => ({
-              ...receipt,
+            argsJson: receiptAction.args,
+            receipt: {
+              ...receiptAction.receipt,
+              receiptActions: [],
               contractId,
-              receiptActions: receipt.receiptActions.map((receiptAction) => ({
-                ...receiptAction,
+              originatedFromTransaction: {
+                ...receiptAction.receipt.originatedFromTransaction,
                 contractId,
-                argsJson: receiptAction.args,
-                includedInBlockTimestamp: receipt.includedInBlockTimestamp,
-              })),
-            })),
+              },
+            },
           })),
         );
 
-        this.logger.log(`Stored ${transactions.length} transaction(s)`);
+        this.logger.log(`Stored ${receiptActions.length} receipt action(s)`);
       }
 
-      for await (const metrics of aggregationService.aggregateMetrics(
+      const daos = [];
+      for await (const dao of aggregationService.aggregateDaos(contractId)) {
+        await this.daoService.create(dao);
+
+        daos.push(dao);
+      }
+
+      this.logger.log(`Stored ${daos.length} DAO(s)`);
+
+      // Purging DAOs that were removed from contract
+      const { affected } = await this.daoService.purgeInactive(
+        contractId,
+        daos.map(({ dao }) => dao),
+      );
+
+      if (affected) {
+        this.logger.log(`Purged ${affected} inactive DAO(s)`);
+      }
+
+      for await (const metric of aggregationService.aggregateMetrics(
         contractId,
       )) {
-        await this.daoService.create([
-          {
-            dao: metrics[0].dao,
-            contractId,
-          },
-        ]);
-
-        await PromisePool.withConcurrency(500)
-          .for(metrics)
-          .handleError((error) => {
-            throw error;
-          })
-          .process(async (metric) => {
-            await this.daoStatsService.createOrUpdate(metric);
-            await this.daoStatsHistoryService.createOrUpdate(metric);
-          });
-
-        this.logger.log(`Stored ${metrics.length} metric(s)`);
+        await this.daoStatsService.createOrUpdate(metric);
+        await this.daoStatsHistoryService.createOrUpdate(metric);
       }
+
+      this.logger.log(`Finished processing contract: ${contractId}`);
     }
+
+    await this.cacheService.clearCache();
   }
 }

@@ -7,6 +7,7 @@ import { TransactionModule } from '@dao-stats/transaction';
 import { TvlController } from './tvl.controller';
 import { TvlService } from './tvl.service';
 import { ContractModule } from '../contract/contract.module';
+import { MetricService } from '../common/metric.service';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ContractModule } from '../contract/contract.module';
     TransactionModule,
     ContractModule,
   ],
-  providers: [TvlService],
+  providers: [TvlService, MetricService],
   controllers: [TvlController],
 })
 export class TvlModule {}

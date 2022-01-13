@@ -1,10 +1,7 @@
-import { Metric } from '@dao-stats/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { FlowMetric } from './flow-metric.dto';
 
 export class FlowMetricResponse {
-  @ApiProperty({ type: [Metric] })
-  in: Metric[];
-
-  @ApiProperty({ type: [Metric] })
-  out: Metric[];
+  @ApiProperty({ type: [FlowMetric] })
+  metrics: FlowMetric[];
 }

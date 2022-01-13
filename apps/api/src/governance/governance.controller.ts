@@ -1,21 +1,21 @@
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import {
   ContractContext,
   DaoContractContext,
   MetricQuery,
-  MetricQueryPipe,
   MetricResponse,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
 
-import { ContractInterceptor } from '../interceptors/contract.interceptor';
 import { GovernanceTotalResponse } from './dto/governance-total.dto';
 import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
 import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
 import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
 import { GovernanceService } from './governance.service';
+import { MetricQueryPipe } from '../pipes';
+import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Governance')
 @Controller('governance')
@@ -29,7 +29,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/')
   async totals(
     @Param() context: ContractContext,
@@ -44,7 +43,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/proposals')
   async proposals(
     @Param() context: ContractContext,
@@ -60,7 +58,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/proposals/leaderboard')
   async proposalsLeaderboard(
     @Param() context: ContractContext,
@@ -75,7 +72,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/proposals-types')
   async proposalsTypes(
     @Param() context: ContractContext,
@@ -91,7 +87,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/proposals-types/leaderboard')
   async proposalsTypesLeaderboard(
     @Param() context: ContractContext,
@@ -106,7 +101,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/vote-rate')
   async rate(
     @Param() context: ContractContext,
@@ -122,7 +116,6 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
   @Get('/vote-rate/leaderboard')
   async rateLeaderboard(
     @Param() context: ContractContext,
@@ -137,7 +130,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
     @Param() context: DaoContractContext,
@@ -152,7 +145,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/proposals')
   async daoProposals(
     @Param() context: DaoContractContext,
@@ -168,7 +161,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/proposals-types')
   async daoProposalsTypes(
     @Param() context: DaoContractContext,
@@ -184,7 +177,7 @@ export class GovernanceController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(ContractInterceptor)
+  @HasDaoContractContext()
   @Get('/:dao/vote-rate')
   async daoRate(
     @Param() context: DaoContractContext,

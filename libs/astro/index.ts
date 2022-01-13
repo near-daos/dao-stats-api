@@ -1,2 +1,2 @@
-export * from './src/astro.module';
-export * from './src/astro.service';
+export * from './src/aggregation.module';
+export * from './src/aggregation.service';
