@@ -11,11 +11,11 @@ export class DaoStats implements HasContract {
   @JoinColumn({ name: 'contract_id' })
   contractId: string;
 
-  @PrimaryColumn()
-  dao: string;
-
   @PrimaryColumn({ type: 'enum', enum: DaoStatsMetric })
   metric: DaoStatsMetric;
+
+  @PrimaryColumn()
+  dao: string;
 
   @Column({ type: 'double precision', default: 0 })
   value: number;
