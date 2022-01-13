@@ -83,7 +83,7 @@ export class DaoStatsService {
       params,
     );
 
-    if (result) {
+    if (result && result.total) {
       return parseFloat(result.total);
     }
 

@@ -170,7 +170,7 @@ export class NearIndexerService {
       .select(`sum((ara.args ->> 'deposit')::decimal) as amount`)
       .execute();
 
-    if (result) {
+    if (result && result.amount) {
       return result.amount;
     }
 
