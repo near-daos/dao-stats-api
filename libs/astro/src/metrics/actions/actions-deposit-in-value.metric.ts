@@ -17,7 +17,7 @@ export class ActionsDepositInValueMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.ActionsDepositInValue;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const amount = await this.nearIndexerService.getReceiptActionsDepositAmount(
@@ -28,7 +28,7 @@ export class ActionsDepositInValueMetric implements DaoContractMetricInterface {
     return yoctoToNear(amount);
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     const result =

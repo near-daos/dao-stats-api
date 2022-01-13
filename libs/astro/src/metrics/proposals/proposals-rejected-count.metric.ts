@@ -16,14 +16,14 @@ export class ProposalsRejectedCountMetric
     return DaoStatsMetric.ProposalsRejectedCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (await contract.getProposalsByStatus(ProposalStatus.Rejected))
       .length;
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

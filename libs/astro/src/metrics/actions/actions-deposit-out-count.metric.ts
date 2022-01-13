@@ -18,7 +18,7 @@ export class ActionsDepositOutCountMetric
     return DaoStatsMetric.ActionsDepositOutCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return this.nearIndexerService.getReceiptActionsCount({
@@ -26,7 +26,7 @@ export class ActionsDepositOutCountMetric
     });
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getReceiptActionsDepositCountDaily({

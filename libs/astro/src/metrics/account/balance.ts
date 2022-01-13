@@ -17,14 +17,14 @@ export class AccountBalanceMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.AccountBalance;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const state = await contract.account.state();
     return yoctoToNear(state.amount);
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     const result = await this.nearIndexerService.getAccountBalanceDaily(

@@ -22,7 +22,7 @@ export class NftsValueLockedMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.NftsValueLocked;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const tokens = await this.nearHelperService.getLikelyNFTs(
@@ -54,7 +54,7 @@ export class NftsValueLockedMetric implements DaoContractMetricInterface {
     return 0;
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

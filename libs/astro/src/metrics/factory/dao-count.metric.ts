@@ -16,13 +16,13 @@ export class DaoCountMetric implements DaoFactoryContractMetricInterface {
     return DaoStatsMetric.DaoCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoFactoryContractMetricCurrentParams): Promise<number> {
     return (await contract.getDaoList()).length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoFactoryContractMetricHistoryParams): Promise<
     DaoFactoryContractMetricHistoryResponse[]

@@ -18,8 +18,8 @@ export type DaoFactoryContractMetricHistoryResponse = {
 
 export interface DaoFactoryContractMetricInterface {
   getType(): DaoStatsMetric;
-  getCurrentValue(args: DaoFactoryContractMetricCurrentParams): Promise<number>;
-  getHistoricalValues(
+  getTotal(args: DaoFactoryContractMetricCurrentParams): Promise<number>;
+  getHistorical(
     args: DaoFactoryContractMetricHistoryParams,
   ): Promise<DaoFactoryContractMetricHistoryResponse[]>;
 }

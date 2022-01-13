@@ -14,14 +14,14 @@ export class CouncilSizeMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.CouncilSize;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const groups = await contract.getGroups();
     return groups.filter(isRoleGroupCouncil).length;
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

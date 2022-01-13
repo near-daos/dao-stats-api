@@ -189,7 +189,7 @@ export class AggregationService implements Aggregator {
       let total;
 
       try {
-        total = await metric.getCurrentValue({
+        total = await metric.getTotal({
           contract: factoryContract,
         });
       } catch (err) {
@@ -205,8 +205,8 @@ export class AggregationService implements Aggregator {
 
       yield {
         contractId,
-        dao: contractName, // TODO: make optional
         metric: type,
+        dao: contractName,
         total,
       };
     }
@@ -223,7 +223,7 @@ export class AggregationService implements Aggregator {
         let total;
 
         try {
-          total = await metric.getCurrentValue({
+          total = await metric.getTotal({
             contract: daoContract,
           });
         } catch (err) {
@@ -266,7 +266,7 @@ export class AggregationService implements Aggregator {
       let data;
 
       try {
-        data = await metric.getHistoricalValues({
+        data = await metric.getHistorical({
           contract: factoryContract,
         });
       } catch (err) {
@@ -303,7 +303,7 @@ export class AggregationService implements Aggregator {
         let data;
 
         try {
-          data = await metric.getHistoricalValues({
+          data = await metric.getHistorical({
             contract: daoContract,
           });
         } catch (err) {
