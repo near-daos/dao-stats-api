@@ -167,20 +167,20 @@ export class NearIndexerService {
       ...params,
       isDeposit: true,
     })
-      .select(`sum((ara.args ->> 'deposit')::decimal)`)
+      .select(`sum((ara.args ->> 'deposit')::decimal) as amount`)
       .execute();
 
-    if (!result || !result['sum']) {
-      return '0';
+    if (result) {
+      return result.amount;
     }
 
-    return result['sum'];
+    return '0';
   }
 
   async getReceiptActionsDepositCountDaily(params: {
     predecessorAccountId?: string;
     receiverAccountId?: string;
-  }): Promise<{ date: Date; value: number }[]> {
+  }): Promise<{ date: Date; total: number }[]> {
     const [query, parameters] = this.buildReceiptActionsQuery({
       ...params,
       isDeposit: true,
@@ -192,7 +192,7 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (${query})
-          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -202,7 +202,7 @@ export class NearIndexerService {
   async getReceiptActionsDepositAmountDaily(params: {
     predecessorAccountId?: string;
     receiverAccountId?: string;
-  }): Promise<{ date: Date; value: string }[]> {
+  }): Promise<{ date: Date; total: string }[]> {
     const [query, parameters] = this.buildReceiptActionsQuery({
       ...params,
       isDeposit: true,
@@ -214,7 +214,7 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (${query})
-          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -223,7 +223,7 @@ export class NearIndexerService {
 
   async getDaoCountDaily(
     contractId: string,
-  ): Promise<{ date: Date; value: number }[]> {
+  ): Promise<{ date: Date; total: number }[]> {
     return this.connection.query(
       `
           with data as (
@@ -238,7 +238,7 @@ export class NearIndexerService {
               group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
           )
           select date,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as value
+                 sum(value) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       [contractId, `%.${contractId}`],
@@ -249,7 +249,7 @@ export class NearIndexerService {
   // TODO: find cause and fix query
   async getAccountBalanceDaily(
     accountId: string,
-  ): Promise<{ date: Date; value: number }[]> {
+  ): Promise<{ date: Date; total: number }[]> {
     return this.connection.query(
       `
           with deposits as (
@@ -280,7 +280,7 @@ export class NearIndexerService {
                    from deposits
                    full outer join withdrawals using (date)
                )
-          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as total
           from balance;
       `,
       [accountId],

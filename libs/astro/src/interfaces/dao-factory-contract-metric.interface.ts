@@ -13,7 +13,7 @@ export interface DaoFactoryContractMetricHistoryParams
 
 export type DaoFactoryContractMetricHistoryResponse = {
   date: Date;
-  value: number;
+  total: number;
 };
 
 export interface DaoFactoryContractMetricInterface {

@@ -35,7 +35,7 @@ export class DaoStatsHistory implements HasContract {
   total: number;
 
   @Column({ type: 'double precision', nullable: true })
-  change: number;
+  change: number | null;
 
   @CreateDateColumn({
     type: 'timestamptz',

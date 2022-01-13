@@ -30,9 +30,9 @@ export class AccountBalanceMetric implements DaoContractMetricInterface {
     const result = await this.nearIndexerService.getAccountBalanceDaily(
       contract.contractId,
     );
-    return result.map(({ date, value }) => ({
+    return result.map(({ date, total }) => ({
       date,
-      value: yoctoToNear(value),
+      total: yoctoToNear(total),
     }));
   }
 }

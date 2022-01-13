@@ -37,9 +37,9 @@ export class ActionsDepositOutValueMetric
       await this.nearIndexerService.getReceiptActionsDepositAmountDaily({
         predecessorAccountId: contract.contractId,
       });
-    return result.map(({ date, value }) => ({
+    return result.map(({ date, total }) => ({
       date,
-      value: yoctoToNear(value),
+      total: yoctoToNear(total),
     }));
   }
 }

@@ -35,9 +35,9 @@ export class ActionsDepositInValueMetric implements DaoContractMetricInterface {
       await this.nearIndexerService.getReceiptActionsDepositAmountDaily({
         receiverAccountId: contract.contractId,
       });
-    return result.map(({ date, value }) => ({
+    return result.map(({ date, total }) => ({
       date,
-      value: yoctoToNear(value),
+      total: yoctoToNear(total),
     }));
   }
 }
