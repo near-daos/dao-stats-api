@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Contract } from './contract.entity';
 import { DaoStatsMetric } from '../types';
 
@@ -25,4 +33,21 @@ export class DaoStatsHistory implements HasContract {
 
   @Column({ type: 'double precision', nullable: false, default: 0 })
   total: number;
+
+  @Column({ type: 'double precision', nullable: true })
+  change: number;
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt?: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt?: Date;
 }
