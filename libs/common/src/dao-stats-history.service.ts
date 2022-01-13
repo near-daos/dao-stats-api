@@ -2,7 +2,7 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { DaoStatsDto, DaoStatsHistory, DaoStatsMetric } from '.';
+import { DaoStatsHistory, DaoStatsHistoryDto, DaoStatsMetric } from '.';
 
 export interface DaoStatsHistoryTotalParams {
   from?: number;
@@ -31,25 +31,69 @@ export class DaoStatsHistoryService {
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DaoStatsDto): Promise<InsertResult> {
+  async getPrevTotal({
+    contractId,
+    metric,
+    dao,
+  }: {
+    contractId: string;
+    metric: string;
+    dao: string;
+  }): Promise<number | undefined> {
+    const result = await this.connection
+      .getRepository(DaoStatsHistory)
+      .createQueryBuilder()
+      .select('total')
+      .where({
+        contractId,
+        metric,
+        dao,
+      })
+      .andWhere('date < CURRENT_DATE')
+      .orderBy('date', 'DESC')
+      .limit(1)
+      .getRawOne();
+
+    return result ? parseFloat(result.total) : undefined;
+  }
+
+  async createOrUpdate(data: DaoStatsHistoryDto): Promise<InsertResult> {
+    let prevTotal: number;
+
+    if (data.change === undefined) {
+      prevTotal = await this.getPrevTotal(data);
+    }
+
     return await this.connection
       .createQueryBuilder()
       .insert()
       .into(DaoStatsHistory)
-      .values(data)
+      .values({
+        ...data,
+        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+      })
       .orUpdate({
         conflict_target: ['date', 'contract_id', 'metric', 'dao'],
-        overwrite: ['total'],
+        overwrite: ['total', 'change', 'updated_at'],
       })
       .execute();
   }
 
-  async createIgnore(data: DaoStatsDto): Promise<InsertResult> {
+  async createIgnore(data: DaoStatsHistoryDto): Promise<InsertResult> {
+    let prevTotal: number;
+
+    if (data.change === undefined) {
+      prevTotal = await this.getPrevTotal(data);
+    }
+
     return await this.connection
       .createQueryBuilder()
       .insert()
       .into(DaoStatsHistory)
-      .values(data)
+      .values({
+        ...data,
+        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+      })
       .onConflict('DO NOTHING')
       .execute();
   }

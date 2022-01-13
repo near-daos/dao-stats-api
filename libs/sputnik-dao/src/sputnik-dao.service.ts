@@ -3,20 +3,25 @@ import {
   Aggregator,
   DaoDto,
   DaoStatsDto,
+  DaoStatsHistoryDto,
   ReceiptActionDto,
 } from '@dao-stats/common';
 
 @Injectable()
 export class AggregationService implements Aggregator {
+  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
+    return undefined;
+  }
+
+  aggregateDaos(): AsyncGenerator<DaoDto> {
+    return undefined;
+  }
+
   aggregateMetrics(): AsyncGenerator<DaoStatsDto> {
     return undefined;
   }
 
-  async getDaos(): Promise<DaoDto[]> {
-    return [];
-  }
-
-  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
+  aggregateHistoricalMetrics(): AsyncGenerator<DaoStatsHistoryDto> {
     return undefined;
   }
 }

@@ -42,7 +42,7 @@ export class DaoStatsService {
       .values(data)
       .orUpdate({
         conflict_target: ['contract_id', 'metric', 'dao'],
-        overwrite: ['total'],
+        overwrite: ['total', 'updated_at'],
       })
       .execute();
   }

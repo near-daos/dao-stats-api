@@ -24,9 +24,7 @@ export class DaoCountMetric implements DaoFactoryContractMetricInterface {
 
   async getHistorical({
     contract,
-  }: DaoFactoryContractMetricHistoryParams): Promise<
-    DaoFactoryContractMetricHistoryResponse[]
-  > {
+  }: DaoFactoryContractMetricHistoryParams): Promise<DaoFactoryContractMetricHistoryResponse> {
     return this.nearIndexerService.getDaoCountDaily(contract.contractId);
   }
 }

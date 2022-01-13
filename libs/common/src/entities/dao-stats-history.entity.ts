@@ -18,7 +18,7 @@ export class DaoStatsHistory implements HasContract {
     type: 'date',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  date?: string;
+  date?: Date;
 
   @PrimaryColumn()
   @ManyToOne(() => Contract, (contract) => contract.contractId)

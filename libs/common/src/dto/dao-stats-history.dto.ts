@@ -1,9 +1,10 @@
 import { DaoStatsMetric } from '../types';
 
 export interface DaoStatsHistoryDto {
-  date: string;
+  date?: Date;
   contractId: string;
   metric: DaoStatsMetric;
   dao: string;
   total: number;
+  change?: number;
 }
