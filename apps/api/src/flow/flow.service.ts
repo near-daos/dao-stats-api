@@ -291,11 +291,9 @@ export class FlowService {
   ): LeaderboardMetric[] {
     const { conversionFactor } = contract;
 
-    return data.map(({ receiver_account_id: dao, count }) => {
+    return data.map(({ account_id: dao, count }) => {
       const dayAgoCount =
-        dayAgoData.find(
-          ({ receiver_account_id }) => receiver_account_id === dao,
-        )?.count || 0;
+        dayAgoData.find(({ account_id }) => account_id === dao)?.count || 0;
 
       return {
         dao,
@@ -309,8 +307,8 @@ export class FlowService {
         overview: days.map(({ end: timestamp }) => {
           const count =
             byDaysData.find(
-              ({ receiver_account_id, day }) =>
-                receiver_account_id === dao &&
+              ({ account_id, day }) =>
+                account_id === dao &&
                 moment(day).isSame(moment(timestamp), 'day'),
             )?.count || 0;
 

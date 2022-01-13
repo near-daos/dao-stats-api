@@ -69,8 +69,13 @@ export class ReceiptActionService {
       metricQuery,
       daily,
     )
-      .addSelect('receipt_receiver_account_id', 'receiver_account_id')
-      .addGroupBy('receiver_account_id')
+      .addSelect(
+        `receipt_${
+          transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
+        }_account_id`,
+        'account_id',
+      )
+      .addGroupBy('account_id')
       .addOrderBy('count', 'DESC');
 
     if (!daily) {
@@ -78,78 +83,6 @@ export class ReceiptActionService {
     }
 
     return qb.execute();
-  }
-
-  async getFunds(
-    context: DaoContractContext,
-    transferType?: TransferType,
-    metricQuery?: MetricQuery,
-  ): Promise<{ count: number }> {
-    return this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-    ).getRawOne();
-  }
-
-  async getFundsHistory(
-    context: DaoContractContext,
-    transferType?: TransferType,
-    metricQuery?: MetricQuery,
-  ): Promise<DailyCountDto[]> {
-    return this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-      true,
-    ).execute();
-  }
-
-  async getFundsLeaderboard(
-    context: DaoContractContext,
-    transferType?: TransferType,
-    metricQuery?: MetricQuery,
-    daily?: boolean,
-  ): Promise<any[]> {
-    const qb = this.getFundsQueryBuilder(
-      context,
-      transferType,
-      metricQuery,
-      daily,
-    )
-      .addSelect('receipt_receiver_account_id', 'receiver_account_id')
-      .addGroupBy('receiver_account_id')
-      .addOrderBy('count', 'DESC');
-
-    if (!daily) {
-      qb.limit(10);
-    }
-
-    return qb.execute();
-  }
-
-  private getFundsQueryBuilder(
-    context: DaoContractContext,
-    transferType?: TransferType,
-    metricQuery?: MetricQuery,
-    daily?: boolean,
-  ) {
-    const qb = this.getTransferIntervalQueryBuilder(
-      context,
-      null,
-      transferType,
-      metricQuery,
-      daily,
-    );
-
-    const selection = `sum((args_json->>'deposit')::numeric) as count`;
-    if (daily) {
-      qb.addSelect(selection);
-    } else {
-      qb.select(selection);
-    }
-
-    return qb;
   }
 
   private getTransferIntervalQueryBuilder(
