@@ -80,16 +80,16 @@ export class DaoStatsHistoryService {
 
     query.andWhere('contract_id = :contractId', { contractId });
 
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
-
     if (Array.isArray(metric)) {
       query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
+    }
+
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
+      query.andWhere('dao = :dao', { dao });
     }
 
     query.groupBy('date, dao');
@@ -141,16 +141,16 @@ export class DaoStatsHistoryService {
 
     query.andWhere('contract_id = :contractId', { contractId });
 
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
-
     if (Array.isArray(metric)) {
       query.andWhere('metric in (:...metric)', { metric });
     } else {
       query.andWhere('metric = :metric', { metric });
+    }
+
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
+      query.andWhere('dao = :dao', { dao });
     }
 
     query.groupBy('date, dao');
