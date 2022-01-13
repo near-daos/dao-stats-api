@@ -48,26 +48,6 @@ export class AddNewColumnsToDaoStats1642073707228
       `ALTER TABLE "dao_stats"
           ALTER COLUMN "updated_at" SET DEFAULT now()`,
     );
-
-    // migrate change column and fill it with calculated data
-    await queryRunner.query(
-      `UPDATE "dao_stats_history"
-       SET "change"     = "data"."new_change",
-           "updated_at" = now()
-       FROM (
-           SELECT "date",
-                  "contract_id",
-                  "metric",
-                  "dao",
-                  "total" -
-                  lag("total") OVER (PARTITION BY "contract_id", "metric", "dao" ORDER BY "date") as "new_change"
-           FROM "dao_stats_history"
-       ) AS "data"
-       WHERE "dao_stats_history"."date" = "data"."date"
-         AND "dao_stats_history"."contract_id" = "data"."contract_id"
-         AND "dao_stats_history"."metric" = "data"."metric"
-         AND "dao_stats_history"."dao" = "data"."dao"`,
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
