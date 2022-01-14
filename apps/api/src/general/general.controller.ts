@@ -10,7 +10,7 @@ import {
 } from '@dao-stats/common';
 import { GeneralTotalResponse } from './dto';
 import { GeneralService } from './general.service';
-import { MetricQueryPipe } from '../pipes';
+import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('General')
@@ -27,7 +27,7 @@ export class GeneralController {
   })
   @Get('/')
   async totals(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
   }
@@ -41,7 +41,7 @@ export class GeneralController {
   })
   @Get('/daos')
   async daos(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.daos(context, metricQuery);
@@ -56,7 +56,7 @@ export class GeneralController {
   })
   @Get('/active')
   async active(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.active(context, metricQuery);
@@ -71,7 +71,7 @@ export class GeneralController {
   })
   @Get('/active/leaderboard')
   async activeLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.generalService.activeLeaderboard(context);
   }
@@ -85,7 +85,7 @@ export class GeneralController {
   })
   @Get('/groups')
   async groups(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.groups(context, metricQuery);
@@ -100,7 +100,7 @@ export class GeneralController {
   })
   @Get('/groups/leaderboard')
   async groupsLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.generalService.groupsLeaderboard(context);
   }
@@ -114,7 +114,7 @@ export class GeneralController {
   })
   @Get('/average-groups')
   async averageGroups(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.averageGroups(context, metricQuery);
@@ -130,7 +130,7 @@ export class GeneralController {
   @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
   ): Promise<GeneralTotalResponse> {
     return this.generalService.totals(context);
   }
@@ -145,7 +145,7 @@ export class GeneralController {
   @HasDaoContractContext()
   @Get('/:dao/activity')
   async daoActivity(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.active(context, metricQuery);
@@ -161,7 +161,7 @@ export class GeneralController {
   @HasDaoContractContext()
   @Get('/:dao/groups')
   async daoGroups(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.generalService.groups(context, metricQuery);

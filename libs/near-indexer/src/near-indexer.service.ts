@@ -46,10 +46,10 @@ export class NearIndexerService {
         new Brackets((qb) =>
           qb
             .where(`receipt_action.receipt_predecessor_account_id LIKE :id`, {
-              id: `%${accountIds}`,
+              id: `%.${accountIds}`,
             })
             .orWhere(`receipt_action.receipt_receiver_account_id LIKE :id`, {
-              id: `%${accountIds}`,
+              id: `%.${accountIds}`,
             }),
         ),
       );
