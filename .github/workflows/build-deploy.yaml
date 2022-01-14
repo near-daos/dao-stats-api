@@ -19,8 +19,6 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
-  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
-  KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
 
 jobs:
   get-updated-apps:
@@ -85,6 +83,7 @@ jobs:
       environment: ${{ steps.get-environment.outputs.environment }}
       namespace_prefix: ${{ steps.get-environment.outputs.namespace_prefix }}
       k8s_ingress_base_host: ${{ steps.get-environment.outputs.k8s_ingress_base_host }}
+      kube_config_data_secret_name: ${{ steps.get-environment.outputs.kube_config_data_secret_name }}
     steps:
     - name: get environment
       id: get-environment
@@ -95,6 +94,7 @@ jobs:
           echo "::set-output name=environment::production"
           echo "::set-output name=namespace_prefix::dao-stats-api-production"
           echo "::set-output name=k8s_ingress_base_host::api.daostats.io"
+          echo "::set-output name=kube_config_data_secret_name::KUBE_CONFIG_DATA_PRODUCTION"
         elif [[ "${{ github.ref }}" =~ ^refs/heads/staging ]]
         then
           echo "::set-output name=environment::staging"
@@ -104,6 +104,7 @@ jobs:
           echo "::set-output name=environment::develop"
           echo "::set-output name=namespace_prefix::ds-d"
           echo "::set-output name=k8s_ingress_base_host::development.api.daostats.io"
+          echo "::set-output name=kube_config_data_secret_name::KUBE_CONFIG_DATA_DEVELOP"
         fi
         if [[ "${{ github.event.inputs.environment }}" != "" ]]
         then
@@ -111,6 +112,7 @@ jobs:
           echo "::set-output name=environment::${{ github.event.inputs.environment }}"
           echo "::set-output name=namespace_prefix::ds-d"
           echo "::set-output name=k8s_ingress_base_host::development.api.daostats.io"
+          echo "::set-output name=kube_config_data_secret_name::KUBE_CONFIG_DATA_DEVELOP"
         fi
 
   build-image-aggregator:
@@ -175,6 +177,8 @@ jobs:
         cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
       uses: koslib/helm-eks-action@v1.8.0
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets[needs.get-environment.outputs.kube_config_data_secret_name] }}
       with:
         command: |
           set -x
@@ -209,6 +213,8 @@ jobs:
         cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
       uses: koslib/helm-eks-action@v1.8.0
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets[needs.get-environment.outputs.kube_config_data_secret_name] }}
       with:
         command: |
           set -x
