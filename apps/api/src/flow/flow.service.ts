@@ -18,26 +18,16 @@ import {
   FlowLeaderboardMetricResponse,
 } from './dto';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
-import { ContractService } from '../contract/contract.service';
 
 @Injectable()
 export class FlowService {
-  constructor(
-    private readonly receiptActionService: ReceiptActionService,
-    private readonly contractService: ContractService,
-  ) {}
+  constructor(private readonly receiptActionService: ReceiptActionService) {}
 
   async totals(context: ContractContext): Promise<FlowTotalResponse> {
-    const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contractId);
-
+    const { contract } = context;
     const { conversionFactor } = contract;
 
-    const contractContext = {
-      ...context,
-      contract,
-    };
+    const dayAgo = moment().subtract(1, 'days');
 
     const [
       txInCount,
@@ -50,12 +40,12 @@ export class FlowService {
       dayAgoTotalOut,
     ] = await Promise.all([
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
         {
@@ -63,12 +53,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
         {
@@ -76,12 +66,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
         {
@@ -89,12 +79,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
         {
@@ -128,24 +118,18 @@ export class FlowService {
     metricType: FlowMetricType,
     metricQuery?: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    const contract = await this.contractService.findById(context.contractId);
-
+    const { contract } = context;
     const { conversionFactor } = contract;
-
-    const contractContext = {
-      ...context,
-      contract,
-    };
 
     const [incoming, outgoing] = await Promise.all([
       this.receiptActionService.getHistory(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         metricQuery,
       ),
       this.receiptActionService.getHistory(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         metricQuery,
@@ -187,16 +171,11 @@ export class FlowService {
     context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
   ): Promise<FlowLeaderboardMetricResponse> {
+    const { contract } = context;
+
     const weekAgo = moment().subtract(7, 'days');
     const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contractId);
-
-    const contractContext = {
-      ...context,
-      contract,
-    };
 
     const [
       byDaysIncoming,
@@ -207,7 +186,7 @@ export class FlowService {
       outgoing,
     ] = await Promise.all([
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
@@ -217,7 +196,7 @@ export class FlowService {
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -227,7 +206,7 @@ export class FlowService {
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
@@ -235,7 +214,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
@@ -243,7 +222,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -251,7 +230,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {

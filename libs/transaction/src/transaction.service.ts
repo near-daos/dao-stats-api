@@ -212,7 +212,8 @@ export class TransactionService {
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): SelectQueryBuilder<Transaction> {
-    const { contractId, dao } = context as DaoContractContext;
+    const { contract, dao } = context as DaoContractContext;
+    const { contractId, contractName } = contract;
     const { from, to } = metricQuery || {};
 
     const qb = this.transactionRepository.createQueryBuilder();
@@ -221,6 +222,8 @@ export class TransactionService {
 
     if (dao) {
       qb.andWhere('receiver_account_id = :dao', { dao });
+    } else {
+      qb.andWhere('receiver_account_id like :id', { id: `%.${contractName}` });
     }
 
     if (from) {

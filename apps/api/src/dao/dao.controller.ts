@@ -7,6 +7,7 @@ import {
   DaoService,
 } from '@dao-stats/common';
 import { HasDaoContractContext } from '../decorators';
+import { ContractContextPipe } from '../pipes';
 
 @ApiTags('DAOs')
 @Controller('daos')
@@ -21,7 +22,9 @@ export class DaoController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get()
-  async daos(@Param() context: ContractContext): Promise<DaoDto[]> {
+  async daos(
+    @Param(ContractContextPipe) context: ContractContext,
+  ): Promise<DaoDto[]> {
     const { contractId } = context;
 
     return this.daoService.find(contractId);
@@ -36,7 +39,9 @@ export class DaoController {
   })
   @HasDaoContractContext()
   @Get('/:dao')
-  async dao(@Param() context: DaoContractContext): Promise<DaoDto> {
+  async dao(
+    @Param(ContractContextPipe) context: DaoContractContext,
+  ): Promise<DaoDto> {
     const { contractId, dao } = context;
 
     const daoEntity = await this.daoService.findById(contractId, dao);
@@ -57,7 +62,7 @@ export class DaoController {
   })
   @Get('/autocomplete/:input')
   async autocomplete(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Param('input') input: string,
   ): Promise<DaoDto[]> {
     const { contractId } = context;
