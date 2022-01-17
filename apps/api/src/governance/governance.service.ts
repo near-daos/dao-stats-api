@@ -88,6 +88,8 @@ export class GovernanceService {
       }),
     ]);
 
+    const voteRate = getRate(proposalsApprovedCount, proposalsCount);
+
     return {
       proposals: {
         count: proposalsCount,
@@ -104,10 +106,10 @@ export class GovernanceService {
         members: proposalsMemberCount,
       },
       voteRate: {
-        count: getRate(proposalsApprovedCount, proposalsCount),
+        count: voteRate,
         growth: getGrowth(
-          proposalsApprovedCount / proposalsCount,
-          dayAgoProposalsApprovedCount / dayAgoProposalsCount,
+          voteRate,
+          getRate(dayAgoProposalsApprovedCount, dayAgoProposalsCount),
         ),
       },
     };
