@@ -173,8 +173,8 @@ export class FlowService {
   ): Promise<FlowLeaderboardMetricResponse> {
     const { contract } = context;
 
-    const weekAgo = moment().subtract(7, 'days');
-    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const monthAgo = moment().subtract(1, 'month');
+    const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
 
     const [
@@ -190,7 +190,7 @@ export class FlowService {
         metricType,
         TransferType.Incoming,
         {
-          from: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,
@@ -200,7 +200,7 @@ export class FlowService {
         metricType,
         TransferType.Outgoing,
         {
-          from: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,

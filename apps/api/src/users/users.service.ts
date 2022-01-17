@@ -129,8 +129,8 @@ export class UsersService {
   async usersLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const weekAgo = moment().subtract(7, 'days');
-    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const monthAgo = moment().subtract(1, 'month');
+    const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
 
     const { results: byDays, errors } = await PromisePool.withConcurrency(5)
       .for(days)
@@ -249,15 +249,15 @@ export class UsersService {
   async interactionsLeaderboard(
     context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
-    const weekAgo = moment().subtract(7, 'days');
-    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const monthAgo = moment().subtract(1, 'month');
+    const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
 
     const [byDays, dayAgoActivity, totalActivity] = await Promise.all([
       this.transactionService.getActivityLeaderboard(
         context,
         {
-          from: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,
