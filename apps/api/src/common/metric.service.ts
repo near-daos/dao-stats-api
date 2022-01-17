@@ -89,7 +89,7 @@ export class MetricService {
     const { contractId } = context;
 
     const dayAgo = moment().subtract(1, 'day');
-    const weekAgo = moment().subtract(1, 'week');
+    const monthAgo = moment().subtract(1, 'month');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contractId,
@@ -109,7 +109,7 @@ export class MetricService {
             contractId,
             dao,
             metric,
-            from: weekAgo.valueOf(),
+            from: monthAgo.valueOf(),
           }),
         ]);
 

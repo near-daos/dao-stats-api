@@ -326,7 +326,7 @@ export class GovernanceService {
     const { contractId, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
-    const weekAgo = moment().subtract(7, 'days');
+    const monthAgo = moment().subtract(30, 'month');
 
     const [totalLeaderboard, approvedLeaderboard] = await Promise.all([
       this.daoStatsService.getLeaderboard({
@@ -376,13 +376,13 @@ export class GovernanceService {
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
-              from: weekAgo.valueOf(),
+              from: monthAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
-              from: weekAgo.valueOf(),
+              from: monthAgo.valueOf(),
             }),
           ]);
 
