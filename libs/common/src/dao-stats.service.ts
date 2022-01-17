@@ -6,15 +6,15 @@ import { DaoStats, DaoStatsDto, DaoStatsMetric } from '.';
 
 export interface DaoStatsTotalParams {
   contractId: string;
-  dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
-  daoAverage?: boolean;
+  dao?: string | string[];
+  averagePerDao?: boolean;
 }
 
 export interface DaoStatsLeaderboardParams {
   contractId: string;
-  dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
+  dao?: string | string[];
   limit?: number;
 }
 
@@ -51,7 +51,7 @@ export class DaoStatsService {
     contractId,
     dao,
     metric,
-    daoAverage,
+    averagePerDao,
   }: DaoStatsTotalParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
@@ -76,10 +76,9 @@ export class DaoStatsService {
     const [subQuery, params] = query.getQueryAndParameters();
 
     const [result] = await this.connection.query(
-      `
-          with data as (${subQuery})
-          select ${daoAverage ? 'avg' : 'sum'}(total) as total
-          from data`,
+      `with data as (${subQuery})
+       select ${averagePerDao ? 'avg' : 'sum'}(total) as total
+       from data`,
       params,
     );
 

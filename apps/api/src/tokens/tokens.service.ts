@@ -7,7 +7,7 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
 } from '@dao-stats/common';
-import { TokensTotalResponse } from './dto/tokens-total.dto';
+import { TokensTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 
 @Injectable()

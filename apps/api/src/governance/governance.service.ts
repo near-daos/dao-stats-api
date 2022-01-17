@@ -16,10 +16,12 @@ import {
   TransactionType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { GovernanceTotalResponse } from './dto/governance-total.dto';
-import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
-import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import {
+  GovernanceTotalResponse,
+  ProposalsTypesLeaderboardResponse,
+  ProposalsTypesHistoryResponse,
+  VoteRateLeaderboardResponse,
+} from './dto';
 import { MetricService } from '../common/metric.service';
 import { getGrowth, getRate, patchMetricDays } from '../utils';
 
@@ -54,7 +56,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsCount,
       }),
-      this.daoStatsHistoryService.getLastTotal({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
@@ -65,7 +67,7 @@ export class GovernanceService {
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
       }),
-      this.daoStatsHistoryService.getLastTotal({
+      this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
@@ -144,7 +146,7 @@ export class GovernanceService {
           count:
             proposalCountHistory.find(({ date }) =>
               moment(date).isSame(moment(day), 'day'),
-            )?.total || count,
+            )?.value || count,
         })),
         MetricType.Total,
       ),
@@ -201,9 +203,9 @@ export class GovernanceService {
     ]);
 
     const toResponse = (data: DaoStatsHistoryHistoryResponse) =>
-      data.map(({ date, total }) => ({
+      data.map(({ date, value }) => ({
         timestamp: date.valueOf(),
-        count: total,
+        count: value,
       }));
 
     return {
@@ -222,8 +224,8 @@ export class GovernanceService {
           return {
             timestamp: row.date.valueOf(),
             count:
-              row.total -
-              (payout?.total || 0 + bounty?.total || 0 + member?.total || 0),
+              row.value -
+              (payout?.value || 0 + bounty?.value || 0 + member?.value || 0),
           };
         }),
         financial: toResponse(payouts),
@@ -312,7 +314,7 @@ export class GovernanceService {
           );
           return {
             timestamp: row.date.valueOf(),
-            count: getRate(approved?.total || 0, row.total),
+            count: getRate(approved?.value || 0, row.value),
           };
         }),
         MetricType.Total,
@@ -360,13 +362,13 @@ export class GovernanceService {
       leaderboard.map(async ({ dao, total, approved, rate }) => {
         const [dayAgoTotal, dayAgoApproved, totalHistory, approvedHistory] =
           await Promise.all([
-            this.daoStatsHistoryService.getLastTotal({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
               to: dayAgo.valueOf(),
             }),
-            this.daoStatsHistoryService.getLastTotal({
+            this.daoStatsHistoryService.getLastValue({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
@@ -402,13 +404,13 @@ export class GovernanceService {
             count: rate,
             growth: getGrowth(rate, dayAgoRate),
           },
-          overview: totalHistory.map(({ date, total }) => {
+          overview: totalHistory.map(({ date, value }) => {
             const approved = approvedHistory.find(
               (row) => date.valueOf() === row.date.valueOf(),
             );
             return {
               timestamp: date.valueOf(),
-              count: getRate(approved?.total || 0, total),
+              count: getRate(approved?.value || 0, value),
             };
           }),
         };

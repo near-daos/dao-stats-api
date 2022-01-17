@@ -168,6 +168,7 @@ export class GeneralService {
       metricQuery,
       DaoStatsMetric.GroupsCount,
       true,
+      true,
     );
   }
 }

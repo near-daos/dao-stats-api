@@ -11,8 +11,7 @@ import {
   MetricQuery,
   MetricResponse,
 } from '@dao-stats/common';
-import { TvlTotalResponse } from './dto/tvl-total.dto';
-import { TvlDaoTotalResponse } from './dto/tvl-dao-total.dto';
+import { TvlDaoTotalResponse, TvlTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 
 @Injectable()
@@ -105,6 +104,7 @@ export class TvlService {
       context,
       metricQuery,
       DaoStatsMetricGroup.TotalValueLocked,
+      true,
       true,
     );
   }
