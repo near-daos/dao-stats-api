@@ -129,6 +129,22 @@ export class TvlController {
     description: 'Bad Request Response based on the query params set',
   })
   @HasDaoContractContext()
+  @Get('/:dao/tvl')
+  async daoTvl(
+    @Param(ContractContextPipe) context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tvlService.tvl(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @HasDaoContractContext()
   @Get('/:dao/bounties/number')
   async daoBountiesNumber(
     @Param(ContractContextPipe) context: DaoContractContext,
