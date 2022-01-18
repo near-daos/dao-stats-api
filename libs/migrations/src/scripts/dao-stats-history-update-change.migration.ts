@@ -24,17 +24,14 @@ export class DaoStatsHistoryUpdateChangeMigration implements Migration {
                    "contract_id",
                    "metric",
                    "dao",
-                   "total" -
-                   lag("total")
-                   OVER (PARTITION BY "contract_id", "metric", "dao" ORDER BY "date") as "new_change"
+                   coalesce("total" - lag("total") OVER (PARTITION BY "contract_id", "metric", "dao" ORDER BY "date"),
+                            "total") as "new_change"
             FROM "dao_stats_history"
         ) AS "data"
         WHERE "dao_stats_history"."date" = "data"."date"
           AND "dao_stats_history"."contract_id" = "data"."contract_id"
           AND "dao_stats_history"."metric" = "data"."metric"
           AND "dao_stats_history"."dao" = "data"."dao"
-          AND "dao_stats_history"."change" IS NULL
-          AND "data"."new_change" IS NOT NULL
     `);
 
     this.logger.log(`Affected rows: ${rowsAffected}`);
