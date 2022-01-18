@@ -69,21 +69,6 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @Get('/avg-tvl')
-  async avgTvl(
-    @Param(ContractContextPipe) context: ContractContext,
-    @Query(MetricQueryPipe) metricQuery: MetricQuery,
-  ): Promise<MetricResponse> {
-    return this.tvlService.avgTvl(context, metricQuery);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: MetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
   @Get('/bounties-and-grants-vl')
   async bountiesAndGrants(
     @Param(ContractContextPipe) context: ContractContext,
