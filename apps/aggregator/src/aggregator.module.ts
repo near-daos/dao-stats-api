@@ -20,6 +20,9 @@ import {
 import { AggregatorService } from './aggregator.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ReceiptModule } from '@dao-stats/receipt';
+import { CoinPriceHistoryModule } from '@dao-stats/common/coin-price-history.module';
+import { ContractModule } from 'apps/api/src/contract/contract.module';
+import { ExchangeModule } from 'libs/exchange/src/exchange.module';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { ReceiptModule } from '@dao-stats/receipt';
     DaoStatsModule,
     DaoStatsHistoryModule,
     HttpCacheModule,
+    CoinPriceHistoryModule,
+    ContractModule,
+    ExchangeModule,
   ],
   providers: [
     AggregatorService,
