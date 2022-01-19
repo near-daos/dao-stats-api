@@ -9,8 +9,4 @@ export class AggregatorValidationSchema extends DatabaseValidationSchema {
   @IsString()
   @IsNotEmpty()
   REDIS_EVENT_BUS_URL: string;
-
-  @IsString()
-  @IsNotEmpty()
-  SMART_CONTRACTS: string;
 }

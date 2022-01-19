@@ -14,6 +14,8 @@ import {
   DaoStatsHistoryModule,
 } from '@dao-stats/common';
 import migrationScripts from './scripts';
+import { ExchangeModule } from 'libs/exchange/src/exchange.module';
+import { CoinPriceHistoryModule } from '@dao-stats/common/coin-price-history.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import migrationScripts from './scripts';
     TypeOrmModule.forFeature([Contract, Transaction, Receipt, ReceiptAction]),
     DaoStatsHistoryModule,
     HttpCacheModule,
+    ExchangeModule,
+    CoinPriceHistoryModule,
   ],
   providers: [...migrationScripts],
 })

@@ -14,3 +14,4 @@ export * from './receipt.dto';
 export * from './receipt-action.dto';
 export * from './total.dto';
 export * from './transaction.dto';
+export * from './coin-price-query.dto';

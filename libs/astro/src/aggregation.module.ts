@@ -3,7 +3,6 @@ import { CacheModule, Module } from '@nestjs/common';
 import { NearModule } from '@dao-stats/near';
 import { NearHelperModule } from '@dao-stats/near-helper';
 import { NearIndexerModule } from '@dao-stats/near-indexer';
-import { SodakiModule } from '@dao-stats/sodaki';
 
 import {
   AggregationService,
@@ -14,6 +13,7 @@ import {
 } from '.';
 import { AstroModule } from './astro.module';
 import configuration from './config/configuration';
+import { ExchangeModule } from 'libs/exchange/src/exchange.module';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import configuration from './config/configuration';
     NearModule,
     NearIndexerModule,
     NearHelperModule,
-    SodakiModule,
+    ExchangeModule,
   ],
   providers: [
     AggregationService,
