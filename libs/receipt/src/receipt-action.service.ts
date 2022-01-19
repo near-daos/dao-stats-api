@@ -107,6 +107,12 @@ export class ReceiptActionService {
           transferType === TransferType.Incoming ? 'receiver' : 'predecessor'
         }_account_id ${dao ? `= '${dao}'` : `like '%.${contractName}'`}`,
       );
+
+      qb.andWhere(
+        `receipt_${
+          transferType === TransferType.Incoming ? 'predecessor' : 'receiver'
+        }_account_id ${dao ? `!= '${dao}'` : `not like '%.${contractName}'`}`,
+      );
     }
 
     if (from) {
