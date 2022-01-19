@@ -29,7 +29,9 @@ export class FlowController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/')
-  async totals(@Param(ContractContextPipe) context: ContractContext): Promise<FlowTotalResponse> {
+  async totals(
+    @Param(ContractContextPipe) context: ContractContext,
+  ): Promise<FlowTotalResponse> {
     return this.flowService.totals(context);
   }
 

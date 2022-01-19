@@ -50,6 +50,7 @@ export class CoinGeckoService {
   }
 
   private getBaseUri(): string {
-    return this.configService.get<ExchangeConfig>('exchange')?.coingeckoApiBaseUrl;
+    return this.configService.get<ExchangeConfig>('exchange')
+      ?.coingeckoApiBaseUrl;
   }
 }
