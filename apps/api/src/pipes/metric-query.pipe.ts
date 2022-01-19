@@ -44,6 +44,7 @@ export class MetricQueryPipe implements PipeTransform {
     }
 
     return {
+      ...query,
       from: from.valueOf(),
       to: to.valueOf(),
     };

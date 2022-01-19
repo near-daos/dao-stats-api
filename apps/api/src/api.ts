@@ -15,7 +15,7 @@ export default class Api {
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1/:contractId', {
-      exclude: ['/api/v1/contracts'],
+      exclude: ['/api/v1/contracts', '/api/v1/market/([^\\s]+)'],
     });
 
     if (process.env.NODE_ENV === 'development') {

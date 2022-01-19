@@ -39,6 +39,7 @@ import { FlowModule } from './flow/flow.module';
 import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
+import { MarketModule } from './market/market.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { TokensModule } from './tokens/tokens.module';
     FlowModule,
     TvlModule,
     TokensModule,
+    MarketModule,
   ],
   providers: [
     {

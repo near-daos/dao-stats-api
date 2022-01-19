@@ -1,3 +1,4 @@
+import { CoinType } from '@dao-stats/common/types/coin-type';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ContractResponse {
@@ -12,4 +13,7 @@ export class ContractResponse {
 
   @ApiProperty()
   conversionFactor: number;
+
+  @ApiProperty()
+  coin: CoinType;
 }
