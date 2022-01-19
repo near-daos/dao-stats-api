@@ -57,7 +57,7 @@ export class TransactionService {
     const query = `
         with data as (
           select
-            date_trunc('day', to_timestamp(block_timestamp / 1000 / 1000 / 1000)) as day,
+            date_trunc('day', to_timestamp(block_timestamp / 1e9)) as day,
             count(1)
           from transactions
           where contract_id = '${contractId}' and type = '${txType}'
@@ -83,12 +83,12 @@ export class TransactionService {
     return this.getContractActivityCountQuery(context, metricQuery).getRawOne();
   }
 
-  async getContractActivityCountDaily(
+  async getContractActivityCountWeekly(
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
   ): Promise<DailyCountDto[]> {
     let queryBuilder = this.getContractActivityCountQuery(context, metricQuery);
-    queryBuilder = this.addDailySelection(queryBuilder);
+    queryBuilder = this.addWeeklySelection(queryBuilder);
 
     return queryBuilder.execute();
   }
@@ -244,7 +244,18 @@ export class TransactionService {
   ): SelectQueryBuilder<Transaction> {
     return qb
       .addSelect(
-        `date_trunc('day', to_timestamp(block_timestamp / 1000 / 1000 / 1000)) as day`,
+        `date_trunc('day', to_timestamp(block_timestamp / 1e9)) as day`,
+      )
+      .groupBy('day')
+      .orderBy('day', 'ASC');
+  }
+
+  private addWeeklySelection(
+    qb: SelectQueryBuilder<Transaction>,
+  ): SelectQueryBuilder<Transaction> {
+    return qb
+      .addSelect(
+        `date_trunc('week', to_timestamp(block_timestamp / 1e9)) as day`,
       )
       .groupBy('day')
       .orderBy('day', 'ASC');

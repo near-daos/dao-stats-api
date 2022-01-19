@@ -10,12 +10,11 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
-  MetricType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
-import { getDailyIntervals, getGrowth, patchMetricDays } from '../utils';
+import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class GeneralService {
@@ -29,15 +28,15 @@ export class GeneralService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<GeneralTotalResponse> {
-    const dayAgo = moment().subtract(1, 'days');
+    const weekAgo = moment().subtract(1, 'week');
 
-    const [dao, groups, averageGroups, activity, dayAgoActivity] =
+    const [dao, groups, averageGroups, activity, weekAgoActivity] =
       await Promise.all([
         this.metricService.total(context, DaoStatsMetric.DaoCount),
         this.metricService.total(context, DaoStatsMetric.GroupsCount),
         this.metricService.total(context, DaoStatsMetric.GroupsCount, true),
         this.transactionService.getContractActivityCount(context, {
-          to: dayAgo.valueOf(),
+          to: weekAgo.valueOf(),
         }),
         this.transactionService.getContractActivityCount(context),
       ]);
@@ -46,7 +45,7 @@ export class GeneralService {
       dao,
       activity: {
         count: activity.count,
-        growth: getGrowth(activity.count, dayAgoActivity.count),
+        growth: getGrowth(activity.count, weekAgoActivity.count),
       },
       groups,
       averageGroups,
@@ -68,20 +67,17 @@ export class GeneralService {
     context: ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const metrics = await this.transactionService.getContractActivityCountDaily(
-      context,
-      metricQuery,
-    );
+    const metrics =
+      await this.transactionService.getContractActivityCountWeekly(
+        context,
+        metricQuery,
+      );
 
     return {
-      metrics: patchMetricDays(
-        metricQuery,
-        metrics.map(({ day, count }) => ({
-          timestamp: moment(day).valueOf(),
-          count,
-        })),
-        MetricType.Daily,
-      ),
+      metrics: metrics.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
     };
   }
 
