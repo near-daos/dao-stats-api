@@ -16,10 +16,12 @@ import {
   TransactionType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { GovernanceTotalResponse } from './dto/governance-total.dto';
-import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
-import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import {
+  GovernanceTotalResponse,
+  ProposalsTypesHistoryResponse,
+  ProposalsTypesLeaderboardResponse,
+  VoteRateLeaderboardResponse,
+} from './dto';
 import { MetricService } from '../common/metric.service';
 import { getGrowth, getRate, patchMetricDays } from '../utils';
 
