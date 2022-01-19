@@ -1,7 +1,7 @@
 import { CacheModule, Module } from '@nestjs/common';
 
 import { CacheConfigService } from '@dao-stats/config/cache';
-import { ContractModule, ContractService } from '@dao-stats/common';
+import { ContractModule } from '@dao-stats/common';
 
 import { ContractController } from './contract.controller';
 
@@ -12,8 +12,6 @@ import { ContractController } from './contract.controller';
     }),
     ContractModule,
   ],
-  providers: [ContractService],
   controllers: [ContractController],
-  exports: [ContractService],
 })
 export class ApiContractModule {}
