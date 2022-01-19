@@ -3,6 +3,8 @@ export * from './entities';
 export * from './interfaces';
 export * from './types';
 export * from './constants';
+export * from './contract.service';
+export * from './contract.module';
 export * from './dao.module';
 export * from './dao.service';
 export * from './dao-stats.service';

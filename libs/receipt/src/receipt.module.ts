@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Contract, Receipt, ReceiptAction } from '@dao-stats/common';
+import {
+  Contract,
+  ContractModule,
+  Receipt,
+  ReceiptAction,
+} from '@dao-stats/common';
 
-import { ContractModule } from 'apps/api/src/contract/contract.module';
 import { ReceiptActionService } from './receipt-action.service';
 
 @Module({

@@ -1,9 +1,13 @@
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
-import { Migration } from '..';
 import { CacheService } from '@dao-stats/cache';
-import { Aggregator, DaoStatsHistoryService } from '@dao-stats/common';
+import {
+  Aggregator,
+  ContractService,
+  DaoStatsHistoryService,
+} from '@dao-stats/common';
+import { Migration } from '..';
 
 @Injectable()
 export class HistoricalAggregationMigration implements Migration {
@@ -13,13 +17,14 @@ export class HistoricalAggregationMigration implements Migration {
     private readonly configService: ConfigService,
     private readonly cacheService: CacheService,
     private readonly lazyModuleLoader: LazyModuleLoader,
+    private readonly contractService: ContractService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
   ) {}
 
   public async migrate(): Promise<void> {
-    const { smartContracts } = this.configService.get('aggregator');
+    const contracts = await this.contractService.find();
 
-    for (const contractId of smartContracts) {
+    for (const { contractId } of contracts) {
       this.logger.log(`Processing contract: ${contractId}...`);
 
       const { AggregationModule, AggregationService } = await import(

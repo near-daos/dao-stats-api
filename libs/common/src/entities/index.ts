@@ -1,4 +1,5 @@
 export * from './base.entity';
+export * from './coin-price-history.entity';
 export * from './contract.entity';
 export * from './dao.entity';
 export * from './dao-stats.entity';

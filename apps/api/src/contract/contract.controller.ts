@@ -1,7 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ContractResponse } from './dto';
-import { ContractService } from './contract.service';
+import { ContractDto, ContractService } from '@dao-stats/common';
 import { NoContractContext } from '../decorators';
 
 @ApiTags('Contracts')
@@ -11,14 +10,14 @@ export class ContractController {
 
   @ApiResponse({
     status: 200,
-    type: [ContractResponse],
+    type: [ContractDto],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
   @NoContractContext()
   @Get()
-  async contracts(): Promise<ContractResponse[]> {
+  async contracts(): Promise<ContractDto[]> {
     return this.contractService.find();
   }
 }
