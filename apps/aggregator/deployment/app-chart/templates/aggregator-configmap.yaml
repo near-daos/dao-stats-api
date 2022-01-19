@@ -6,5 +6,4 @@ data:
   PORT: "3000"
   NEST_APP_TYPE: aggregator
   AGGREGATOR_POLLING_SCHEDULE: "{{ .Values.environment.aggregator_polling_schedule }}"
-  SMART_CONTRACTS: astro
   LOG_LEVELS: "log,warn,error"

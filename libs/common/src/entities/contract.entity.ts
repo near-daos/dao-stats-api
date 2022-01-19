@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { CoinType } from '../types/coin-type';
 import { BaseEntity } from './base.entity';
 
 @Entity({ name: 'contracts' })
@@ -15,4 +16,7 @@ export class Contract extends BaseEntity {
 
   @Column({ type: 'decimal', nullable: true })
   conversionFactor: number;
+
+  @Column({ type: 'text' })
+  coin: CoinType;
 }
