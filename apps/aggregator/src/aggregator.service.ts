@@ -153,7 +153,7 @@ export class AggregatorService {
             CurrencyType[currency],
           );
         } catch (e) {
-          this.logger.error(e);
+          this.logger.warn(e);
 
           this.logger.log(
             'Unable to get market price from Sodaki. Switching to CoinGecko for another try.',

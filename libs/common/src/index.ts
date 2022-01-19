@@ -10,3 +10,5 @@ export * from './dao-stats.module';
 export * from './dao-stats-history.service';
 export * from './dao-stats-history.module';
 export * from './utils';
+export * from './coin-price-history.module';
+export * from './coin-price-history.service';

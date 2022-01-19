@@ -5,12 +5,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CoinPriceHistoryResponse } from './dto';
+
+import { CoinType } from '@dao-stats/common/types';
+import { CoinPriceQuery } from '@dao-stats/common/dto';
+
 import { MarketService } from './market.service';
 import { NoContractContext } from '../decorators';
 import { MetricQueryPipe } from '../pipes';
-import { CoinType } from '@dao-stats/common/types/coin-type';
-import { CoinPriceQuery } from '@dao-stats/common/dto/coin-price-query.dto';
+import { CoinPriceHistoryResponse } from './dto';
 
 @ApiTags('Market')
 @Controller('/api/v1/market')

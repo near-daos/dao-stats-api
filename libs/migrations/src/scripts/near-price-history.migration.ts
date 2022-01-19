@@ -7,7 +7,6 @@ import { CoinPriceHistoryService } from '@dao-stats/common/coin-price-history.se
 import { CoinGeckoService } from 'libs/exchange/src';
 import { CoinType } from '@dao-stats/common/types/coin-type';
 import { CurrencyType } from '@dao-stats/common/types/currency-type';
-import moment from 'moment';
 
 @Injectable()
 export class NearPriceHistoryMigration implements Migration {
@@ -46,7 +45,7 @@ export class NearPriceHistoryMigration implements Migration {
           coin: CoinType.Near,
           currency: CurrencyType.USD,
           price,
-          date: moment(timestamp).format('YYYY-MM-DD'),
+          date: new Date(timestamp),
         }),
       ),
     );

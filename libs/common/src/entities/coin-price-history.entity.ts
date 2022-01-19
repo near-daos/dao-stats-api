@@ -8,7 +8,7 @@ export class CoinPriceHistory {
     type: 'date',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  date?: string;
+  date?: Date;
 
   @PrimaryColumn({ type: 'text' })
   coin: CoinType;

@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { DaoStatsMetric, convertFunds } from '@dao-stats/common';
+import { CurrencyType, CoinType } from '@dao-stats/common/types';
 import { NearHelperService } from '@dao-stats/near-helper';
 import { SodakiService } from '@dao-stats/exchange';
+
 import { AstroService } from '../../astro.service';
 import {
   DaoContractMetricCurrentParams,
@@ -9,8 +12,6 @@ import {
   DaoContractMetricHistoryResponse,
   DaoContractMetricInterface,
 } from '../../interfaces';
-import { CurrencyType } from '@dao-stats/common/types/currency-type';
-import { CoinType } from '@dao-stats/common/types/coin-type';
 
 @Injectable()
 export class FtsValueLockedMetric implements DaoContractMetricInterface {
