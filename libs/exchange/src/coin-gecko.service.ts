@@ -3,8 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cacheable } from '@type-cacheable/core';
-import { CoinType } from '@dao-stats/common/types/coin-type';
-import { CurrencyType } from '@dao-stats/common/types/currency-type';
+import { CoinType, CurrencyType } from '@dao-stats/common';
 import { ExchangeConfig } from '@dao-stats/config/exchange-config';
 
 @Injectable()

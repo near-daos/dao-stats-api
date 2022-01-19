@@ -31,7 +31,7 @@ import {
   DaoContractContextInterceptor,
   HttpCacheInterceptor,
 } from './interceptors';
-import { ContractModule } from './contract/contract.module';
+import { ApiContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
 import { GovernanceModule } from './governance/governance.module';
@@ -62,7 +62,7 @@ import { MarketModule } from './market/market.module';
     TypeOrmModule.forFeature([Contract, Receipt, ReceiptAction, Transaction]),
     HttpCacheModule,
     RedisModule,
-    ContractModule,
+    ApiContractModule,
     ApiDaoModule,
     GeneralModule,
     UsersModule,

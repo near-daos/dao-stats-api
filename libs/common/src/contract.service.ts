@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Contract } from '@dao-stats/common';
-import { ContractResponse } from './dto';
+import { ContractDto } from './dto';
 
 @Injectable()
 export class ContractService {
@@ -15,11 +15,11 @@ export class ContractService {
     private readonly contractRepository: Repository<Contract>,
   ) {}
 
-  async find(): Promise<ContractResponse[]> {
+  async find(): Promise<ContractDto[]> {
     return this.contractRepository.find();
   }
 
-  async findById(contractId: string): Promise<ContractResponse> {
+  async findById(contractId: string): Promise<ContractDto> {
     return this.contractRepository.findOne({ contractId });
   }
 }

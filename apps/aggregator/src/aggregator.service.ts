@@ -1,25 +1,25 @@
 import moment from 'moment';
+import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
 import {
   Aggregator,
+  AGGREGATOR_POLLING_CRON_JOB,
+  CoinPriceHistoryService,
+  ContractService,
+  CurrencyType,
   DaoService,
-  DaoStatsService,
   DaoStatsHistoryService,
+  DaoStatsService,
   millisToNanos,
   nanosToMillis,
-  AGGREGATOR_POLLING_CRON_JOB,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
 import { ReceiptActionService } from '@dao-stats/receipt';
-import { ContractService } from 'apps/api/src/contract/contract.service';
-import { CurrencyType } from '@dao-stats/common/types/currency-type';
 import { CoinGeckoService, SodakiService } from '@dao-stats/exchange';
-import { CoinPriceHistoryService } from '@dao-stats/common/coin-price-history.service';
 
 @Injectable()
 export class AggregatorService {
@@ -165,7 +165,7 @@ export class AggregatorService {
           );
         }
 
-        this.coinPriceHistoryService.createOrUpdate({
+        await this.coinPriceHistoryService.createOrUpdate({
           coin,
           currency: CurrencyType[currency],
           price,

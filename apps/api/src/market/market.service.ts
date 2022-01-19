@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import moment from 'moment';
 
-import { CoinPriceHistoryService } from '@dao-stats/common';
-import { CoinPriceQuery } from '@dao-stats/common/dto';
-import { CoinType } from '@dao-stats/common/types';
+import {
+  CoinPriceHistoryService,
+  CoinPriceQuery,
+  CoinType,
+} from '@dao-stats/common';
 
 import { CoinPriceHistoryResponse } from './dto';
 
