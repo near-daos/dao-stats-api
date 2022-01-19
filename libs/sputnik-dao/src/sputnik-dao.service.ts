@@ -9,12 +9,12 @@ import {
 
 @Injectable()
 export class AggregationService implements Aggregator {
-  aggregateDaos(contractId: string): AsyncGenerator<DaoDto, any, unknown> {
+  aggregateDaos(_contractId: string): AsyncGenerator<DaoDto, any, unknown> {
     throw new Error('Method not implemented.');
   }
 
   aggregateHistoricalMetrics(
-    contractId: string,
+    _contractId: string,
   ): AsyncGenerator<DaoStatsHistoryDto, any, unknown> {
     throw new Error('Method not implemented.');
   }

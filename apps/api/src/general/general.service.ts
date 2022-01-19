@@ -10,12 +10,11 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
-  MetricType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
-import { getDailyIntervals, getGrowth, patchMetricDays } from '../utils';
+import { getDailyIntervals, getGrowth } from '../utils';
 
 @Injectable()
 export class GeneralService {
