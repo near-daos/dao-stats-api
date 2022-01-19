@@ -4,7 +4,7 @@ import { RequestContext } from '@medibloc/nestjs-request-context';
 
 @Injectable()
 export class ContractContextPipe implements PipeTransform {
-  async transform(context: ContractContext, _metadata: ArgumentMetadata) {
+  async transform(context: ContractContext, metadata: ArgumentMetadata) {
     return {
       ...context,
       ...RequestContext.get(),
