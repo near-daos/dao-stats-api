@@ -1,8 +1,7 @@
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, Module } from '@nestjs/common';
 
 import { CacheConfigService } from '@dao-stats/config/cache';
-import { ContractModule, Dao, DaoService } from '@dao-stats/common';
+import { ContractModule, DaoModule } from '@dao-stats/common';
 
 import { DaoController } from './dao.controller';
 
@@ -11,10 +10,9 @@ import { DaoController } from './dao.controller';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Dao]),
     ContractModule,
+    DaoModule,
   ],
-  providers: [DaoService],
   controllers: [DaoController],
 })
 export class ApiDaoModule {}
