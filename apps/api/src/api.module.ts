@@ -19,7 +19,9 @@ import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
   Contract,
+  ContractModule,
   DaoContractContext,
+  DaoModule,
   Receipt,
   ReceiptAction,
   Transaction,
@@ -60,6 +62,8 @@ import { MarketModule } from './market/market.module';
       useClass: TypeOrmConfigService,
     }),
     TypeOrmModule.forFeature([Contract, Receipt, ReceiptAction, Transaction]),
+    ContractModule,
+    DaoModule,
     HttpCacheModule,
     RedisModule,
     ApiContractModule,
