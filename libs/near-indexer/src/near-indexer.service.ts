@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
 import { ReceiptAction } from './entities';
+import { ActionKind, ProposalKind } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -145,7 +146,7 @@ export class NearIndexerService {
   }): Promise<number> {
     return this.buildReceiptActionsQuery({
       ...params,
-      actionKind: 'FUNCTION_CALL',
+      actionKind: ActionKind.FunctionCall,
     }).getCount();
   }
 
@@ -257,10 +258,10 @@ export class NearIndexerService {
                      sum((args ->> 'deposit')::decimal)                                as value
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-              where receipt_receiver_account_id = $1
+              where ara.receipt_receiver_account_id = $1
+                and ara.args -> 'deposit' is not null
+                and ara.args ->> 'deposit' != '0'
                 and eo.status != 'FAILURE'
-                and args -> 'deposit' is not null
-                and args ->> 'deposit' != '0'
               group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
           ),
                withdrawals as (
@@ -268,10 +269,10 @@ export class NearIndexerService {
                           -sum((args ->> 'deposit')::decimal)                                as value
                    from action_receipt_actions ara
                    left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-                   where receipt_predecessor_account_id = $1
+                   where ara.receipt_predecessor_account_id = $1
+                     and ara.args -> 'deposit' is not null
+                     and ara.args ->> 'deposit' != '0'
                      and eo.status != 'FAILURE'
-                     and args -> 'deposit' is not null
-                     and args ->> 'deposit' != '0'
                    group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
                ),
                balance as (
@@ -289,16 +290,43 @@ export class NearIndexerService {
 
   async getProposalsCountDaily(
     contractId: string,
+    kinds?: ProposalKind[],
+    kindRole?: string,
   ): Promise<{ date: Date; value: number }[]> {
+    const params = [];
+    const kindFilter = [];
+
+    if (kinds) {
+      for (const kind of kinds) {
+        if (kindRole) {
+          kindFilter.push(
+            `lower(ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+              params.length + 1
+            } ->> 'role') = ${params.length + 2}`,
+          );
+          params.push(kind);
+          params.push(kindRole.toLowerCase());
+        } else {
+          kindFilter.push(
+            `ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+              params.length + 1
+            } is not null`,
+          );
+          params.push(kind);
+        }
+      }
+    }
+
     return this.connection.query(
       `
           with data as (
               select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-              where ara.action_kind = 'FUNCTION_CALL'
+              where ara.receipt_receiver_account_id = $1
+                and ara.action_kind = 'FUNCTION_CALL'
                 and ara.args ->> 'method_name' = 'add_proposal'
-                and ara.receipt_receiver_account_id like $2
+                ${kindFilter.length ? `and (${kindFilter.join(' or ')})` : ''}
                 and eo.status != 'FAILURE'
               group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
           )
@@ -306,7 +334,7 @@ export class NearIndexerService {
                  sum(value) over (order by date rows between unbounded preceding and current row) as value
           from data
       `,
-      [contractId, `%.${contractId}`],
+      params,
     );
   }
 }
