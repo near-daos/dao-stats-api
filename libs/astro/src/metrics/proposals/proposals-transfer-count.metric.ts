@@ -19,13 +19,13 @@ export class ProposalsTransferCountMetric
     return DaoStatsMetric.ProposalsTransferCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (await contract.getProposalsByKinds([ProposalKind.Transfer])).length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getProposalsCountDaily(contract.contractId, [

@@ -9,25 +9,19 @@ import {
 
 @Injectable()
 export class AggregationService implements Aggregator {
-  aggregateDaos(contractId: string): AsyncGenerator<DaoDto, any, unknown> {
+  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
     throw new Error('Method not implemented.');
   }
 
-  aggregateHistoricalMetrics(
-    contractId: string,
-  ): AsyncGenerator<DaoStatsHistoryDto, any, unknown> {
+  aggregateDaos(): AsyncGenerator<DaoDto> {
     throw new Error('Method not implemented.');
   }
 
   aggregateMetrics(): AsyncGenerator<DaoStatsDto> {
-    return undefined;
+    throw new Error('Method not implemented.');
   }
 
-  async getDaos(): Promise<DaoDto[]> {
-    return [];
-  }
-
-  aggregateReceiptActions(): AsyncGenerator<ReceiptActionDto[]> {
-    return undefined;
+  aggregateHistoricalMetrics(): AsyncGenerator<DaoStatsHistoryDto> {
+    throw new Error('Method not implemented.');
   }
 }

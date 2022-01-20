@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { CoinType, CurrencyType } from '@dao-stats/common/types';
+import { CoinType, CurrencyType } from '@dao-stats/common';
 
 export class CoinPriceHistoryResponse {
   @ApiProperty()

@@ -17,7 +17,7 @@ export class ProposalsMemberCountMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.ProposalsMemberCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (
@@ -28,7 +28,7 @@ export class ProposalsMemberCountMetric implements DaoContractMetricInterface {
     ).length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getProposalsCountDaily(contract.contractId, [

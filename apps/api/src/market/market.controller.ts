@@ -6,8 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { CoinType } from '@dao-stats/common/types';
-import { CoinPriceQuery } from '@dao-stats/common/dto';
+import { CoinType, CoinPriceQuery } from '@dao-stats/common';
 
 import { MarketService } from './market.service';
 import { NoContractContext } from '../decorators';

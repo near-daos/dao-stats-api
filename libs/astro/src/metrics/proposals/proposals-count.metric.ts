@@ -16,13 +16,13 @@ export class ProposalsCountMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.ProposalsCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (await contract.getProposals()).length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getProposalsCountDaily(contract.contractId);

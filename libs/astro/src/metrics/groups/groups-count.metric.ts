@@ -13,13 +13,13 @@ export class GroupsCountMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.GroupsCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (await contract.getGroups()).length;
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

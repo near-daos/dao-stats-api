@@ -87,3 +87,5 @@ version:
 
 environment:
   aggregator_polling_schedule: "0 * * * *"
+  sodaki_api_base_url: "https://sodaki.com/api"
+  coingecko_api_base_url: "https://api.coingecko.com/api/v3"

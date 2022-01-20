@@ -17,7 +17,7 @@ export class ProposalsBountyCountMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.ProposalsBountyCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (
@@ -28,7 +28,7 @@ export class ProposalsBountyCountMetric implements DaoContractMetricInterface {
     ).length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getProposalsCountDaily(contract.contractId, [

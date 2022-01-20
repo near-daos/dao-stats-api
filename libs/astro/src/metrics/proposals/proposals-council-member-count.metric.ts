@@ -19,7 +19,7 @@ export class ProposalsCouncilMemberCountMetric
     return DaoStatsMetric.ProposalsCouncilMemberCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const proposals = await contract.getProposals();
@@ -32,7 +32,7 @@ export class ProposalsCouncilMemberCountMetric
     return councilMembers.length;
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getProposalsCountDaily(

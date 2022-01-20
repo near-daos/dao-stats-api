@@ -19,7 +19,7 @@ export class ActionsDepositOutValueMetric
     return DaoStatsMetric.ActionsDepositOutValue;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const amount = await this.nearIndexerService.getReceiptActionsDepositAmount(
@@ -30,16 +30,17 @@ export class ActionsDepositOutValueMetric
     return yoctoToNear(amount);
   }
 
-  async getHistoricalValues({
+  async getHistorical({
     contract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     const result =
       await this.nearIndexerService.getReceiptActionsDepositAmountDaily({
         predecessorAccountId: contract.contractId,
       });
-    return result.map(({ date, value }) => ({
+    return result.map(({ date, total, change }) => ({
       date,
-      value: yoctoToNear(value),
+      total: yoctoToNear(total),
+      change: yoctoToNear(change),
     }));
   }
 }

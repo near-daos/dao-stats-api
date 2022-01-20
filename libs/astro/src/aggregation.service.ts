@@ -21,6 +21,10 @@ import {
 import { NearIndexerService, ReceiptAction } from '@dao-stats/near-indexer';
 import { AstroService } from './astro.service';
 import {
+  DaoContractMetricHistoryResponse,
+  DaoFactoryContractMetricHistoryResponse,
+} from './interfaces';
+import {
   DAO_HISTORICAL_METRICS,
   DAO_METRICS,
   FACTORY_HISTORICAL_METRICS,
@@ -186,10 +190,10 @@ export class AggregationService implements Aggregator {
     for (const metricClass of FACTORY_METRICS) {
       const metric = await this.moduleRef.create(metricClass);
       const type = metric.getType();
-      let value;
+      let total: number;
 
       try {
-        value = await metric.getCurrentValue({
+        total = await metric.getTotal({
           contract: factoryContract,
         });
       } catch (err) {
@@ -200,14 +204,14 @@ export class AggregationService implements Aggregator {
       }
 
       this.logger.log(
-        `Aggregated DAO Factory (${contractName}) metric (${type}): ${value}`,
+        `Aggregated DAO Factory (${contractName}) metric (${type}): ${total}`,
       );
 
       yield {
         contractId,
-        dao: contractName, // TODO: make optional
         metric: type,
-        value,
+        dao: contractName,
+        total,
       };
     }
 
@@ -220,10 +224,10 @@ export class AggregationService implements Aggregator {
     for (const [i, daoContract] of daoContracts.entries()) {
       for (const metric of daoMetrics) {
         const type = metric.getType();
-        let value;
+        let total: number;
 
         try {
-          value = await metric.getCurrentValue({
+          total = await metric.getTotal({
             contract: daoContract,
           });
         } catch (err) {
@@ -236,14 +240,14 @@ export class AggregationService implements Aggregator {
         this.logger.log(
           `Aggregated (${i + 1}/${daoContracts.length}) DAO (${
             daoContract.contractId
-          }) metric (${type}): ${value}`,
+          }) metric (${type}): ${total}`,
         );
 
         yield {
           contractId,
-          dao: daoContract.contractId,
           metric: type,
-          value,
+          dao: daoContract.contractId,
+          total,
         };
       }
     }
@@ -263,10 +267,10 @@ export class AggregationService implements Aggregator {
     for (const metricClass of FACTORY_HISTORICAL_METRICS) {
       const metric = await this.moduleRef.create(metricClass);
       const type = metric.getType();
-      let data;
+      let data: DaoFactoryContractMetricHistoryResponse;
 
       try {
-        data = await metric.getHistoricalValues({
+        data = await metric.getHistorical({
           contract: factoryContract,
         });
       } catch (err) {
@@ -276,17 +280,18 @@ export class AggregationService implements Aggregator {
         continue;
       }
 
-      for (const { date, value } of data) {
+      for (const { date, total, change } of data) {
         this.logger.log(
-          `Aggregated DAO Factory (${contractName}) metric (${type}) for date (${date}): ${value}`,
+          `Aggregated DAO Factory (${contractName}) metric (${type}) for date (${date}): ${total}, change: ${change}`,
         );
 
         yield {
           date,
           contractId,
-          dao: contractName, // TODO: make optional
           metric: type,
-          value,
+          dao: contractName,
+          total,
+          change,
         };
       }
     }
@@ -300,10 +305,10 @@ export class AggregationService implements Aggregator {
     for (const [i, daoContract] of daoContracts.entries()) {
       for (const metric of daoHistoricalMetrics) {
         const type = metric.getType();
-        let data;
+        let data: DaoContractMetricHistoryResponse;
 
         try {
-          data = await metric.getHistoricalValues({
+          data = await metric.getHistorical({
             contract: daoContract,
           });
         } catch (err) {
@@ -313,19 +318,20 @@ export class AggregationService implements Aggregator {
           continue;
         }
 
-        for (const { date, value } of data) {
+        for (const { date, total, change } of data) {
           this.logger.log(
             `Aggregated (${i + 1}/${daoContracts.length}) DAO (${
               daoContract.contractId
-            }) metric (${type}) for date (${date}): ${value}`,
+            }) metric (${type}) for date (${date}): ${total}, change: ${change}`,
           );
 
           yield {
             date,
             contractId,
-            dao: daoContract.contractId,
             metric: type,
-            value,
+            dao: daoContract.contractId,
+            total,
+            change,
           };
         }
       }

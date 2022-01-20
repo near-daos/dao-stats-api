@@ -11,15 +11,19 @@ export interface DaoFactoryContractMetricHistoryParams
   to?: number;
 }
 
-export type DaoFactoryContractMetricHistoryResponse = {
+export interface DaoFactoryContractMetricDaily {
   date: Date;
-  value: number;
-};
+  total: number;
+  change: number;
+}
+
+export type DaoFactoryContractMetricHistoryResponse =
+  DaoFactoryContractMetricDaily[];
 
 export interface DaoFactoryContractMetricInterface {
   getType(): DaoStatsMetric;
-  getCurrentValue(args: DaoFactoryContractMetricCurrentParams): Promise<number>;
-  getHistoricalValues(
+  getTotal(args: DaoFactoryContractMetricCurrentParams): Promise<number>;
+  getHistorical(
     args: DaoFactoryContractMetricHistoryParams,
-  ): Promise<DaoFactoryContractMetricHistoryResponse[]>;
+  ): Promise<DaoFactoryContractMetricHistoryResponse>;
 }

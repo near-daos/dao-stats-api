@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Contract } from './contract.entity';
 import { DaoStatsMetric } from '../types';
 
@@ -11,12 +19,26 @@ export class DaoStats implements HasContract {
   @JoinColumn({ name: 'contract_id' })
   contractId: string;
 
-  @PrimaryColumn()
-  dao: string;
-
   @PrimaryColumn({ type: 'enum', enum: DaoStatsMetric })
   metric: DaoStatsMetric;
 
+  @PrimaryColumn()
+  dao: string;
+
   @Column({ type: 'double precision', default: 0 })
-  value: number;
+  total: number;
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt?: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt?: Date;
 }
