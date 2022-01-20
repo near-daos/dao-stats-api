@@ -232,7 +232,8 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (
-              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as change
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
+                     count(1) as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.action_kind = 'FUNCTION_CALL'
@@ -240,7 +241,7 @@ export class NearIndexerService {
                 and ara.receipt_predecessor_account_id = $1
                 and ara.receipt_receiver_account_id like $2
                 and eo.status != 'FAILURE'
-              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+              group by 1
           )
           select date,
                  change,
@@ -267,7 +268,7 @@ export class NearIndexerService {
                 and ara.args -> 'deposit' is not null
                 and ara.args ->> 'deposit' != '0'
                 and eo.status != 'FAILURE'
-              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+              group by 1
           ),
                withdrawals as (
                    select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
@@ -278,7 +279,7 @@ export class NearIndexerService {
                      and ara.args -> 'deposit' is not null
                      and ara.args ->> 'deposit' != '0'
                      and eo.status != 'FAILURE'
-                   group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+                   group by 1
                ),
                balance as (
                    select date,
@@ -327,7 +328,8 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (
-              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as change
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
+                     count(1) as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.receipt_receiver_account_id = $1
@@ -335,7 +337,7 @@ export class NearIndexerService {
                 and ara.args ->> 'method_name' = 'add_proposal'
                 ${kindFilter.length ? `and (${kindFilter.join(' or ')})` : ''}
                 and eo.status != 'FAILURE'
-              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+              group by 1
           )
           select date,
                  change,
