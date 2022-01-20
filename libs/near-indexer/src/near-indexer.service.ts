@@ -187,15 +187,15 @@ export class NearIndexerService {
       isDeposit: true,
       daily: true,
     })
-      .addSelect(`count(1) as value`)
+      .addSelect(`count(1) as change`)
       .getQueryAndParameters();
 
     return this.connection.query(
       `
           with data as (${query})
           select date, 
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -211,15 +211,15 @@ export class NearIndexerService {
       isDeposit: true,
       daily: true,
     })
-      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as value`)
+      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as change`)
       .getQueryAndParameters();
 
     return this.connection.query(
       `
           with data as (${query})
           select date, 
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -232,7 +232,7 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (
-              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.action_kind = 'FUNCTION_CALL'
@@ -243,8 +243,8 @@ export class NearIndexerService {
               group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
           )
           select date,
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       [contractId, `%.${contractId}`],
@@ -260,7 +260,7 @@ export class NearIndexerService {
       `
           with deposits as (
               select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
-                     sum((args ->> 'deposit')::decimal)                                as value
+                     sum((args ->> 'deposit')::decimal)                                as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.receipt_receiver_account_id = $1
@@ -271,7 +271,7 @@ export class NearIndexerService {
           ),
                withdrawals as (
                    select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
-                          -sum((args ->> 'deposit')::decimal)                                as value
+                          -sum((args ->> 'deposit')::decimal)                               as change
                    from action_receipt_actions ara
                    left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
                    where ara.receipt_predecessor_account_id = $1
@@ -282,13 +282,13 @@ export class NearIndexerService {
                ),
                balance as (
                    select date,
-                          coalesce(deposits.value, 0) + coalesce(withdrawals.value, 0) as value
+                          coalesce(deposits.change, 0) + coalesce(withdrawals.change, 0) as change
                    from deposits
                    full outer join withdrawals using (date)
                )
-          select date, 
-                 value as change, 
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+          select date,
+                 change, 
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from balance;
       `,
       [accountId],
@@ -299,8 +299,8 @@ export class NearIndexerService {
     contractId: string,
     kinds?: ProposalKind[],
     kindRole?: string,
-  ): Promise<{ date: Date; value: number }[]> {
-    const params = [];
+  ): Promise<{ date: Date; change: number; total: number }[]> {
+    const params = [contractId];
     const kindFilter = [];
 
     if (kinds) {
@@ -309,7 +309,7 @@ export class NearIndexerService {
           kindFilter.push(
             `lower(ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
               params.length + 1
-            } ->> 'role') = ${params.length + 2}`,
+            } ->> 'role') = $${params.length + 2}`,
           );
           params.push(kind);
           params.push(kindRole.toLowerCase());
@@ -327,7 +327,7 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (
-              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.receipt_receiver_account_id = $1
@@ -338,7 +338,8 @@ export class NearIndexerService {
               group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
           )
           select date,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as value
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       params,
