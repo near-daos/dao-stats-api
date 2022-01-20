@@ -74,9 +74,21 @@ export class TvlService {
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    return this.metricService.history(
+    const {
+      metrics: [firstFtsMetric],
+    } = await this.metricService.history(
       context,
       metricQuery,
+      DaoStatsMetric.FtsValueLocked,
+    );
+
+    return this.metricService.history(
+      context,
+      {
+        // skip dates when there were no FtsValueLocked history
+        from: Math.max(metricQuery.from, firstFtsMetric?.timestamp || 0),
+        to: metricQuery.to,
+      },
       DaoStatsMetricGroup.TotalValueLocked,
     );
   }
