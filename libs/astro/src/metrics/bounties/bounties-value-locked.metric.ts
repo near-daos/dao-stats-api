@@ -14,7 +14,7 @@ export class BountiesValueLockedMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.BountiesValueLocked;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const bounties = await contract.getBounties();
@@ -24,7 +24,7 @@ export class BountiesValueLockedMetric implements DaoContractMetricInterface {
     );
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

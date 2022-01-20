@@ -4,6 +4,7 @@ import { ReceiptActionBlockTimestampMigration } from './receipt-action-block-tim
 import { TransactionProposalVoteMigration } from './tx-proposal-vote.migration';
 import { HistoricalAggregationMigration } from './historical-aggregation.migration';
 import { NearPriceHistoryMigration } from './near-price-history.migration';
+import { DaoStatsHistoryUpdateChangeMigration } from './dao-stats-history-update-change.migration';
 
 export default [
   ReceiptActionArgsMigration,
@@ -12,4 +13,5 @@ export default [
   ReceiptActionBlockTimestampMigration,
   HistoricalAggregationMigration,
   NearPriceHistoryMigration,
+  DaoStatsHistoryUpdateChangeMigration,
 ];

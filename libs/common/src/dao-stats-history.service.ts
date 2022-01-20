@@ -1,19 +1,27 @@
-import { Connection, InsertResult, Repository } from 'typeorm';
+import {
+  Connection,
+  InsertResult,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { DaoStatsDto, DaoStatsHistory, DaoStatsMetric } from '.';
+import { DaoStatsHistory, DaoStatsHistoryDto, DaoStatsMetric } from '.';
 
-export interface DaoStatsHistoryValueParams {
+export interface DaoStatsHistoryTotalParams {
+  contractId: string;
+  metric: DaoStatsMetric | DaoStatsMetric[];
+  dao?: string | string[];
   from?: number;
   to?: number;
-  contractId: string;
-  dao?: string;
-  metric: DaoStatsMetric | DaoStatsMetric[];
-  daoAverage?: boolean;
+  // return absolute or average value per dao
+  averagePerDao?: boolean;
+  // return total accumulated value(s) instead of daily change, default: true
+  totals?: boolean;
 }
 
-export type DaoStatsHistoryHistoryParams = DaoStatsHistoryValueParams;
+export type DaoStatsHistoryHistoryParams = DaoStatsHistoryTotalParams;
 
 export interface DaoStatsHistoryHistory {
   date: Date;
@@ -31,101 +39,189 @@ export class DaoStatsHistoryService {
     private connection: Connection,
   ) {}
 
-  async createOrUpdate(data: DaoStatsDto): Promise<InsertResult> {
+  async getPrevTotal({
+    contractId,
+    metric,
+    dao,
+  }: {
+    contractId: string;
+    metric: string;
+    dao: string;
+  }): Promise<number | undefined> {
+    const result = await this.connection
+      .getRepository(DaoStatsHistory)
+      .createQueryBuilder()
+      .select('total')
+      .where({
+        contractId,
+        metric,
+        dao,
+      })
+      .andWhere('date < CURRENT_DATE')
+      .orderBy('date', 'DESC')
+      .limit(1)
+      .getRawOne();
+
+    return result ? parseFloat(result.total) : undefined;
+  }
+
+  async createOrUpdate(data: DaoStatsHistoryDto): Promise<InsertResult> {
+    let prevTotal: number;
+
+    if (data.change === undefined) {
+      prevTotal = await this.getPrevTotal(data);
+    }
+
     return await this.connection
       .createQueryBuilder()
       .insert()
       .into(DaoStatsHistory)
-      .values(data)
+      .values({
+        ...data,
+        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+      })
       .orUpdate({
-        conflict_target: ['date', 'contract_id', 'dao', 'metric'],
-        overwrite: ['value'],
+        conflict_target: ['date', 'contract_id', 'metric', 'dao'],
+        overwrite: ['total', 'change', 'updated_at'],
       })
       .execute();
   }
 
-  async createIgnore(data: DaoStatsDto): Promise<InsertResult> {
+  async createIgnore(data: DaoStatsHistoryDto): Promise<InsertResult> {
+    let prevTotal: number;
+
+    if (data.change === undefined) {
+      prevTotal = await this.getPrevTotal(data);
+    }
+
     return await this.connection
       .createQueryBuilder()
       .insert()
       .into(DaoStatsHistory)
-      .values(data)
+      .values({
+        ...data,
+        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+      })
       .onConflict('DO NOTHING')
       .execute();
   }
 
-  async getLastValue({
-    contractId,
-    dao,
-    metric,
-    daoAverage,
-    from,
-    to,
-  }: DaoStatsHistoryValueParams): Promise<number> {
-    const query = this.repository
-      .createQueryBuilder()
-      .select(`date, dao, sum(value) as value`);
-
-    if (from) {
-      query.andWhere('date >= to_timestamp(:from)::date', {
-        from: from / 1000,
-      });
-    }
-
-    if (to) {
-      query.andWhere('date <= to_timestamp(:to)::date', {
-        to: to / 1000,
-      });
-    }
-
-    query.andWhere('contract_id = :contractId', { contractId });
-
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
+  private buildWhere(
+    query: SelectQueryBuilder<any>,
+    tableAliasName: string,
+    { contractId, metric, dao }: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query.andWhere(`${tableAliasName}.contract_id = :contractId`, {
+      contractId,
+    });
 
     if (Array.isArray(metric)) {
-      query.andWhere('metric in (:...metric)', { metric });
+      query.andWhere(`${tableAliasName}.metric in (:...metric)`, { metric });
     } else {
-      query.andWhere('metric = :metric', { metric });
+      query.andWhere(`${tableAliasName}.metric = :metric`, { metric });
     }
 
-    query.groupBy('date, dao');
-
-    const [subQuery, params] = query.getQueryAndParameters();
-
-    const [result] = await this.connection.query(
-      `
-          with data as (${subQuery})
-          select ${daoAverage ? 'avg' : 'sum'}(value) as value
-          from data
-          group by date
-          order by date desc
-          limit 1
-      `,
-      params,
-    );
-
-    if (!result || !result['value']) {
-      return 0;
+    if (Array.isArray(dao)) {
+      query.andWhere(`${tableAliasName}.dao in (:...dao)`, { dao });
+    } else if (dao) {
+      query.andWhere(`${tableAliasName}.dao = :dao`, { dao });
     }
 
-    return parseFloat(result['value']);
+    return query;
   }
 
-  async getHistory({
-    contractId,
-    dao,
-    metric,
-    daoAverage,
-    from,
-    to,
-  }: DaoStatsHistoryHistoryParams): Promise<DaoStatsHistoryHistoryResponse> {
-    const query = this.repository
-      .createQueryBuilder()
-      .select(`date, sum(value) as value`);
+  private buildChangeByDateAndDaoSubQuery(
+    query: SelectQueryBuilder<any>,
+    params: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query
+      .select('date, dao, sum(change) as change')
+      .from('dao_stats_history', 'h');
+
+    this.buildWhere(query, 'h', params);
+
+    query.groupBy('date, dao');
+
+    return query;
+  }
+
+  private buildDaoCountSubQuery(
+    query: SelectQueryBuilder<any>,
+    parentAliasName: string,
+    params: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query
+      .select('count(distinct dao)')
+      .from('dao_stats_history', 'h2')
+      .where(`h2.date <= ${parentAliasName}.date`);
+
+    this.buildWhere(query, 'h2', params);
+
+    return query;
+  }
+
+  private buildChangeByDateSubQuery(
+    query: SelectQueryBuilder<any>,
+    { averagePerDao, ...params }: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query
+      .select('date, sum(change) as change')
+      .from(
+        (subQuery) => this.buildChangeByDateAndDaoSubQuery(subQuery, params),
+        'change_by_date_and_dao',
+      )
+      .groupBy('date');
+
+    if (averagePerDao) {
+      query.addSelect(
+        (subQuery) =>
+          this.buildDaoCountSubQuery(
+            subQuery,
+            'change_by_date_and_dao',
+            params,
+          ),
+        'dao_count',
+      );
+    }
+
+    return query;
+  }
+
+  private buildDailyDataSubQuery(
+    query: SelectQueryBuilder<any>,
+    { totals = true, averagePerDao, ...params }: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query.select('date').from(
+      (subQuery) =>
+        this.buildChangeByDateSubQuery(subQuery, {
+          ...params,
+          averagePerDao,
+        }),
+      'change_by_date',
+    );
+
+    const selection = averagePerDao ? 'change / dao_count' : 'change';
+
+    if (totals) {
+      query.addSelect(
+        `sum(${selection}) over (order by date rows between unbounded preceding and current row)`,
+        'value',
+      );
+    } else {
+      query.addSelect(selection, 'value');
+    }
+
+    return query;
+  }
+
+  private buildQuery(
+    query: SelectQueryBuilder<any>,
+    { from, to, ...params }: DaoStatsHistoryTotalParams,
+  ): SelectQueryBuilder<any> {
+    query.from(
+      (subQuery) => this.buildDailyDataSubQuery(subQuery, params),
+      'daily_data',
+    );
 
     if (from) {
       query.andWhere('date >= to_timestamp(:from)::date', {
@@ -139,34 +235,34 @@ export class DaoStatsHistoryService {
       });
     }
 
-    query.andWhere('contract_id = :contractId', { contractId });
+    return query;
+  }
 
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
-
-    if (Array.isArray(metric)) {
-      query.andWhere('metric in (:...metric)', { metric });
-    } else {
-      query.andWhere('metric = :metric', { metric });
-    }
-
-    query.groupBy('date, dao');
-
-    const [subQuery, params] = query.getQueryAndParameters();
-
-    const result = await this.connection.query(
-      `
-          with data as (${subQuery})
-          select date, ${daoAverage ? 'avg' : 'sum'}(value) as value
-          from data
-          group by date
-          order by date
-      `,
+  async getLastValue(params: DaoStatsHistoryTotalParams): Promise<number> {
+    const [result] = await this.buildQuery(
+      this.connection.createQueryBuilder(),
       params,
-    );
+    )
+      .orderBy('date', 'DESC')
+      .limit(1)
+      .execute();
+
+    if (result && result.value) {
+      return parseFloat(result.value);
+    }
+
+    return 0;
+  }
+
+  async getHistory(
+    params: DaoStatsHistoryHistoryParams,
+  ): Promise<DaoStatsHistoryHistoryResponse> {
+    const result = await this.buildQuery(
+      this.connection.createQueryBuilder(),
+      params,
+    )
+      .orderBy('date')
+      .execute();
 
     return result.map(({ date, value }) => ({
       date,

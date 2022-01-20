@@ -4,23 +4,23 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
 import { DaoStats, DaoStatsDto, DaoStatsMetric } from '.';
 
-export interface DaoStatsValueParams {
+export interface DaoStatsTotalParams {
   contractId: string;
-  dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
-  daoAverage?: boolean;
+  dao?: string | string[];
+  averagePerDao?: boolean;
 }
 
 export interface DaoStatsLeaderboardParams {
   contractId: string;
-  dao?: string;
   metric: DaoStatsMetric | DaoStatsMetric[];
+  dao?: string | string[];
   limit?: number;
 }
 
 export interface DaoStatsLeaderboard {
   dao: string;
-  value: number;
+  total: number;
 }
 
 export type DaoStatsLeaderboardResponse = DaoStatsLeaderboard[];
@@ -41,29 +41,23 @@ export class DaoStatsService {
       .into(DaoStats)
       .values(data)
       .orUpdate({
-        conflict_target: ['contract_id', 'dao', 'metric'],
-        overwrite: ['value'],
+        conflict_target: ['contract_id', 'metric', 'dao'],
+        overwrite: ['total', 'updated_at'],
       })
       .execute();
   }
 
-  async getValue({
+  async getTotal({
     contractId,
     dao,
     metric,
-    daoAverage,
-  }: DaoStatsValueParams): Promise<number> {
+    averagePerDao,
+  }: DaoStatsTotalParams): Promise<number> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`sum(value) as value`);
+      .select(`sum(total) as total`);
 
     query.andWhere('contract_id = :contractId', { contractId });
-
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
 
     if (Array.isArray(metric)) {
       query.andWhere('metric in (:...metric)', { metric });
@@ -71,23 +65,28 @@ export class DaoStatsService {
       query.andWhere('metric = :metric', { metric });
     }
 
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
+      query.andWhere('dao = :dao', { dao });
+    }
+
     query.groupBy('dao');
 
     const [subQuery, params] = query.getQueryAndParameters();
 
     const [result] = await this.connection.query(
-      `
-          with data as (${subQuery})
-          select ${daoAverage ? 'avg' : 'sum'}(value) as value
-          from data`,
+      `with data as (${subQuery})
+       select ${averagePerDao ? 'avg' : 'sum'}(total) as total
+       from data`,
       params,
     );
 
-    if (!result || !result['value']) {
-      return 0;
+    if (result && result.total) {
+      return parseFloat(result.total);
     }
 
-    return parseFloat(result['value']);
+    return 0;
   }
 
   async getLeaderboard({
@@ -98,14 +97,8 @@ export class DaoStatsService {
   }: DaoStatsLeaderboardParams): Promise<DaoStatsLeaderboardResponse> {
     const query = this.repository
       .createQueryBuilder()
-      .select(`dao, sum(value) as value`)
+      .select(`dao, sum(total) as total`)
       .where('contract_id = :contractId', { contractId });
-
-    if (Array.isArray(dao)) {
-      query.andWhere('dao in (:...dao)', { dao });
-    } else if (dao) {
-      query.andWhere('dao = :dao', { dao });
-    }
 
     if (Array.isArray(metric)) {
       query.andWhere('metric in (:...metric)', { metric });
@@ -113,15 +106,21 @@ export class DaoStatsService {
       query.andWhere('metric = :metric', { metric });
     }
 
+    if (Array.isArray(dao)) {
+      query.andWhere('dao in (:...dao)', { dao });
+    } else if (dao) {
+      query.andWhere('dao = :dao', { dao });
+    }
+
     const result = await query
       .groupBy('dao')
-      .orderBy('value', 'DESC')
+      .orderBy('total', 'DESC')
       .take(limit)
       .execute();
 
-    return result.map(({ dao, value }) => ({
+    return result.map(({ dao, total }) => ({
       dao,
-      value: parseFloat(value),
+      total: parseFloat(total),
     }));
   }
 }

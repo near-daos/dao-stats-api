@@ -16,7 +16,7 @@ export class ProposalsCouncilMemberCountMetric
     return DaoStatsMetric.ProposalsCouncilMemberCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const proposals = await contract.getProposals();
@@ -29,7 +29,7 @@ export class ProposalsCouncilMemberCountMetric
     return councilMembers.length;
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

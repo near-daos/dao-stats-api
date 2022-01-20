@@ -16,7 +16,7 @@ export class ActionsOutCountMetric implements DaoContractMetricInterface {
     return DaoStatsMetric.ActionsOutCount;
   }
 
-  async getCurrentValue({
+  async getTotal({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return this.nearIndexerService.getReceiptActionsCount({
@@ -24,7 +24,7 @@ export class ActionsOutCountMetric implements DaoContractMetricInterface {
     });
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     // TODO: add implementation
     return Promise.reject('Not implemented');
   }

@@ -51,7 +51,7 @@ export class GovernanceService {
       proposalsBountyCount,
       proposalsMemberCount,
     ] = await Promise.all([
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsCount,
@@ -62,7 +62,7 @@ export class GovernanceService {
         metric: DaoStatsMetric.ProposalsCount,
         to: dayAgo.valueOf(),
       }),
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsApprovedCount,
@@ -73,17 +73,17 @@ export class GovernanceService {
         metric: DaoStatsMetric.ProposalsApprovedCount,
         to: dayAgo.valueOf(),
       }),
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsTransferCount,
       }),
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsBountyCount,
       }),
-      this.daoStatsService.getValue({
+      this.daoStatsService.getTotal({
         contractId,
         dao,
         metric: DaoStatsMetric.ProposalsMemberCount,
@@ -203,9 +203,9 @@ export class GovernanceService {
     ]);
 
     const toResponse = (data: DaoStatsHistoryHistoryResponse) =>
-      data.map((row) => ({
-        timestamp: row.date.valueOf(),
-        count: row.value,
+      data.map(({ date, value }) => ({
+        timestamp: date.valueOf(),
+        count: value,
       }));
 
     return {
@@ -246,19 +246,19 @@ export class GovernanceService {
     });
 
     const leaderboard = await Promise.all(
-      daos.map(async ({ dao, value }) => {
+      daos.map(async ({ dao, total }) => {
         const [payouts, bounties, members] = await Promise.all([
-          this.daoStatsService.getValue({
+          this.daoStatsService.getTotal({
             contractId,
             dao,
             metric: DaoStatsMetric.ProposalsTransferCount,
           }),
-          this.daoStatsService.getValue({
+          this.daoStatsService.getTotal({
             contractId,
             dao,
             metric: DaoStatsMetric.ProposalsBountyCount,
           }),
-          this.daoStatsService.getValue({
+          this.daoStatsService.getTotal({
             contractId,
             dao,
             metric: DaoStatsMetric.ProposalsMemberCount,
@@ -268,7 +268,7 @@ export class GovernanceService {
         return {
           dao,
           proposalsByType: {
-            governance: value - (payouts + bounties + members),
+            governance: total - (payouts + bounties + members),
             financial: payouts,
             bounties,
             members,
@@ -345,13 +345,13 @@ export class GovernanceService {
       }),
     ]);
 
-    const leaderboard = totalLeaderboard.map(({ dao, value }) => {
+    const leaderboard = totalLeaderboard.map(({ dao, total }) => {
       const approved = approvedLeaderboard.find((row) => dao === row.dao);
       return {
         dao,
-        total: value,
-        approved: approved?.value || 0,
-        rate: getRate(approved?.value || 0, value),
+        total,
+        approved: approved?.total || 0,
+        rate: getRate(approved?.total || 0, total),
       };
     });
 
