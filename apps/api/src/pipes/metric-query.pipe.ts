@@ -38,7 +38,7 @@ export class MetricQueryPipe implements PipeTransform {
         : FALLBACK_FROM_DATE;
     }
 
-    to = moment(to);
+    to = moment(isNaN(to) ? to : parseInt(to));
     if (!to.isValid()) {
       throw new BadRequestException(`Invalid 'to' query parameter.`);
     }
