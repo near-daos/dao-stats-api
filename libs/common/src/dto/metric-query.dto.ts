@@ -18,5 +18,5 @@ export class MetricQuery {
     required: false,
     description: `Metric Range End. ${METRIC_RANGE_FORMAT_DESCRIPTION}`,
   })
-  to?: number | any = moment().endOf('day').valueOf();
+  to?: number | any = moment().subtract(1, 'day').endOf('day').valueOf();
 }
