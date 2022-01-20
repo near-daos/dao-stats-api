@@ -1,7 +1,7 @@
-import { CoinType } from '@dao-stats/common/types/coin-type';
 import { ApiProperty } from '@nestjs/swagger';
+import { CoinType } from '../types/coin-type';
 
-export class ContractResponse {
+export class ContractDto {
   @ApiProperty()
   contractId: string;
 

@@ -7,15 +7,16 @@ import configuration, {
 } from '@dao-stats/config/aggregator-config';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
+  CoinPriceHistoryModule,
   Contract,
-  Transaction,
+  ContractModule,
+  DaoStatsHistoryModule,
   Receipt,
   ReceiptAction,
-  DaoStatsHistoryModule,
+  Transaction,
 } from '@dao-stats/common';
+import { ExchangeModule } from '@dao-stats/exchange';
 import migrationScripts from './scripts';
-import { ExchangeModule } from 'libs/exchange/src/exchange.module';
-import { CoinPriceHistoryModule } from '@dao-stats/common/coin-price-history.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CoinPriceHistoryModule } from '@dao-stats/common/coin-price-history.mod
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forFeature([Contract, Transaction, Receipt, ReceiptAction]),
+    ContractModule,
     DaoStatsHistoryModule,
     HttpCacheModule,
     ExchangeModule,

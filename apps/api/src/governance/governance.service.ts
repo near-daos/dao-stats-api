@@ -18,8 +18,8 @@ import {
 import { TransactionService } from '@dao-stats/transaction';
 import {
   GovernanceTotalResponse,
-  ProposalsTypesLeaderboardResponse,
   ProposalsTypesHistoryResponse,
+  ProposalsTypesLeaderboardResponse,
   VoteRateLeaderboardResponse,
 } from './dto';
 import { MetricService } from '../common/metric.service';

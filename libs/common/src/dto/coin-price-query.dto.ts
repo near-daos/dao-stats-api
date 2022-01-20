@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MetricQuery } from '.';
+import { MetricQuery } from './metric-query.dto';
 import { CurrencyType } from '../types/currency-type';
 
 export class CoinPriceQuery extends MetricQuery {

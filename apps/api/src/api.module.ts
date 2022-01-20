@@ -19,7 +19,9 @@ import { ApiValidationSchema } from '@dao-stats/config/validation/api.schema';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
   Contract,
+  ContractModule,
   DaoContractContext,
+  DaoModule,
   Receipt,
   ReceiptAction,
   Transaction,
@@ -31,7 +33,7 @@ import {
   DaoContractContextInterceptor,
   HttpCacheInterceptor,
 } from './interceptors';
-import { ContractModule } from './contract/contract.module';
+import { ApiContractModule } from './contract/contract.module';
 import { GeneralModule } from './general/general.module';
 import { UsersModule } from './users/users.module';
 import { GovernanceModule } from './governance/governance.module';
@@ -60,9 +62,11 @@ import { MarketModule } from './market/market.module';
       useClass: TypeOrmConfigService,
     }),
     TypeOrmModule.forFeature([Contract, Receipt, ReceiptAction, Transaction]),
+    ContractModule,
+    DaoModule,
     HttpCacheModule,
     RedisModule,
-    ContractModule,
+    ApiContractModule,
     ApiDaoModule,
     GeneralModule,
     UsersModule,

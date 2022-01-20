@@ -2,9 +2,8 @@ import { Connection, InsertResult, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 
-import { CoinPriceHistory } from './entities/coin-price-history.entity';
-import { CoinType } from './types/coin-type';
-import { CurrencyType } from './types/currency-type';
+import { CoinPriceHistory } from './entities';
+import { CoinType, CurrencyType } from './types';
 
 @Injectable()
 export class CoinPriceHistoryService {

@@ -9,8 +9,11 @@ import {
 } from '@nestjs/common';
 import { RequestContext } from '@medibloc/nestjs-request-context';
 
-import { ContractContext, NO_CONTRACT_CONTEXT } from '@dao-stats/common';
-import { ContractService } from '../contract/contract.service';
+import {
+  ContractContext,
+  ContractService,
+  NO_CONTRACT_CONTEXT,
+} from '@dao-stats/common';
 
 @Injectable()
 export class ContractContextInterceptor implements NestInterceptor {

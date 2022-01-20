@@ -1,12 +1,14 @@
 import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transaction } from '@dao-stats/common';
+import {
+  CoinPriceHistoryService,
+  CoinType,
+  CurrencyType,
+  Transaction,
+} from '@dao-stats/common';
+import { CoinGeckoService } from '@dao-stats/exchange';
 import { Migration } from '..';
-import { CoinPriceHistoryService } from '@dao-stats/common/coin-price-history.service';
-import { CoinGeckoService } from 'libs/exchange/src';
-import { CoinType } from '@dao-stats/common/types/coin-type';
-import { CurrencyType } from '@dao-stats/common/types/currency-type';
 
 @Injectable()
 export class NearPriceHistoryMigration implements Migration {
