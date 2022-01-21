@@ -78,13 +78,17 @@ export class NearIndexerService {
 
   buildReceiptActionsQuery({
     predecessorAccountId,
+    predecessorAccountIdCond = '=',
     receiverAccountId,
+    receiverAccountIdCond = '=',
     isDeposit,
     actionKind,
     daily,
   }: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
     isDeposit?: boolean;
     actionKind?: string;
     daily?: boolean;
@@ -100,7 +104,7 @@ export class NearIndexerService {
 
     if (predecessorAccountId) {
       query.andWhere(
-        'ara.receipt_predecessor_account_id = :predecessorAccountId',
+        `ara.receipt_predecessor_account_id ${predecessorAccountIdCond} :predecessorAccountId`,
         {
           predecessorAccountId,
         },
@@ -108,9 +112,12 @@ export class NearIndexerService {
     }
 
     if (receiverAccountId) {
-      query.andWhere('ara.receipt_receiver_account_id = :receiverAccountId', {
-        receiverAccountId,
-      });
+      query.andWhere(
+        `ara.receipt_receiver_account_id ${receiverAccountIdCond} :receiverAccountId`,
+        {
+          receiverAccountId,
+        },
+      );
     }
 
     query.andWhere(`eo.status != 'FAILURE'`);
@@ -134,14 +141,18 @@ export class NearIndexerService {
 
   async getReceiptActionsCount(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<number> {
     return this.buildReceiptActionsQuery(params).getCount();
   }
 
   async getReceiptActionsFunctionCallCount(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<number> {
     return this.buildReceiptActionsQuery({
       ...params,
@@ -151,7 +162,9 @@ export class NearIndexerService {
 
   async getReceiptActionsDepositCount(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<number> {
     return this.buildReceiptActionsQuery({
       ...params,
@@ -161,7 +174,9 @@ export class NearIndexerService {
 
   async getReceiptActionsDepositAmount(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<string> {
     const [result] = await this.buildReceiptActionsQuery({
       ...params,
@@ -179,7 +194,9 @@ export class NearIndexerService {
 
   async getReceiptActionsDepositCountDaily(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<{ date: Date; change: number; total: number }[]> {
     const [query, parameters] = this.buildReceiptActionsQuery({
       ...params,
@@ -203,7 +220,9 @@ export class NearIndexerService {
 
   async getReceiptActionsDepositAmountDaily(params: {
     predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
     receiverAccountId?: string;
+    receiverAccountIdCond?: string;
   }): Promise<{ date: Date; change: string; total: string }[]> {
     const [query, parameters] = this.buildReceiptActionsQuery({
       ...params,

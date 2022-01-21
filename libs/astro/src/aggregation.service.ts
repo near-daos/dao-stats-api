@@ -194,7 +194,7 @@ export class AggregationService implements Aggregator {
 
       try {
         total = await metric.getTotal({
-          contract: factoryContract,
+          factoryContract,
         });
       } catch (err) {
         this.logger.error(
@@ -228,6 +228,7 @@ export class AggregationService implements Aggregator {
 
         try {
           total = await metric.getTotal({
+            factoryContract,
             contract: daoContract,
           });
         } catch (err) {
@@ -271,7 +272,7 @@ export class AggregationService implements Aggregator {
 
       try {
         data = await metric.getHistorical({
-          contract: factoryContract,
+          factoryContract,
         });
       } catch (err) {
         this.logger.error(
@@ -309,6 +310,7 @@ export class AggregationService implements Aggregator {
 
         try {
           data = await metric.getHistorical({
+            factoryContract,
             contract: daoContract,
           });
         } catch (err) {

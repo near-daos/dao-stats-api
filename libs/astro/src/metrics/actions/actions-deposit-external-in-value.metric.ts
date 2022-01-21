@@ -10,21 +10,24 @@ import {
 import { yoctoToNear } from '../../utils';
 
 @Injectable()
-export class ActionsDepositOutValueMetric
+export class ActionsDepositExternalInValueMetric
   implements DaoContractMetricInterface
 {
   constructor(private readonly nearIndexerService: NearIndexerService) {}
 
   getType(): DaoStatsMetric {
-    return DaoStatsMetric.ActionsDepositOutValue;
+    return DaoStatsMetric.ActionsDepositExternalInValue;
   }
 
   async getTotal({
     contract,
+    factoryContract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const amount = await this.nearIndexerService.getReceiptActionsDepositAmount(
       {
-        predecessorAccountId: contract.contractId,
+        receiverAccountId: contract.contractId,
+        predecessorAccountId: `%.${factoryContract.contractId}`,
+        predecessorAccountIdCond: 'not like',
       },
     );
     return yoctoToNear(amount);
@@ -32,10 +35,13 @@ export class ActionsDepositOutValueMetric
 
   async getHistorical({
     contract,
+    factoryContract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     const result =
       await this.nearIndexerService.getReceiptActionsDepositAmountDaily({
-        predecessorAccountId: contract.contractId,
+        receiverAccountId: contract.contractId,
+        predecessorAccountId: `%.${factoryContract.contractId}`,
+        predecessorAccountIdCond: 'not like',
       });
     return result.map(({ date, total, change }) => ({
       date,

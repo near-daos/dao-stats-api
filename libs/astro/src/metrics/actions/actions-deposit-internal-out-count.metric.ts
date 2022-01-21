@@ -9,26 +9,34 @@ import {
 } from '../../interfaces';
 
 @Injectable()
-export class ActionsDepositInCountMetric implements DaoContractMetricInterface {
+export class ActionsDepositInternalOutCountMetric
+  implements DaoContractMetricInterface
+{
   constructor(private readonly nearIndexerService: NearIndexerService) {}
 
   getType(): DaoStatsMetric {
-    return DaoStatsMetric.ActionsDepositInCount;
+    return DaoStatsMetric.ActionsDepositInternalOutCount;
   }
 
   async getTotal({
     contract,
+    factoryContract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return this.nearIndexerService.getReceiptActionsDepositCount({
-      receiverAccountId: contract.contractId,
+    return this.nearIndexerService.getReceiptActionsCount({
+      predecessorAccountId: contract.contractId,
+      receiverAccountId: `%.${factoryContract.contractId}`,
+      receiverAccountIdCond: 'like',
     });
   }
 
   async getHistorical({
     contract,
+    factoryContract,
   }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
     return this.nearIndexerService.getReceiptActionsDepositCountDaily({
-      receiverAccountId: contract.contractId,
+      predecessorAccountId: contract.contractId,
+      receiverAccountId: `%.${factoryContract.contractId}`,
+      receiverAccountIdCond: 'like',
     });
   }
 }
