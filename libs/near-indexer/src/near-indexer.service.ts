@@ -304,24 +304,22 @@ export class NearIndexerService {
     const params = [contractId];
     const kindFilter = [];
 
-    if (kinds) {
-      for (const kind of kinds) {
-        if (kindRole) {
-          kindFilter.push(
-            `lower(ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
-              params.length + 1
-            } ->> 'role') = $${params.length + 2}`,
-          );
-          params.push(kind);
-          params.push(kindRole.toLowerCase());
-        } else {
-          kindFilter.push(
-            `ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
-              params.length + 1
-            } is not null`,
-          );
-          params.push(kind);
-        }
+    for (const kind of kinds || []) {
+      if (kindRole) {
+        kindFilter.push(
+          `lower(ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+            params.length + 1
+          } ->> 'role') = $${params.length + 2}`,
+        );
+        params.push(kind);
+        params.push(kindRole.toLowerCase());
+      } else {
+        kindFilter.push(
+          `ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+            params.length + 1
+          } is not null`,
+        );
+        params.push(kind);
       }
     }
 
