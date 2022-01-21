@@ -80,4 +80,10 @@ export const DAO_HISTORICAL_METRICS = [
   ActionsDepositInValueMetric,
   ActionsDepositOutCountMetric,
   ActionsDepositOutValueMetric,
+  ProposalsCountMetric,
+  ProposalsBountyCountMetric,
+  ProposalsCouncilMemberCountMetric,
+  ProposalsMemberCountMetric,
+  ProposalsPolicyChangeCountMetric,
+  ProposalsTransferCountMetric,
 ];

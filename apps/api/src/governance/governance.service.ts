@@ -13,9 +13,7 @@ import {
   MetricQuery,
   MetricResponse,
   MetricType,
-  TransactionType,
 } from '@dao-stats/common';
-import { TransactionService } from '@dao-stats/transaction';
 import {
   GovernanceTotalResponse,
   ProposalsTypesHistoryResponse,
@@ -29,7 +27,6 @@ import { getGrowth, getRate, patchMetricDays } from '../utils';
 export class GovernanceService {
   constructor(
     private readonly configService: ConfigService,
-    private readonly transactionService: TransactionService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
     private readonly metricService: MetricService,
@@ -121,36 +118,11 @@ export class GovernanceService {
     context: DaoContractContext | ContractContext,
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
-    const { contractId, dao } = context as DaoContractContext;
-
-    const [proposalCountHistory, metrics] = await Promise.all([
-      this.daoStatsHistoryService.getHistory({
-        contractId,
-        dao,
-        metric: DaoStatsMetric.ProposalsCount,
-      }),
-      this.transactionService.getTotalCountDaily(
-        context,
-        TransactionType.AddProposal,
-        {
-          to: metricQuery.to,
-        },
-      ),
-    ]);
-
-    return {
-      metrics: patchMetricDays(
-        metricQuery,
-        metrics.map(({ day, count }) => ({
-          timestamp: moment(day).valueOf(),
-          count:
-            proposalCountHistory.find(({ date }) =>
-              moment(date).isSame(moment(day), 'day'),
-            )?.value || count,
-        })),
-        MetricType.Total,
-      ),
-    };
+    return this.metricService.history(
+      context,
+      metricQuery,
+      DaoStatsMetric.ProposalsCount,
+    );
   }
 
   async proposalsLeaderboard(
