@@ -1,169 +1,112 @@
-import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 import {
-  Contract,
   ContractContext,
   DaoContractContext,
-  LeaderboardMetric,
+  DaoStatsMetricGroup,
   MetricQuery,
 } from '@dao-stats/common';
+import { FlowMetricType } from '@dao-stats/receipt';
 import {
-  FlowMetricType,
-  ReceiptActionService,
-  TransferType,
-} from '@dao-stats/receipt';
-import {
-  FlowTotalResponse,
-  FlowMetricResponse,
   FlowLeaderboardMetricResponse,
+  FlowMetricResponse,
+  FlowTotalResponse,
 } from './dto';
-import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
+import { MetricService } from '../common/metric.service';
 
 @Injectable()
 export class FlowService {
-  constructor(private readonly receiptActionService: ReceiptActionService) {}
+  constructor(private readonly metricService: MetricService) {}
 
-  async totals(context: ContractContext): Promise<FlowTotalResponse> {
-    const { contract } = context;
-    const { conversionFactor } = contract;
-
-    const dayAgo = moment().subtract(1, 'days');
-
-    const [
-      txInCount,
-      dayAgoTxInCount,
-      txOutCount,
-      dayAgoTxOutCount,
-      totalIn,
-      dayAgoTotalIn,
-      totalOut,
-      dayAgoTotalOut,
-    ] = await Promise.all([
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Transaction,
-        TransferType.Incoming,
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Transaction,
-        TransferType.Incoming,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Transaction,
-        TransferType.Outgoing,
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Transaction,
-        TransferType.Outgoing,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Fund,
-        TransferType.Incoming,
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Fund,
-        TransferType.Incoming,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Fund,
-        TransferType.Outgoing,
-      ),
-      this.receiptActionService.getTotals(
-        context,
-        FlowMetricType.Fund,
-        TransferType.Outgoing,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-    ]);
+  async totals(
+    context: ContractContext,
+    platform: boolean,
+  ): Promise<FlowTotalResponse> {
+    const [totalIn, totalOut, transactionsIn, transactionsOut] =
+      await Promise.all([
+        this.metricService.total(
+          context,
+          platform
+            ? DaoStatsMetricGroup.PlatformActionsDepositInValue
+            : DaoStatsMetricGroup.DaoActionsDepositInValue,
+        ),
+        this.metricService.total(
+          context,
+          platform
+            ? DaoStatsMetricGroup.PlatformActionsDepositOutValue
+            : DaoStatsMetricGroup.DaoActionsDepositOutValue,
+        ),
+        this.metricService.total(
+          context,
+          platform
+            ? DaoStatsMetricGroup.PlatformActionsDepositInCount
+            : DaoStatsMetricGroup.DaoActionsDepositInCount,
+        ),
+        this.metricService.total(
+          context,
+          platform
+            ? DaoStatsMetricGroup.PlatformActionsDepositOutCount
+            : DaoStatsMetricGroup.DaoActionsDepositOutCount,
+        ),
+      ]);
 
     return {
-      totalIn: {
-        count: convertFunds(totalIn.count || 0, conversionFactor).toNumber(),
-        growth: getGrowth(totalIn.count, dayAgoTotalIn.count),
-      },
-      totalOut: {
-        count: convertFunds(totalOut.count || 0, conversionFactor).toNumber(),
-        growth: getGrowth(totalOut.count, dayAgoTotalOut.count),
-      },
-      transactionsIn: {
-        count: txInCount.count,
-        growth: getGrowth(txInCount.count, dayAgoTxInCount.count),
-      },
-      transactionsOut: {
-        count: txOutCount.count,
-        growth: getGrowth(txOutCount.count, dayAgoTxOutCount.count),
-      },
+      totalIn,
+      totalOut,
+      transactionsIn,
+      transactionsOut,
     };
   }
 
   async history(
     context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
-    metricQuery?: MetricQuery,
+    metricQuery: MetricQuery,
+    platform: boolean,
   ): Promise<FlowMetricResponse> {
-    const { contract } = context;
-    const { conversionFactor } = contract;
-
     const [incoming, outgoing] = await Promise.all([
-      this.receiptActionService.getHistory(
+      this.metricService.history(
         context,
-        metricType,
-        TransferType.Incoming,
         metricQuery,
+        platform
+          ? metricType === FlowMetricType.Fund
+            ? DaoStatsMetricGroup.PlatformActionsDepositInValue
+            : DaoStatsMetricGroup.PlatformActionsDepositInCount
+          : metricType === FlowMetricType.Fund
+          ? DaoStatsMetricGroup.DaoActionsDepositInValue
+          : DaoStatsMetricGroup.DaoActionsDepositInCount,
+        false,
       ),
-      this.receiptActionService.getHistory(
+      this.metricService.history(
         context,
-        metricType,
-        TransferType.Outgoing,
         metricQuery,
+        platform
+          ? metricType === FlowMetricType.Fund
+            ? DaoStatsMetricGroup.PlatformActionsDepositOutValue
+            : DaoStatsMetricGroup.PlatformActionsDepositOutCount
+          : metricType === FlowMetricType.Fund
+          ? DaoStatsMetricGroup.DaoActionsDepositOutValue
+          : DaoStatsMetricGroup.DaoActionsDepositOutCount,
+        false,
       ),
     ]);
 
-    const days = [
+    const timestamps = [
       ...new Set([
-        ...incoming.map(({ day }) => moment(day).valueOf()),
-        ...outgoing.map(({ day }) => moment(day).valueOf()),
+        ...incoming.metrics.map(({ timestamp }) => timestamp),
+        ...outgoing.metrics.map(({ timestamp }) => timestamp),
       ]),
-    ].sort((a, b) => a.valueOf() - b.valueOf());
+    ].sort((a, b) => a - b);
 
     return {
-      metrics: days.map((day) => {
-        const inc =
-          incoming.find((metric) => day === moment(metric.day).valueOf())
-            ?.count || 0;
-        const out =
-          outgoing.find((metric) => day === moment(metric.day).valueOf())
-            ?.count || 0;
-
-        return {
-          timestamp: moment(day).endOf('day').valueOf(),
-          incoming:
-            metricType == FlowMetricType.Fund
-              ? convertFunds(inc, conversionFactor).toNumber()
-              : inc,
-          outgoing:
-            metricType === FlowMetricType.Fund
-              ? convertFunds(out, conversionFactor).toNumber()
-              : out,
-        };
-      }),
+      metrics: timestamps.map((timestamp) => ({
+        timestamp,
+        incoming:
+          incoming.metrics.find(({ timestamp: t }) => timestamp == t)?.count ||
+          0,
+        outgoing:
+          outgoing.metrics.find(({ timestamp: t }) => timestamp == t)?.count ||
+          0,
+      })),
     };
   }
 
@@ -171,135 +114,26 @@ export class FlowService {
     context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
   ): Promise<FlowLeaderboardMetricResponse> {
-    const { contract } = context;
-
-    const monthAgo = moment().subtract(1, 'month');
-    const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
-    const dayAgo = moment().subtract(1, 'days');
-
-    const [
-      byDaysIncoming,
-      byDaysOutgoing,
-      dayAgoIncoming,
-      incoming,
-      dayAgoOutgoing,
-      outgoing,
-    ] = await Promise.all([
-      this.receiptActionService.getLeaderboard(
+    const [incoming, outgoing] = await Promise.all([
+      this.metricService.leaderboard(
         context,
-        metricType,
-        TransferType.Incoming,
-        {
-          from: monthAgo.valueOf(),
-          to: moment().valueOf(),
-        },
-        true,
+        metricType === FlowMetricType.Fund
+          ? DaoStatsMetricGroup.PlatformActionsDepositInValue
+          : DaoStatsMetricGroup.PlatformActionsDepositInCount,
+        false,
       ),
-      this.receiptActionService.getLeaderboard(
+      this.metricService.leaderboard(
         context,
-        metricType,
-        TransferType.Outgoing,
-        {
-          from: monthAgo.valueOf(),
-          to: moment().valueOf(),
-        },
-        true,
-      ),
-      this.receiptActionService.getLeaderboard(
-        context,
-        metricType,
-        TransferType.Incoming,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-      this.receiptActionService.getLeaderboard(
-        context,
-        metricType,
-        TransferType.Incoming,
-        {
-          to: moment().valueOf(),
-        },
-      ),
-      this.receiptActionService.getLeaderboard(
-        context,
-        metricType,
-        TransferType.Outgoing,
-        {
-          to: dayAgo.valueOf(),
-        },
-      ),
-      this.receiptActionService.getLeaderboard(
-        context,
-        metricType,
-        TransferType.Outgoing,
-        {
-          to: moment().valueOf(),
-        },
+        metricType === FlowMetricType.Fund
+          ? DaoStatsMetricGroup.PlatformActionsDepositOutValue
+          : DaoStatsMetricGroup.PlatformActionsDepositOutCount,
+        false,
       ),
     ]);
 
     return {
-      incoming: this.getLeaderboardMetrics(
-        metricType,
-        incoming,
-        dayAgoIncoming,
-        byDaysIncoming,
-        days,
-        contract,
-      ),
-      outgoing: this.getLeaderboardMetrics(
-        metricType,
-        outgoing,
-        dayAgoOutgoing,
-        byDaysOutgoing,
-        days,
-        contract,
-      ),
+      incoming: incoming.metrics,
+      outgoing: outgoing.metrics,
     };
-  }
-
-  // TODO: re-visit leaderboard metric types
-  private getLeaderboardMetrics(
-    metricType: FlowMetricType,
-    data,
-    dayAgoData,
-    byDaysData,
-    days: { start: number; end: number }[],
-    contract: Contract,
-  ): LeaderboardMetric[] {
-    const { conversionFactor } = contract;
-
-    return data.map(({ account_id: dao, count }) => {
-      const dayAgoCount =
-        dayAgoData.find(({ account_id }) => account_id === dao)?.count || 0;
-
-      return {
-        dao,
-        activity: {
-          count:
-            metricType === FlowMetricType.Fund
-              ? convertFunds(count, conversionFactor).toNumber()
-              : count,
-          growth: getGrowth(count, dayAgoCount),
-        },
-        overview: days.map(({ end: timestamp }) => {
-          const count =
-            byDaysData.find(
-              ({ account_id, day }) =>
-                account_id === dao &&
-                moment(day).isSame(moment(timestamp), 'day'),
-            )?.count || 0;
-
-          return {
-            timestamp,
-            count:
-              metricType === FlowMetricType.Fund
-                ? convertFunds(count, conversionFactor).toNumber()
-                : count,
-          };
-        }),
-      };
-    });
   }
 }
