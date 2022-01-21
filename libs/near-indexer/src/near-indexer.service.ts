@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
 import { ReceiptAction } from './entities';
+import { ActionKind, ProposalKind } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -156,7 +157,7 @@ export class NearIndexerService {
   }): Promise<number> {
     return this.buildReceiptActionsQuery({
       ...params,
-      actionKind: 'FUNCTION_CALL',
+      actionKind: ActionKind.FunctionCall,
     }).getCount();
   }
 
@@ -203,15 +204,15 @@ export class NearIndexerService {
       isDeposit: true,
       daily: true,
     })
-      .addSelect(`count(1) as value`)
+      .addSelect(`count(1) as change`)
       .getQueryAndParameters();
 
     return this.connection.query(
       `
           with data as (${query})
           select date, 
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -229,15 +230,15 @@ export class NearIndexerService {
       isDeposit: true,
       daily: true,
     })
-      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as value`)
+      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as change`)
       .getQueryAndParameters();
 
     return this.connection.query(
       `
           with data as (${query})
           select date, 
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       parameters,
@@ -250,7 +251,8 @@ export class NearIndexerService {
     return this.connection.query(
       `
           with data as (
-              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
+                     count(1) as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
               where ara.action_kind = 'FUNCTION_CALL'
@@ -258,11 +260,11 @@ export class NearIndexerService {
                 and ara.receipt_predecessor_account_id = $1
                 and ara.receipt_receiver_account_id like $2
                 and eo.status != 'FAILURE'
-              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+              group by 1
           )
           select date,
-                 value as change,
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from data
       `,
       [contractId, `%.${contractId}`],
@@ -278,38 +280,88 @@ export class NearIndexerService {
       `
           with deposits as (
               select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
-                     sum((args ->> 'deposit')::decimal)                                as value
+                     sum((args ->> 'deposit')::decimal)                                as change
               from action_receipt_actions ara
               left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-              where receipt_receiver_account_id = $1
+              where ara.receipt_receiver_account_id = $1
+                and ara.args -> 'deposit' is not null
+                and ara.args ->> 'deposit' != '0'
                 and eo.status != 'FAILURE'
-                and args -> 'deposit' is not null
-                and args ->> 'deposit' != '0'
-              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+              group by 1
           ),
                withdrawals as (
                    select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
-                          -sum((args ->> 'deposit')::decimal)                                as value
+                          -sum((args ->> 'deposit')::decimal)                               as change
                    from action_receipt_actions ara
                    left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-                   where receipt_predecessor_account_id = $1
+                   where ara.receipt_predecessor_account_id = $1
+                     and ara.args -> 'deposit' is not null
+                     and ara.args ->> 'deposit' != '0'
                      and eo.status != 'FAILURE'
-                     and args -> 'deposit' is not null
-                     and args ->> 'deposit' != '0'
-                   group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+                   group by 1
                ),
                balance as (
                    select date,
-                          coalesce(deposits.value, 0) + coalesce(withdrawals.value, 0) as value
+                          coalesce(deposits.change, 0) + coalesce(withdrawals.change, 0) as change
                    from deposits
                    full outer join withdrawals using (date)
                )
-          select date, 
-                 value as change, 
-                 sum(value) over (order by date rows between unbounded preceding and current row) as total
+          select date,
+                 change, 
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
           from balance;
       `,
       [accountId],
+    );
+  }
+
+  async getProposalsCountDaily(
+    contractId: string,
+    kinds?: ProposalKind[],
+    kindRole?: string,
+  ): Promise<{ date: Date; change: number; total: number }[]> {
+    const params = [contractId];
+    const kindFilter = [];
+
+    for (const kind of kinds || []) {
+      if (kindRole) {
+        kindFilter.push(
+          `lower(ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+            params.length + 1
+          } ->> 'role') = $${params.length + 2}`,
+        );
+        params.push(kind);
+        params.push(kindRole.toLowerCase());
+      } else {
+        kindFilter.push(
+          `ara.args -> 'args_json' -> 'proposal' -> 'kind' -> $${
+            params.length + 1
+          } is not null`,
+        );
+        params.push(kind);
+      }
+    }
+
+    return this.connection.query(
+      `
+          with data as (
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
+                     count(1) as change
+              from action_receipt_actions ara
+              left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+              where ara.receipt_receiver_account_id = $1
+                and ara.action_kind = 'FUNCTION_CALL'
+                and ara.args ->> 'method_name' = 'add_proposal'
+                ${kindFilter.length ? `and (${kindFilter.join(' or ')})` : ''}
+                and eo.status != 'FAILURE'
+              group by 1
+          )
+          select date,
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
+          from data
+      `,
+      params,
     );
   }
 }

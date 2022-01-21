@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import {
   DaoContractMetricCurrentParams,
   DaoContractMetricHistoryParams,
@@ -12,6 +13,8 @@ import { ProposalKind } from '../../types';
 export class ProposalsCouncilMemberCountMetric
   implements DaoContractMetricInterface
 {
+  constructor(private readonly nearIndexerService: NearIndexerService) {}
+
   getType(): DaoStatsMetric {
     return DaoStatsMetric.ProposalsCouncilMemberCount;
   }
@@ -29,8 +32,13 @@ export class ProposalsCouncilMemberCountMetric
     return councilMembers.length;
   }
 
-  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistorical({
+    contract,
+  }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+    return this.nearIndexerService.getProposalsCountDaily(
+      contract.contractId,
+      [ProposalKind.AddMemberToRole, ProposalKind.RemoveMemberFromRole],
+      'council',
+    );
   }
 }
