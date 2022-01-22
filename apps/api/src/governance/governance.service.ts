@@ -287,21 +287,27 @@ export class GovernanceService {
       }),
     ]);
 
+    // start count rates from first approved timestamp
+    const firstApprovedTimestamp = approvedHistory.length
+      ? approvedHistory[0].date.valueOf()
+      : 0;
     const revApprovedHistory = approvedHistory.splice(0).reverse();
 
     return {
       metrics: patchMetricDays(
         metricQuery,
-        totalHistory.map((row) => {
-          const timestamp = row.date.valueOf();
-          const approved =
-            revApprovedHistory.find(({ date }) => date.valueOf() <= timestamp)
-              ?.value || 0;
-          return {
-            timestamp,
-            count: getRate(approved, row.value),
-          };
-        }),
+        totalHistory
+          .filter(({ date }) => date.valueOf() >= firstApprovedTimestamp)
+          .map((row) => {
+            const timestamp = row.date.valueOf();
+            const approved =
+              revApprovedHistory.find(({ date }) => date.valueOf() <= timestamp)
+                ?.value || 0;
+            return {
+              timestamp,
+              count: getRate(approved, row.value),
+            };
+          }),
         MetricType.Total,
       ),
     };
