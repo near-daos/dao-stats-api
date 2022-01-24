@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsHistoryHistoryResponse,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -174,35 +173,46 @@ export class GovernanceService {
       }),
     ]);
 
-    const toResponse = (data: DaoStatsHistoryHistoryResponse) =>
-      data.map(({ date, value }) => ({
-        timestamp: date.valueOf(),
-        count: value,
-      }));
+    const revPayouts = [...payouts].reverse();
+    const revBounties = [...bounties].reverse();
+    const revMembers = [...members].reverse();
+
+    const overall = totals.map((row) => {
+      const timestamp = row.date.valueOf();
+      const payout =
+        revPayouts.find(({ date }) => date.valueOf() <= timestamp)?.value || 0;
+      const bounty =
+        revBounties.find(({ date }) => date.valueOf() <= timestamp)?.value || 0;
+      const member =
+        revMembers.find(({ date }) => date.valueOf() <= timestamp)?.value || 0;
+
+      return {
+        timestamp,
+        governance: row.value - (payout + bounty + member),
+        financial: payout,
+        bounties: bounty,
+        members: member,
+      };
+    });
 
     return {
       metrics: {
-        governance: totals.map((row) => {
-          const payout = payouts.find(
-            ({ date }) => date.valueOf() === row.date.valueOf(),
-          );
-          const bounty = bounties.find(
-            ({ date }) => date.valueOf() === row.date.valueOf(),
-          );
-          const member = members.find(
-            ({ date }) => date.valueOf() === row.date.valueOf(),
-          );
-
-          return {
-            timestamp: row.date.valueOf(),
-            count:
-              row.value -
-              (payout?.value || 0 + bounty?.value || 0 + member?.value || 0),
-          };
-        }),
-        financial: toResponse(payouts),
-        bounties: toResponse(bounties),
-        members: toResponse(members),
+        governance: overall.map(({ timestamp, governance: count }) => ({
+          timestamp,
+          count,
+        })),
+        financial: overall.map(({ timestamp, financial: count }) => ({
+          timestamp,
+          count,
+        })),
+        bounties: overall.map(({ timestamp, bounties: count }) => ({
+          timestamp,
+          count,
+        })),
+        members: overall.map(({ timestamp, members: count }) => ({
+          timestamp,
+          count,
+        })),
       },
     };
   }
@@ -277,18 +287,27 @@ export class GovernanceService {
       }),
     ]);
 
+    // start count rates from first approved timestamp
+    const firstApprovedTimestamp = approvedHistory.length
+      ? approvedHistory[0].date.valueOf()
+      : 0;
+    const revApprovedHistory = approvedHistory.splice(0).reverse();
+
     return {
       metrics: patchMetricDays(
         metricQuery,
-        totalHistory.map((row) => {
-          const approved = approvedHistory.find(
-            ({ date }) => date.valueOf() === row.date.valueOf(),
-          );
-          return {
-            timestamp: row.date.valueOf(),
-            count: getRate(approved?.value || 0, row.value),
-          };
-        }),
+        totalHistory
+          .filter(({ date }) => date.valueOf() >= firstApprovedTimestamp)
+          .map((row) => {
+            const timestamp = row.date.valueOf();
+            const approved =
+              revApprovedHistory.find(({ date }) => date.valueOf() <= timestamp)
+                ?.value || 0;
+            return {
+              timestamp,
+              count: getRate(approved, row.value),
+            };
+          }),
         MetricType.Total,
       ),
     };
