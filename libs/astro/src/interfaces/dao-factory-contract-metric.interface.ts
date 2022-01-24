@@ -2,7 +2,7 @@ import { DaoStatsMetric } from '@dao-stats/common';
 import { DaoFactoryContract } from '../contracts';
 
 export interface DaoFactoryContractMetricCurrentParams {
-  contract: DaoFactoryContract;
+  factoryContract: DaoFactoryContract;
 }
 
 export interface DaoFactoryContractMetricHistoryParams

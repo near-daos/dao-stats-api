@@ -6,15 +6,31 @@ export const DaoStatsMetricGroup = {
     DaoStatsMetric.ActionsFunctionCallInCount,
     DaoStatsMetric.ActionsFunctionCallOutCount,
   ],
-  ActionsDepositCount: [
-    DaoStatsMetric.ActionsDepositInCount,
-    DaoStatsMetric.ActionsDepositOutCount,
-  ],
-  ActionsDepositValue: [
-    DaoStatsMetric.ActionsDepositInValue,
-    DaoStatsMetric.ActionsDepositOutValue,
-  ],
   BountiesAndGrantsValueLocked: [DaoStatsMetric.BountiesValueLocked],
+  DaoActionsDepositInCount: [
+    DaoStatsMetric.ActionsDepositInternalInCount,
+    DaoStatsMetric.ActionsDepositExternalInCount,
+  ],
+  DaoActionsDepositOutCount: [
+    DaoStatsMetric.ActionsDepositInternalOutCount,
+    DaoStatsMetric.ActionsDepositExternalOutCount,
+  ],
+  DaoActionsDepositInValue: [
+    DaoStatsMetric.ActionsDepositInternalInValue,
+    DaoStatsMetric.ActionsDepositExternalInValue,
+  ],
+  DaoActionsDepositOutValue: [
+    DaoStatsMetric.ActionsDepositInternalOutValue,
+    DaoStatsMetric.ActionsDepositExternalOutValue,
+  ],
+  PlatformActionsDepositInCount: [DaoStatsMetric.ActionsDepositExternalInCount],
+  PlatformActionsDepositOutCount: [
+    DaoStatsMetric.ActionsDepositExternalOutCount,
+  ],
+  PlatformActionsDepositInValue: [DaoStatsMetric.ActionsDepositExternalInValue],
+  PlatformActionsDepositOutValue: [
+    DaoStatsMetric.ActionsDepositExternalOutValue,
+  ],
   TotalValueLocked: [
     DaoStatsMetric.AccountBalance,
     DaoStatsMetric.FtsValueLocked,

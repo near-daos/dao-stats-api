@@ -10,7 +10,7 @@ import { TransactionModule } from '@dao-stats/transaction';
 
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { MetricService } from '../common/metric.service';
+import { MetricModule } from '../common/metric.module';
 
 @Module({
   imports: [
@@ -21,8 +21,9 @@ import { MetricService } from '../common/metric.service';
     DaoStatsModule,
     DaoStatsHistoryModule,
     ContractModule,
+    MetricModule,
   ],
-  providers: [UsersService, MetricService],
+  providers: [UsersService],
   controllers: [UsersController],
 })
 export class UsersModule {}

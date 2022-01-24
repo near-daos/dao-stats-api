@@ -56,7 +56,7 @@ export class MetricService {
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
     metric: DaoStatsMetric | DaoStatsMetric[],
-    totals?: boolean,
+    totals = true,
     averagePerDao?: boolean,
   ): Promise<MetricResponse> {
     const { contractId, dao } = context as DaoContractContext;
@@ -72,14 +72,16 @@ export class MetricService {
       averagePerDao,
     });
 
+    const metrics = history.map(({ date, value }) => ({
+      timestamp: date.valueOf(),
+      count: value,
+    }));
+
     return {
       metrics: patchMetricDays(
         metricQuery,
-        history.map(({ date, value }) => ({
-          timestamp: date.valueOf(),
-          count: value,
-        })),
-        MetricType.Total,
+        metrics,
+        totals ? MetricType.Total : MetricType.Daily,
       ),
     };
   }
@@ -87,7 +89,7 @@ export class MetricService {
   async leaderboard(
     context: ContractContext,
     metric: DaoStatsMetric | DaoStatsMetric[],
-    overviewTotals?: boolean,
+    overviewTotals = true,
   ): Promise<LeaderboardMetricResponse> {
     const { contractId } = context;
 
@@ -117,16 +119,22 @@ export class MetricService {
           }),
         ]);
 
+        const overview = history.map(({ date, value }) => ({
+          timestamp: date.valueOf(),
+          count: value,
+        }));
+
         return {
           dao,
           activity: {
             count: total,
             growth: getGrowth(total, prevValue),
           },
-          overview: history.map(({ date, value }) => ({
-            timestamp: date.valueOf(),
-            count: value,
-          })),
+          overview: patchMetricDays(
+            { from: monthAgo.valueOf(), to: new Date().valueOf() },
+            overview,
+            overviewTotals ? MetricType.Total : MetricType.Daily,
+          ),
         };
       }),
     );

@@ -32,7 +32,7 @@ export class FlowController {
   async totals(
     @Param(ContractContextPipe) context: ContractContext,
   ): Promise<FlowTotalResponse> {
-    return this.flowService.totals(context);
+    return this.flowService.totals(context, true);
   }
 
   @ApiResponse({
@@ -47,7 +47,12 @@ export class FlowController {
     @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Fund,
+      metricQuery,
+      true,
+    );
   }
 
   @ApiResponse({
@@ -80,6 +85,7 @@ export class FlowController {
       context,
       FlowMetricType.Transaction,
       metricQuery,
+      true,
     );
   }
 
@@ -109,7 +115,7 @@ export class FlowController {
   async daoTotals(
     @Param(ContractContextPipe) context: DaoContractContext,
   ): Promise<FlowTotalResponse> {
-    return this.flowService.totals(context);
+    return this.flowService.totals(context, false);
   }
 
   @ApiResponse({
@@ -125,7 +131,12 @@ export class FlowController {
     @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    return this.flowService.history(context, FlowMetricType.Fund, metricQuery);
+    return this.flowService.history(
+      context,
+      FlowMetricType.Fund,
+      metricQuery,
+      false,
+    );
   }
 
   @ApiResponse({
@@ -145,6 +156,7 @@ export class FlowController {
       context,
       FlowMetricType.Transaction,
       metricQuery,
+      false,
     );
   }
 }

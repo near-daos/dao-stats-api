@@ -11,7 +11,7 @@ import { TransactionModule } from '@dao-stats/transaction';
 
 import { TvlController } from './tvl.controller';
 import { TvlService } from './tvl.service';
-import { MetricService } from '../common/metric.service';
+import { MetricModule } from '../common/metric.module';
 
 @Module({
   imports: [
@@ -23,8 +23,9 @@ import { MetricService } from '../common/metric.service';
     TransactionModule,
     ContractModule,
     CoinPriceHistoryModule,
+    MetricModule,
   ],
-  providers: [TvlService, MetricService],
+  providers: [TvlService],
   controllers: [TvlController],
 })
 export class TvlModule {}

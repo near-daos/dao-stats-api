@@ -17,14 +17,14 @@ export class DaoCountMetric implements DaoFactoryContractMetricInterface {
   }
 
   async getTotal({
-    contract,
+    factoryContract,
   }: DaoFactoryContractMetricCurrentParams): Promise<number> {
-    return (await contract.getDaoList()).length;
+    return (await factoryContract.getDaoList()).length;
   }
 
   async getHistorical({
-    contract,
+    factoryContract,
   }: DaoFactoryContractMetricHistoryParams): Promise<DaoFactoryContractMetricHistoryResponse> {
-    return this.nearIndexerService.getDaoCountDaily(contract.contractId);
+    return this.nearIndexerService.getDaoCountDaily(factoryContract.contractId);
   }
 }

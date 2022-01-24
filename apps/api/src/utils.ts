@@ -57,7 +57,7 @@ export const patchMetricDays = (
   }
 
   const { from, to } = metricQuery;
-  const days = getDailyIntervals(Math.max(metrics[0].timestamp, from), to);
+  const days = getDailyIntervals(Math.min(metrics[0].timestamp, from), to);
 
   return days.map((day) => {
     let metric = metrics.find(({ timestamp }) =>

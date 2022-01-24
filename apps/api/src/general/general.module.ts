@@ -1,15 +1,11 @@
 import { CacheModule, Module } from '@nestjs/common';
 
 import { CacheConfigService } from '@dao-stats/config/cache';
-import {
-  ContractModule,
-  DaoStatsModule,
-  DaoStatsHistoryModule,
-} from '@dao-stats/common';
+import { ContractModule, DaoStatsHistoryModule } from '@dao-stats/common';
 import { TransactionModule } from '@dao-stats/transaction';
 import { GeneralController } from './general.controller';
 import { GeneralService } from './general.service';
-import { MetricService } from '../common/metric.service';
+import { MetricModule } from '../common/metric.module';
 
 @Module({
   imports: [
@@ -17,11 +13,11 @@ import { MetricService } from '../common/metric.service';
       useClass: CacheConfigService,
     }),
     TransactionModule,
-    DaoStatsModule,
     DaoStatsHistoryModule,
     ContractModule,
+    MetricModule,
   ],
-  providers: [GeneralService, MetricService],
+  providers: [GeneralService],
   controllers: [GeneralController],
 })
 export class GeneralModule {}

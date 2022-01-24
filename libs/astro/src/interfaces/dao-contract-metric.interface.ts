@@ -1,8 +1,9 @@
 import { DaoStatsMetric } from '@dao-stats/common';
-import { DaoContract } from '../contracts';
+import { DaoContract, DaoFactoryContract } from '../contracts';
 
 export interface DaoContractMetricCurrentParams {
   contract: DaoContract;
+  factoryContract: DaoFactoryContract;
 }
 
 export interface DaoContractMetricHistoryParams
