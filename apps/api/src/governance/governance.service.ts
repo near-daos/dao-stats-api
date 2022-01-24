@@ -173,9 +173,9 @@ export class GovernanceService {
       }),
     ]);
 
-    const revPayouts = payouts.splice(0).reverse();
-    const revBounties = bounties.splice(0).reverse();
-    const revMembers = members.splice(0).reverse();
+    const revPayouts = [...payouts].reverse();
+    const revBounties = [...bounties].reverse();
+    const revMembers = [...members].reverse();
 
     const overall = totals.map((row) => {
       const timestamp = row.date.valueOf();
