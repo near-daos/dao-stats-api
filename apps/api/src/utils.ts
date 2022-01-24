@@ -51,13 +51,17 @@ export const patchMetricDays = (
   metricQuery: MetricQuery,
   metrics: Metric[],
   type: MetricType,
+  isOverview = false,
 ) => {
-  if (!metrics || !metrics.length) {
+  if ((!metrics || !metrics.length) && !isOverview) {
     return metrics;
   }
 
   const { from, to } = metricQuery;
-  const days = getDailyIntervals(Math.max(metrics[0].timestamp, from), to);
+  const days = getDailyIntervals(
+    !isOverview ? Math.max(metrics[0].timestamp, from) : from,
+    to,
+  );
 
   return days.map((day) => {
     let metric = metrics.find(({ timestamp }) =>

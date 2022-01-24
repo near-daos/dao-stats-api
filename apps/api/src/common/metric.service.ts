@@ -134,6 +134,7 @@ export class MetricService {
             { from: monthAgo.valueOf(), to: new Date().valueOf() },
             overview,
             overviewTotals ? MetricType.Total : MetricType.Daily,
+            true,
           ),
         };
       }),
