@@ -1,11 +1,9 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsHistoryService,
   DaoStatsMetric,
   LeaderboardMetricResponse,
   MetricQuery,
@@ -19,33 +17,35 @@ import { getDailyIntervals, getGrowth } from '../utils';
 @Injectable()
 export class GeneralService {
   constructor(
-    private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-    private readonly daoStatsHistoryService: DaoStatsHistoryService,
     private readonly metricService: MetricService,
   ) {}
 
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<GeneralTotalResponse> {
-    const weekAgo = moment().subtract(1, 'week');
+    const monthAgo = moment().subtract(1, 'month');
+    const twoMonthsAgo = moment().subtract(2, 'months');
 
-    const [dao, groups, averageGroups, activity, weekAgoActivity] =
+    const [dao, groups, averageGroups, activity, monthAgoActivity] =
       await Promise.all([
         this.metricService.total(context, DaoStatsMetric.DaoCount),
         this.metricService.total(context, DaoStatsMetric.GroupsCount),
         this.metricService.total(context, DaoStatsMetric.GroupsCount, true),
         this.transactionService.getContractActivityCount(context, {
-          to: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
         }),
-        this.transactionService.getContractActivityCount(context),
+        this.transactionService.getContractActivityCount(context, {
+          from: twoMonthsAgo.valueOf(),
+          to: monthAgo.valueOf(),
+        }),
       ]);
 
     return {
       dao,
       activity: {
         count: activity.count,
-        growth: getGrowth(activity.count, weekAgoActivity.count),
+        growth: getGrowth(activity.count, monthAgoActivity.count),
       },
       groups,
       averageGroups,
