@@ -13,6 +13,7 @@ import { TransactionService } from '@dao-stats/transaction';
 import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 import { getDailyIntervals, getGrowth } from '../utils';
+import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
 
 @Injectable()
 export class GeneralService {
@@ -68,9 +69,10 @@ export class GeneralService {
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const metrics =
-      await this.transactionService.getContractActivityCountWeekly(
+      await this.transactionService.getContractActivityCountHistory(
         context,
         metricQuery,
+        ActivityInterval.Week,
       );
 
     return {

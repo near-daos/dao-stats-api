@@ -13,6 +13,8 @@ import {
   TransactionType,
 } from '@dao-stats/common';
 import { TransactionLeaderboardDto } from './dto/transaction-leaderboard.dto';
+import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
+import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
 
 @Injectable()
 export class TransactionService {
@@ -83,12 +85,13 @@ export class TransactionService {
     return this.getContractActivityCountQuery(context, metricQuery).getRawOne();
   }
 
-  async getContractActivityCountWeekly(
+  async getContractActivityCountHistory(
     context: DaoContractContext | ContractContext,
     metricQuery?: MetricQuery,
+    interval?: ActivityInterval,
   ): Promise<DailyCountDto[]> {
     let queryBuilder = this.getContractActivityCountQuery(context, metricQuery);
-    queryBuilder = this.addWeeklySelection(queryBuilder);
+    queryBuilder = this.addIntervalSelection(queryBuilder, interval);
 
     return queryBuilder.execute();
   }
@@ -98,6 +101,18 @@ export class TransactionService {
     metricQuery?: MetricQuery,
   ): Promise<Metric> {
     return this.getUsersTotalQueryBuilder(context, metricQuery).getRawOne();
+  }
+
+  async getUsersTotalCountHistory(
+    context: DaoContractContext | ContractContext,
+    metricQuery?: IntervalMetricQuery,
+  ): Promise<DailyCountDto[]> {
+    const { interval } = metricQuery;
+
+    let queryBuilder = this.getUsersTotalQueryBuilder(context, metricQuery);
+    queryBuilder = this.addIntervalSelection(queryBuilder, interval);
+
+    return queryBuilder.execute();
   }
 
   async getInteractionsCount(
@@ -250,12 +265,13 @@ export class TransactionService {
       .orderBy('day', 'ASC');
   }
 
-  private addWeeklySelection(
+  private addIntervalSelection(
     qb: SelectQueryBuilder<Transaction>,
+    interval: ActivityInterval,
   ): SelectQueryBuilder<Transaction> {
     return qb
       .addSelect(
-        `date_trunc('week', to_timestamp(block_timestamp / 1e9)) as day`,
+        `date_trunc('${interval}', to_timestamp(block_timestamp / 1e9) + '1 ${interval}'::interval) as day`,
       )
       .groupBy('day')
       .orderBy('day', 'ASC');
