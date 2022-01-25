@@ -12,6 +12,7 @@ import { UsersTotalResponse } from './dto';
 import { UsersService } from './users.service';
 import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
+import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -59,6 +60,36 @@ export class UsersController {
     @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.usersService.usersLeaderboard(context);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/active-users')
+  async activeUsers(
+    @Param(ContractContextPipe) context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: IntervalMetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.activeUsers(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/active-users/leaderboard')
+  async activeUsersLeaderboard(
+    @Param(ContractContextPipe) context: ContractContext,
+    @Query(MetricQueryPipe) metricQuery: IntervalMetricQuery,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.usersService.usersLeaderboard(context, metricQuery.interval);
   }
 
   @ApiResponse({
@@ -178,6 +209,22 @@ export class UsersController {
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.usersService.users(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @HasDaoContractContext()
+  @Get('/:dao/active-users')
+  async daoActiveUsers(
+    @Param(ContractContextPipe) context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: IntervalMetricQuery,
+  ): Promise<MetricResponse> {
+    return this.usersService.activeUsers(context, metricQuery);
   }
 
   @ApiResponse({
