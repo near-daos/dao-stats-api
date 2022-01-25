@@ -149,7 +149,7 @@ export class DaoStatsHistoryService {
     params: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
     query
-      .select('date, count(distinct dao) as dao_count')
+      .select('date, count(dao) as dao_count')
       .from('dao_stats_history', 'h2')
       .groupBy('date');
 
@@ -186,15 +186,15 @@ export class DaoStatsHistoryService {
       'change_by_date',
     );
 
-    const selection = averagePerDao ? 'change / dao_count' : 'change';
-
     if (totals) {
       query.addSelect(
-        `sum(${selection}) over (order by change_by_date.date rows between unbounded preceding and current row)`,
+        `sum(change) over (order by change_by_date.date rows between unbounded preceding and current row)${
+          averagePerDao ? ' / dao_count' : ''
+        }`,
         'value',
       );
     } else {
-      query.addSelect(selection, 'value');
+      query.addSelect(`change${averagePerDao ? ' / dao_count' : ''}`, 'value');
     }
 
     if (averagePerDao) {
