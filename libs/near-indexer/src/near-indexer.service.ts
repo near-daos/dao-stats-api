@@ -364,4 +364,24 @@ export class NearIndexerService {
       params,
     );
   }
+
+  async getCreateArgsDaily(
+    factoryContractId: string,
+    contractId: string,
+  ): Promise<{ date: Date; args: Record<string, any> }[]> {
+    return this.connection.query(
+      `
+        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))::timestamptz as date, 
+               args
+        from action_receipt_actions ara
+        left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+        where ara.action_kind = 'FUNCTION_CALL'
+          and ara.args ->> 'method_name' = 'new'
+          and ara.receipt_predecessor_account_id = $1
+          and ara.receipt_receiver_account_id = $2
+          and eo.status != 'FAILURE'
+      `,
+      [factoryContractId, contractId],
+    );
+  }
 }

@@ -12,7 +12,7 @@ export type RoleKindMember = {
 
 // Set of accounts.
 export type RoleKindGroup = {
-  Group: string[];
+  Group: AccountId[];
 };
 
 export type RoleKind = RoleKindEveryone | RoleKindMember | RoleKindGroup;
@@ -226,3 +226,16 @@ export type NfTokenForOwnerInterface =
   | NfTokenForOwnerParasInterface;
 
 export type NfTokenForOwnerResponse = NfTokenForOwnerInterface[];
+
+export interface CreateConfig {
+  name: string;
+  purpose: string;
+  metadata: string;
+}
+
+export type VersionedPolicy = AccountId[] | Policy;
+
+export interface CreateArgs {
+  config: CreateConfig;
+  policy: VersionedPolicy;
+}
