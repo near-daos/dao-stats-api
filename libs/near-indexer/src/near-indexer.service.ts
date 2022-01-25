@@ -1,4 +1,5 @@
 import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
+import { Cacheable } from '@type-cacheable/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
@@ -365,6 +366,11 @@ export class NearIndexerService {
     );
   }
 
+  @Cacheable({
+    ttlSeconds: 300,
+    cacheKey: ([factoryContractId, contractId]) =>
+      `create_args_daily:${factoryContractId}:${contractId}`,
+  })
   async getCreateArgsDaily(
     factoryContractId: string,
     contractId: string,
