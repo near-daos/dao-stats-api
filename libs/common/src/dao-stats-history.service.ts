@@ -40,15 +40,12 @@ export class DaoStatsHistoryService {
   ) {}
 
   async getPrevTotal({
+    date,
     contractId,
     metric,
     dao,
-  }: {
-    contractId: string;
-    metric: string;
-    dao: string;
-  }): Promise<number | undefined> {
-    const result = await this.connection
+  }: DaoStatsHistoryDto): Promise<number | undefined> {
+    const query = await this.connection
       .getRepository(DaoStatsHistory)
       .createQueryBuilder()
       .select('total')
@@ -57,10 +54,16 @@ export class DaoStatsHistoryService {
         metric,
         dao,
       })
-      .andWhere('date < CURRENT_DATE')
       .orderBy('date', 'DESC')
-      .limit(1)
-      .getRawOne();
+      .limit(1);
+
+    if (date) {
+      query.andWhere('date < :date', { date });
+    } else {
+      query.andWhere('date < CURRENT_DATE');
+    }
+
+    const result = await query.getRawOne();
 
     return result ? parseFloat(result.total) : undefined;
   }
@@ -78,7 +81,12 @@ export class DaoStatsHistoryService {
       .into(DaoStatsHistory)
       .values({
         ...data,
-        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+        change:
+          prevTotal !== undefined
+            ? data.total - prevTotal
+            : data.change !== undefined
+            ? data.change
+            : data.total,
       })
       .orUpdate({
         conflict_target: ['date', 'contract_id', 'metric', 'dao'],
@@ -100,7 +108,12 @@ export class DaoStatsHistoryService {
       .into(DaoStatsHistory)
       .values({
         ...data,
-        change: prevTotal != undefined ? data.total - prevTotal : data.change,
+        change:
+          prevTotal != undefined
+            ? data.total - prevTotal
+            : data.change !== undefined
+            ? data.change
+            : data.total,
       })
       .onConflict('DO NOTHING')
       .execute();
