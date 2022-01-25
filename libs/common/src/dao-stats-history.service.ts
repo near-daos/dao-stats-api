@@ -136,24 +136,22 @@ export class DaoStatsHistoryService {
   ): SelectQueryBuilder<any> {
     query
       .select('date, dao, sum(change) as change')
-      .from('dao_stats_history', 'h');
+      .from('dao_stats_history', 'h')
+      .groupBy('date, dao');
 
     this.buildWhere(query, 'h', params);
-
-    query.groupBy('date, dao');
 
     return query;
   }
 
   private buildDaoCountSubQuery(
     query: SelectQueryBuilder<any>,
-    parentAliasName: string,
     params: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
     query
-      .select('count(distinct dao)')
+      .select('date, count(distinct dao) as dao_count')
       .from('dao_stats_history', 'h2')
-      .where(`h2.date <= ${parentAliasName}.date`);
+      .groupBy('date');
 
     this.buildWhere(query, 'h2', params);
 
@@ -162,7 +160,7 @@ export class DaoStatsHistoryService {
 
   private buildChangeByDateSubQuery(
     query: SelectQueryBuilder<any>,
-    { averagePerDao, ...params }: DaoStatsHistoryTotalParams,
+    params: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
     query
       .select('date, sum(change) as change')
@@ -172,18 +170,6 @@ export class DaoStatsHistoryService {
       )
       .groupBy('date');
 
-    if (averagePerDao) {
-      query.addSelect(
-        (subQuery) =>
-          this.buildDaoCountSubQuery(
-            subQuery,
-            'change_by_date_and_dao',
-            params,
-          ),
-        'dao_count',
-      );
-    }
-
     return query;
   }
 
@@ -191,7 +177,7 @@ export class DaoStatsHistoryService {
     query: SelectQueryBuilder<any>,
     { totals = true, averagePerDao, ...params }: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
-    query.select('date').from(
+    query.select('change_by_date.date').from(
       (subQuery) =>
         this.buildChangeByDateSubQuery(subQuery, {
           ...params,
@@ -204,11 +190,19 @@ export class DaoStatsHistoryService {
 
     if (totals) {
       query.addSelect(
-        `sum(${selection}) over (order by date rows between unbounded preceding and current row)`,
+        `sum(${selection}) over (order by change_by_date.date rows between unbounded preceding and current row)`,
         'value',
       );
     } else {
       query.addSelect(selection, 'value');
+    }
+
+    if (averagePerDao) {
+      query.leftJoin(
+        (subQuery) => this.buildDaoCountSubQuery(subQuery, params),
+        'dc',
+        'dc.date = change_by_date.date',
+      );
     }
 
     return query;

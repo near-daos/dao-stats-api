@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -13,6 +14,7 @@ import { DaoStatsMetric } from '../types';
 import { HasContract } from '../interfaces';
 
 @Entity({ name: 'dao_stats_history' })
+@Index(['contractId', 'metric', 'dao'])
 export class DaoStatsHistory implements HasContract {
   @PrimaryColumn({
     type: 'date',
