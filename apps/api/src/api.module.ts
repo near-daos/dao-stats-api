@@ -42,6 +42,8 @@ import { TvlModule } from './tvl/tvl.module';
 import { ApiDaoModule } from './dao/dao.module';
 import { TokensModule } from './tokens/tokens.module';
 import { MarketModule } from './market/market.module';
+import { TotalsModule } from './totals/totals.module';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -75,6 +77,8 @@ import { MarketModule } from './market/market.module';
     TvlModule,
     TokensModule,
     MarketModule,
+    TotalsModule,
+    ActivityModule,
   ],
   providers: [
     {
