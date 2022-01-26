@@ -1,4 +1,5 @@
 import { Observable, throwError } from 'rxjs';
+import { Reflector } from '@nestjs/core';
 import {
   BadRequestException,
   CallHandler,
@@ -6,11 +7,13 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-
-import { ContractService } from '../contract/contract.service';
 import { RequestContext } from '@medibloc/nestjs-request-context';
-import { ContractContext, NO_CONTRACT_CONTEXT } from '@dao-stats/common';
-import { Reflector } from '@nestjs/core';
+
+import {
+  ContractContext,
+  ContractService,
+  NO_CONTRACT_CONTEXT,
+} from '@dao-stats/common';
 
 @Injectable()
 export class ContractContextInterceptor implements NestInterceptor {

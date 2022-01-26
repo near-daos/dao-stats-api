@@ -7,12 +7,15 @@ import configuration, {
 } from '@dao-stats/config/aggregator-config';
 import { HttpCacheModule } from '@dao-stats/cache';
 import {
+  CoinPriceHistoryModule,
   Contract,
-  Transaction,
+  ContractModule,
+  DaoStatsHistoryModule,
   Receipt,
   ReceiptAction,
-  DaoStatsHistoryModule,
+  Transaction,
 } from '@dao-stats/common';
+import { ExchangeModule } from '@dao-stats/exchange';
 import migrationScripts from './scripts';
 
 @Module({
@@ -26,8 +29,11 @@ import migrationScripts from './scripts';
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forFeature([Contract, Transaction, Receipt, ReceiptAction]),
+    ContractModule,
     DaoStatsHistoryModule,
     HttpCacheModule,
+    ExchangeModule,
+    CoinPriceHistoryModule,
   ],
   providers: [...migrationScripts],
 })

@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsService,
@@ -25,7 +24,7 @@ export class MetricService {
   async total(
     context: DaoContractContext | ContractContext,
     metric: DaoStatsMetric | DaoStatsMetric[],
-    func = DaoStatsAggregateFunction.Sum,
+    daoAverage?: boolean,
   ): Promise<TotalMetric> {
     const { contractId, dao } = context as DaoContractContext;
 
@@ -36,13 +35,13 @@ export class MetricService {
         contractId,
         dao,
         metric,
-        func,
+        daoAverage,
       }),
       this.daoStatsHistoryService.getLastValue({
         contractId,
         dao,
         metric,
-        func,
+        daoAverage,
         to: dayAgo.valueOf(),
       }),
     ]);
@@ -57,7 +56,7 @@ export class MetricService {
     context: ContractContext | DaoContractContext,
     metricQuery: MetricQuery,
     metric: DaoStatsMetric | DaoStatsMetric[],
-    func = DaoStatsAggregateFunction.Sum,
+    daoAverage?: boolean,
   ): Promise<MetricResponse> {
     const { contractId, dao } = context as DaoContractContext;
     const { from, to } = metricQuery;
@@ -66,7 +65,7 @@ export class MetricService {
       contractId,
       dao,
       metric,
-      func,
+      daoAverage,
       from,
       to,
     });
@@ -86,17 +85,15 @@ export class MetricService {
   async leaderboard(
     context: ContractContext,
     metric: DaoStatsMetric | DaoStatsMetric[],
-    func = DaoStatsAggregateFunction.Sum,
   ): Promise<LeaderboardMetricResponse> {
     const { contractId } = context;
 
     const dayAgo = moment().subtract(1, 'day');
-    const weekAgo = moment().subtract(1, 'week');
+    const monthAgo = moment().subtract(1, 'month');
 
     const leaderboard = await this.daoStatsService.getLeaderboard({
       contractId,
       metric,
-      func,
     });
 
     const metrics = await Promise.all(
@@ -106,15 +103,13 @@ export class MetricService {
             contractId,
             dao,
             metric,
-            func,
             to: dayAgo.valueOf(),
           }),
           this.daoStatsHistoryService.getHistory({
             contractId,
             dao,
             metric,
-            func,
-            from: weekAgo.valueOf(),
+            from: monthAgo.valueOf(),
           }),
         ]);
 

@@ -1,10 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { DatabaseValidationSchema } from './db.schema';
 
 export class AggregatorValidationSchema extends DatabaseValidationSchema {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  AGGREGATOR_POLLING_INTERVAL: number;
+  AGGREGATOR_POLLING_SCHEDULE: string;
 
   @IsString()
   @IsNotEmpty()
@@ -12,5 +12,9 @@ export class AggregatorValidationSchema extends DatabaseValidationSchema {
 
   @IsString()
   @IsNotEmpty()
-  SMART_CONTRACTS: string;
+  SODAKI_API_BASE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  COINGECKO_API_BASE_URL: string;
 }

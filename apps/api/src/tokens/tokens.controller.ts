@@ -9,9 +9,9 @@ import {
   MetricResponse,
 } from '@dao-stats/common';
 
-import { TokensTotalResponse } from './dto/tokens-total.dto';
+import { TokensTotalResponse } from './dto';
 import { TokensService } from './tokens.service';
-import { MetricQueryPipe } from '../pipes';
+import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Tokens')
@@ -28,7 +28,7 @@ export class TokensController {
   })
   @Get('/')
   async totals(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<TokensTotalResponse> {
     return this.tokensService.totals(context);
   }
@@ -42,10 +42,24 @@ export class TokensController {
   })
   @Get('/fts')
   async fts(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.fts(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: LeaderboardMetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @Get('/fts/leaderboard')
+  async ftsLeaderboard(
+    @Param(ContractContextPipe) context: ContractContext,
+  ): Promise<LeaderboardMetricResponse> {
+    return this.tokensService.ftsLeaderboard(context);
   }
 
   @ApiResponse({
@@ -57,7 +71,7 @@ export class TokensController {
   })
   @Get('/fts-vl')
   async ftsValueLocked(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.ftsValueLocked(context, metricQuery);
@@ -70,23 +84,9 @@ export class TokensController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @Get('/fts/leaderboard')
-  async ftsLeaderboard(
-    @Param() context: ContractContext,
-  ): Promise<LeaderboardMetricResponse> {
-    return this.tokensService.ftsLeaderboard(context);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: LeaderboardMetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
   @Get('/fts-vl/leaderboard')
   async ftsValueLockedLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tokensService.ftsValueLockedLeaderboard(context);
   }
@@ -100,7 +100,7 @@ export class TokensController {
   })
   @Get('/nfts')
   async nfts(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.nfts(context, metricQuery);
@@ -115,7 +115,7 @@ export class TokensController {
   })
   @Get('/nfts/leaderboard')
   async nftsLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tokensService.nftsLeaderboard(context);
   }
@@ -130,7 +130,7 @@ export class TokensController {
   @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
   ): Promise<TokensTotalResponse> {
     return this.tokensService.totals(context);
   }
@@ -145,7 +145,7 @@ export class TokensController {
   @HasDaoContractContext()
   @Get('/:dao/fts')
   async daoFts(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.fts(context, metricQuery);
@@ -160,7 +160,7 @@ export class TokensController {
   })
   @Get('/:dao/fts-vl')
   async daoFtsValueLocked(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.ftsValueLocked(context, metricQuery);
@@ -176,7 +176,7 @@ export class TokensController {
   @HasDaoContractContext()
   @Get('/:dao/nfts')
   async daoNfts(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tokensService.nfts(context, metricQuery);

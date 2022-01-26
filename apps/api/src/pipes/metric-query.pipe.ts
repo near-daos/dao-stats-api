@@ -38,15 +38,13 @@ export class MetricQueryPipe implements PipeTransform {
         : FALLBACK_FROM_DATE;
     }
 
-    to = moment(to);
+    to = moment(isNaN(to) ? to : parseInt(to));
     if (!to.isValid()) {
       throw new BadRequestException(`Invalid 'to' query parameter.`);
     }
 
-    const prevDay = moment().subtract(1, 'day').endOf('day');
-    to = prevDay.isBefore(to) ? prevDay : to;
-
     return {
+      ...query,
       from: from.valueOf(),
       to: to.valueOf(),
     };

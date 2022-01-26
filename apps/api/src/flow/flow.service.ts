@@ -12,30 +12,22 @@ import {
   ReceiptActionService,
   TransferType,
 } from '@dao-stats/receipt';
-import { FlowTotalResponse } from './dto/flow-total.dto';
-import { FlowMetricResponse } from './dto/flow-metric-response.dto';
-import { FlowLeaderboardMetricResponse } from './dto/flow-leaderboard-metric-response.dto';
+import {
+  FlowTotalResponse,
+  FlowMetricResponse,
+  FlowLeaderboardMetricResponse,
+} from './dto';
 import { convertFunds, getDailyIntervals, getGrowth } from '../utils';
-import { ContractService } from '../contract/contract.service';
 
 @Injectable()
 export class FlowService {
-  constructor(
-    private readonly receiptActionService: ReceiptActionService,
-    private readonly contractService: ContractService,
-  ) {}
+  constructor(private readonly receiptActionService: ReceiptActionService) {}
 
   async totals(context: ContractContext): Promise<FlowTotalResponse> {
-    const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contractId);
-
+    const { contract } = context;
     const { conversionFactor } = contract;
 
-    const contractContext = {
-      ...context,
-      contract,
-    };
+    const dayAgo = moment().subtract(1, 'days');
 
     const [
       txInCount,
@@ -48,12 +40,12 @@ export class FlowService {
       dayAgoTotalOut,
     ] = await Promise.all([
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Incoming,
         {
@@ -61,12 +53,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Transaction,
         TransferType.Outgoing,
         {
@@ -74,12 +66,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Incoming,
         {
@@ -87,12 +79,12 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
       ),
       this.receiptActionService.getTotals(
-        contractContext,
+        context,
         FlowMetricType.Fund,
         TransferType.Outgoing,
         {
@@ -126,24 +118,18 @@ export class FlowService {
     metricType: FlowMetricType,
     metricQuery?: MetricQuery,
   ): Promise<FlowMetricResponse> {
-    const contract = await this.contractService.findById(context.contractId);
-
+    const { contract } = context;
     const { conversionFactor } = contract;
-
-    const contractContext = {
-      ...context,
-      contract,
-    };
 
     const [incoming, outgoing] = await Promise.all([
       this.receiptActionService.getHistory(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         metricQuery,
       ),
       this.receiptActionService.getHistory(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         metricQuery,
@@ -185,16 +171,11 @@ export class FlowService {
     context: DaoContractContext | ContractContext,
     metricType: FlowMetricType,
   ): Promise<FlowLeaderboardMetricResponse> {
-    const weekAgo = moment().subtract(7, 'days');
-    const days = getDailyIntervals(weekAgo.valueOf(), moment().valueOf());
+    const { contract } = context;
+
+    const monthAgo = moment().subtract(1, 'month');
+    const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
     const dayAgo = moment().subtract(1, 'days');
-
-    const contract = await this.contractService.findById(context.contractId);
-
-    const contractContext = {
-      ...context,
-      contract,
-    };
 
     const [
       byDaysIncoming,
@@ -205,27 +186,27 @@ export class FlowService {
       outgoing,
     ] = await Promise.all([
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
-          from: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {
-          from: weekAgo.valueOf(),
+          from: monthAgo.valueOf(),
           to: moment().valueOf(),
         },
         true,
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
@@ -233,7 +214,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Incoming,
         {
@@ -241,7 +222,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -249,7 +230,7 @@ export class FlowService {
         },
       ),
       this.receiptActionService.getLeaderboard(
-        contractContext,
+        context,
         metricType,
         TransferType.Outgoing,
         {
@@ -289,11 +270,9 @@ export class FlowService {
   ): LeaderboardMetric[] {
     const { conversionFactor } = contract;
 
-    return data.map(({ receiver_account_id: dao, count }) => {
+    return data.map(({ account_id: dao, count }) => {
       const dayAgoCount =
-        dayAgoData.find(
-          ({ receiver_account_id }) => receiver_account_id === dao,
-        )?.count || 0;
+        dayAgoData.find(({ account_id }) => account_id === dao)?.count || 0;
 
       return {
         dao,
@@ -307,8 +286,8 @@ export class FlowService {
         overview: days.map(({ end: timestamp }) => {
           const count =
             byDaysData.find(
-              ({ receiver_account_id, day }) =>
-                receiver_account_id === dao &&
+              ({ account_id, day }) =>
+                account_id === dao &&
                 moment(day).isSame(moment(timestamp), 'day'),
             )?.count || 0;
 

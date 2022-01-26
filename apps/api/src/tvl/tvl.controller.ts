@@ -9,10 +9,9 @@ import {
   MetricResponse,
 } from '@dao-stats/common';
 
-import { TvlTotalResponse } from './dto/tvl-total.dto';
-import { TvlDaoTotalResponse } from './dto/tvl-dao-total.dto';
+import { TvlTotalResponse, TvlDaoTotalResponse } from './dto';
 import { TvlService } from './tvl.service';
-import { MetricQueryPipe } from '../pipes';
+import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('TVL')
@@ -28,7 +27,9 @@ export class TvlController {
     description: 'Bad Request Response based on the query params set',
   })
   @Get('/')
-  async totals(@Param() context: ContractContext): Promise<TvlTotalResponse> {
+  async totals(
+    @Param(ContractContextPipe) context: ContractContext,
+  ): Promise<TvlTotalResponse> {
     return this.tvlService.totals(context);
   }
 
@@ -41,7 +42,7 @@ export class TvlController {
   })
   @Get('/tvl')
   async tvl(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tvlService.tvl(context, metricQuery);
@@ -56,7 +57,7 @@ export class TvlController {
   })
   @Get('/tvl/leaderboard')
   async tvlLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tvlService.tvlLeaderboard(context);
   }
@@ -68,24 +69,9 @@ export class TvlController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @Get('/avg-tvl')
-  async avgTvl(
-    @Param() context: ContractContext,
-    @Query(MetricQueryPipe) metricQuery: MetricQuery,
-  ): Promise<MetricResponse> {
-    return this.tvlService.avgTvl(context, metricQuery);
-  }
-
-  @ApiResponse({
-    status: 200,
-    type: MetricResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
   @Get('/bounties-and-grants-vl')
   async bountiesAndGrants(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tvlService.bountiesAndGrantsValueLocked(context, metricQuery);
@@ -100,7 +86,7 @@ export class TvlController {
   })
   @Get('/bounties-and-grants-vl/leaderboard')
   async bountiesAndGrantsLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.tvlService.bountiesAndGrantsValueLockedLeaderboard(context);
   }
@@ -115,7 +101,7 @@ export class TvlController {
   @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
   ): Promise<TvlDaoTotalResponse> {
     return this.tvlService.daoTotals(context);
   }
@@ -128,9 +114,25 @@ export class TvlController {
     description: 'Bad Request Response based on the query params set',
   })
   @HasDaoContractContext()
+  @Get('/:dao/tvl')
+  async daoTvl(
+    @Param(ContractContextPipe) context: DaoContractContext,
+    @Query(MetricQueryPipe) metricQuery: MetricQuery,
+  ): Promise<MetricResponse> {
+    return this.tvlService.tvl(context, metricQuery);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: MetricResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @HasDaoContractContext()
   @Get('/:dao/bounties/number')
   async daoBountiesNumber(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tvlService.bountiesNumber(context, metricQuery);
@@ -146,7 +148,7 @@ export class TvlController {
   @HasDaoContractContext()
   @Get('/:dao/bounties/vl')
   async daoBountiesValueLocked(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.tvlService.bountiesValueLocked(context, metricQuery);

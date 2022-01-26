@@ -9,12 +9,14 @@ import {
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
 
-import { GovernanceTotalResponse } from './dto/governance-total.dto';
-import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
-import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import {
+  GovernanceTotalResponse,
+  ProposalsTypesLeaderboardResponse,
+  ProposalsTypesHistoryResponse,
+  VoteRateLeaderboardResponse,
+} from './dto';
 import { GovernanceService } from './governance.service';
-import { MetricQueryPipe } from '../pipes';
+import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
 
 @ApiTags('Governance')
@@ -31,7 +33,7 @@ export class GovernanceController {
   })
   @Get('/')
   async totals(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<GovernanceTotalResponse> {
     return this.governanceService.totals(context);
   }
@@ -45,7 +47,7 @@ export class GovernanceController {
   })
   @Get('/proposals')
   async proposals(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.governanceService.proposals(context, metricQuery);
@@ -60,7 +62,7 @@ export class GovernanceController {
   })
   @Get('/proposals/leaderboard')
   async proposalsLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.governanceService.proposalsLeaderboard(context);
   }
@@ -74,7 +76,7 @@ export class GovernanceController {
   })
   @Get('/proposals-types')
   async proposalsTypes(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
     return this.governanceService.proposalsTypes(context, metricQuery);
@@ -89,7 +91,7 @@ export class GovernanceController {
   })
   @Get('/proposals-types/leaderboard')
   async proposalsTypesLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
     return this.governanceService.proposalsTypesLeaderboard(context);
   }
@@ -103,7 +105,7 @@ export class GovernanceController {
   })
   @Get('/vote-rate')
   async rate(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.governanceService.voteRate(context, metricQuery);
@@ -118,7 +120,7 @@ export class GovernanceController {
   })
   @Get('/vote-rate/leaderboard')
   async rateLeaderboard(
-    @Param() context: ContractContext,
+    @Param(ContractContextPipe) context: ContractContext,
   ): Promise<VoteRateLeaderboardResponse> {
     return this.governanceService.voteRateLeaderboard(context);
   }
@@ -133,7 +135,7 @@ export class GovernanceController {
   @HasDaoContractContext()
   @Get('/:dao')
   async daoTotals(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
   ): Promise<GovernanceTotalResponse> {
     return this.governanceService.totals(context);
   }
@@ -148,7 +150,7 @@ export class GovernanceController {
   @HasDaoContractContext()
   @Get('/:dao/proposals')
   async daoProposals(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.governanceService.proposals(context, metricQuery);
@@ -164,7 +166,7 @@ export class GovernanceController {
   @HasDaoContractContext()
   @Get('/:dao/proposals-types')
   async daoProposalsTypes(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<ProposalsTypesHistoryResponse> {
     return this.governanceService.proposalsTypes(context, metricQuery);
@@ -180,7 +182,7 @@ export class GovernanceController {
   @HasDaoContractContext()
   @Get('/:dao/vote-rate')
   async daoRate(
-    @Param() context: DaoContractContext,
+    @Param(ContractContextPipe) context: DaoContractContext,
     @Query(MetricQueryPipe) metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     return this.governanceService.voteRate(context, metricQuery);

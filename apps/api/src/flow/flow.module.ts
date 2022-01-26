@@ -8,7 +8,6 @@ import { TransactionModule } from '@dao-stats/transaction';
 
 import { FlowController } from './flow.controller';
 import { FlowService } from './flow.service';
-import { ContractModule } from '../contract/contract.module';
 
 @Module({
   imports: [
@@ -18,7 +17,6 @@ import { ContractModule } from '../contract/contract.module';
     TypeOrmModule.forFeature([Contract]),
     TransactionModule,
     ReceiptModule,
-    ContractModule,
   ],
   providers: [FlowService],
   controllers: [FlowController],

@@ -6,9 +6,6 @@ export class TvlTotalResponse {
   tvl: TotalMetric;
 
   @ApiProperty()
-  avgTvl: TotalMetric;
-
-  @ApiProperty()
   bountiesAndGrantsVl: TotalMetric;
 
   @ApiProperty()

@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -16,17 +16,17 @@ import {
   TransactionType,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
-import { GovernanceTotalResponse } from './dto/governance-total.dto';
-import { ProposalsTypesLeaderboardResponse } from './dto/proposals-types-leaderboard-response.dto';
-import { ProposalsTypesHistoryResponse } from './dto/proposals-types-history-response.dto';
-import { VoteRateLeaderboardResponse } from './dto/vote-rate-leaderboard-response.dto';
+import {
+  GovernanceTotalResponse,
+  ProposalsTypesHistoryResponse,
+  ProposalsTypesLeaderboardResponse,
+  VoteRateLeaderboardResponse,
+} from './dto';
 import { MetricService } from '../common/metric.service';
 import { getGrowth, getRate, patchMetricDays } from '../utils';
 
 @Injectable()
 export class GovernanceService {
-  private readonly logger = new Logger(GovernanceService.name);
-
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
@@ -90,6 +90,8 @@ export class GovernanceService {
       }),
     ]);
 
+    const voteRate = getRate(proposalsApprovedCount, proposalsCount);
+
     return {
       proposals: {
         count: proposalsCount,
@@ -106,10 +108,10 @@ export class GovernanceService {
         members: proposalsMemberCount,
       },
       voteRate: {
-        count: getRate(proposalsApprovedCount, proposalsCount),
+        count: voteRate,
         growth: getGrowth(
-          proposalsApprovedCount / proposalsCount,
-          dayAgoProposalsApprovedCount / dayAgoProposalsCount,
+          voteRate,
+          getRate(dayAgoProposalsApprovedCount, dayAgoProposalsCount),
         ),
       },
     };
@@ -152,10 +154,10 @@ export class GovernanceService {
   }
 
   async proposalsLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<LeaderboardMetricResponse> {
     return this.metricService.leaderboard(
-      contractContext,
+      context,
       DaoStatsMetric.ProposalsCount,
     );
   }
@@ -200,7 +202,7 @@ export class GovernanceService {
       }),
     ]);
 
-    const toResponse = (data: DaoStatsHistoryHistoryResponse[]) =>
+    const toResponse = (data: DaoStatsHistoryHistoryResponse) =>
       data.map((row) => ({
         timestamp: row.date.valueOf(),
         count: row.value,
@@ -234,9 +236,9 @@ export class GovernanceService {
   }
 
   async proposalsTypesLeaderboard(
-    contractContext: ContractContext,
+    context: ContractContext,
   ): Promise<ProposalsTypesLeaderboardResponse> {
-    const { contractId } = contractContext;
+    const { contractId } = context;
 
     const daos = await this.daoStatsService.getLeaderboard({
       contractId,
@@ -326,7 +328,7 @@ export class GovernanceService {
     const { contractId, dao } = context as DaoContractContext;
 
     const dayAgo = moment().subtract(1, 'days');
-    const weekAgo = moment().subtract(7, 'days');
+    const monthAgo = moment().subtract(30, 'month');
 
     const [totalLeaderboard, approvedLeaderboard] = await Promise.all([
       this.daoStatsService.getLeaderboard({
@@ -376,13 +378,13 @@ export class GovernanceService {
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsCount,
-              from: weekAgo.valueOf(),
+              from: monthAgo.valueOf(),
             }),
             this.daoStatsHistoryService.getHistory({
               contractId,
               dao,
               metric: DaoStatsMetric.ProposalsApprovedCount,
-              from: weekAgo.valueOf(),
+              from: monthAgo.valueOf(),
             }),
           ]);
 

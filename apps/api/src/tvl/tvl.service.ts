@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import {
   ContractContext,
   DaoContractContext,
-  DaoStatsAggregateFunction,
   DaoStatsHistoryService,
   DaoStatsMetric,
   DaoStatsMetricGroup,
@@ -27,13 +26,8 @@ export class TvlService {
   async totals(
     context: DaoContractContext | ContractContext,
   ): Promise<TvlTotalResponse> {
-    const [tvl, avgTvl, bountiesAndGrantsVl, ftsVl] = await Promise.all([
+    const [tvl, bountiesAndGrantsVl, ftsVl] = await Promise.all([
       this.metricService.total(context, DaoStatsMetricGroup.TotalValueLocked),
-      this.metricService.total(
-        context,
-        DaoStatsMetricGroup.TotalValueLocked,
-        DaoStatsAggregateFunction.Average,
-      ),
       this.metricService.total(
         context,
         DaoStatsMetricGroup.BountiesAndGrantsValueLocked,
@@ -43,7 +37,6 @@ export class TvlService {
 
     return {
       tvl,
-      avgTvl,
       bountiesAndGrantsVl,
       ftsVl,
     };
@@ -95,18 +88,6 @@ export class TvlService {
     return this.metricService.leaderboard(
       context,
       DaoStatsMetricGroup.TotalValueLocked,
-    );
-  }
-
-  async avgTvl(
-    context: ContractContext | DaoContractContext,
-    metricQuery: MetricQuery,
-  ): Promise<MetricResponse> {
-    return this.metricService.history(
-      context,
-      metricQuery,
-      DaoStatsMetricGroup.TotalValueLocked,
-      DaoStatsAggregateFunction.Average,
     );
   }
 

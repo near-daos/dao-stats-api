@@ -5,5 +5,7 @@ metadata:
 data:
   PORT: "3000"
   NEST_APP_TYPE: aggregator
-  AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
-  SMART_CONTRACTS: astro
+  AGGREGATOR_POLLING_SCHEDULE: "{{ .Values.environment.aggregator_polling_schedule }}"
+  LOG_LEVELS: "log,warn,error"
+  SODAKI_API_BASE_URL: "{{ .Values.environment.sodaki_api_base_url }}"
+  COINGECKO_API_BASE_URL: "{{ .Values.environment.coingecko_api_base_url }}"

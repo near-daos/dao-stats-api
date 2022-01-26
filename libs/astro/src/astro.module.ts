@@ -4,11 +4,12 @@ import { NearModule } from '@dao-stats/near';
 
 import { AstroService } from './astro.service';
 import configuration from './config/configuration';
+import exchange from '@dao-stats/config/exchange-config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration],
+      load: [configuration, exchange],
     }),
     NearModule,
   ],

@@ -1,3 +1,4 @@
+import { AccountBalanceMetric } from './account';
 import {
   ActionsInCountMetric,
   ActionsOutCountMetric,
@@ -44,6 +45,7 @@ export const FACTORY_METRICS = [DaoCountMetric];
 export const FACTORY_HISTORICAL_METRICS = [DaoCountMetric];
 
 export const DAO_METRICS = [
+  AccountBalanceMetric,
   ActionsInCountMetric,
   ActionsOutCountMetric,
   ActionsFunctionCallInCountMetric,
@@ -72,4 +74,10 @@ export const DAO_METRICS = [
   NftsCountMetric,
 ];
 
-export const DAO_HISTORICAL_METRICS = [];
+export const DAO_HISTORICAL_METRICS = [
+  AccountBalanceMetric,
+  ActionsDepositInCountMetric,
+  ActionsDepositInValueMetric,
+  ActionsDepositOutCountMetric,
+  ActionsDepositOutValueMetric,
+];

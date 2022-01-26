@@ -2,7 +2,7 @@ import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
-import { ReceiptAction, Transaction } from './entities';
+import { ReceiptAction } from './entities';
 
 @Injectable()
 export class NearIndexerService {
@@ -11,69 +11,6 @@ export class NearIndexerService {
     @Inject(NEAR_INDEXER_DB_CONNECTION)
     private connection: Connection,
   ) {}
-
-  async findFirstTransactionByAccountIds(
-    accountIds: string | string[],
-  ): Promise<Transaction> {
-    return this.buildAggregationTransactionQuery(accountIds)
-      .select('transaction.transactionHash')
-      .orderBy('transaction.block_timestamp', 'ASC')
-      .getOne();
-  }
-
-  async findTransactionsByAccountIds(
-    accountIds: string | string[],
-    fromBlockTimestamp?: bigint,
-    toBlockTimestamp?: bigint,
-  ): Promise<Transaction[]> {
-    return this.buildAggregationTransactionQuery(
-      accountIds,
-      fromBlockTimestamp,
-      toBlockTimestamp,
-    )
-      .orderBy('transaction.block_timestamp', 'ASC')
-      .getMany();
-  }
-
-  async findTransaction(transactionHash: string): Promise<Transaction> {
-    return this.connection.getRepository(Transaction).findOne(transactionHash);
-  }
-
-  private buildAggregationTransactionQuery(
-    accountIds: string | string[],
-    fromBlockTimestamp?: bigint,
-    toBlockTimestamp?: bigint,
-  ): SelectQueryBuilder<Transaction> {
-    const queryBuilder = this.connection
-      .getRepository(Transaction)
-      .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.receipts', 'receipts')
-      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions');
-
-    if (Array.isArray(accountIds)) {
-      queryBuilder.where('transaction.receiver_account_id IN (:...ids)', {
-        ids: accountIds,
-      });
-    } else {
-      queryBuilder.where('transaction.receiver_account_id LIKE :id', {
-        id: `%${accountIds}`,
-      });
-    }
-
-    if (fromBlockTimestamp) {
-      queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-        from: String(fromBlockTimestamp),
-      });
-    }
-
-    if (toBlockTimestamp) {
-      queryBuilder.andWhere('transaction.block_timestamp <= :to', {
-        to: String(toBlockTimestamp),
-      });
-    }
-
-    return queryBuilder;
-  }
 
   buildAggregationReceiptActionQuery(
     accountIds: string | string[],
@@ -109,10 +46,10 @@ export class NearIndexerService {
         new Brackets((qb) =>
           qb
             .where(`receipt_action.receipt_predecessor_account_id LIKE :id`, {
-              id: `%${accountIds}`,
+              id: `%.${accountIds}`,
             })
             .orWhere(`receipt_action.receipt_receiver_account_id LIKE :id`, {
-              id: `%${accountIds}`,
+              id: `%.${accountIds}`,
             }),
         ),
       );
@@ -144,34 +81,52 @@ export class NearIndexerService {
     receiverAccountId,
     isDeposit,
     actionKind,
+    daily,
   }: {
     predecessorAccountId?: string;
     receiverAccountId?: string;
     isDeposit?: boolean;
     actionKind?: string;
+    daily?: boolean;
   }): SelectQueryBuilder<ReceiptAction> {
     const query = this.connection
       .getRepository(ReceiptAction)
-      .createQueryBuilder();
+      .createQueryBuilder('ara')
+      .leftJoin('execution_outcomes', 'eo', 'ara.receipt_id = eo.receipt_id');
 
     if (actionKind) {
       query.andWhere('action_kind = :actionKind', { actionKind });
     }
 
     if (predecessorAccountId) {
-      query.andWhere('receipt_predecessor_account_id = :predecessorAccountId', {
-        predecessorAccountId,
-      });
+      query.andWhere(
+        'ara.receipt_predecessor_account_id = :predecessorAccountId',
+        {
+          predecessorAccountId,
+        },
+      );
     }
 
     if (receiverAccountId) {
-      query.andWhere('receipt_receiver_account_id = :receiverAccountId', {
+      query.andWhere('ara.receipt_receiver_account_id = :receiverAccountId', {
         receiverAccountId,
       });
     }
 
+    query.andWhere(`eo.status != 'FAILURE'`);
+
     if (isDeposit) {
-      query.andWhere(`args -> 'deposit' is not null`);
+      query.andWhere(`ara.args -> 'deposit' is not null`);
+      query.andWhere(`ara.args ->> 'deposit' != '0'`);
+    }
+
+    if (daily) {
+      query.select(
+        'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date',
+      );
+      query.groupBy(
+        'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))',
+      );
     }
 
     return query;
@@ -212,7 +167,7 @@ export class NearIndexerService {
       ...params,
       isDeposit: true,
     })
-      .select(`sum((args ->> 'deposit')::decimal)`)
+      .select(`sum((ara.args ->> 'deposit')::decimal)`)
       .execute();
 
     if (!result || !result['sum']) {
@@ -222,29 +177,113 @@ export class NearIndexerService {
     return result['sum'];
   }
 
-  async getDaoCountDaily(
-    contractId: string,
-  ): Promise<{ date: string; value: number }[]> {
+  async getReceiptActionsDepositCountDaily(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<{ date: Date; value: number }[]> {
+    const [query, parameters] = this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+      daily: true,
+    })
+      .addSelect(`count(1) as value`)
+      .getQueryAndParameters();
+
     return this.connection.query(
       `
-      with data as (
-        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as count
-        from action_receipt_actions ara
-        left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
-        where
-              ara.action_kind = 'FUNCTION_CALL'
-          and ara.args ->> 'method_name' = 'new'
-          and ara.receipt_predecessor_account_id = $1
-          and ara.receipt_receiver_account_id like $2
-          and eo.status = 'SUCCESS_VALUE'
-        group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
-      )
-      select
-          date,
-          sum(count) over (order by date rows between unbounded preceding and current row)::int as value
-      from data
-    `,
+          with data as (${query})
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
+      parameters,
+    );
+  }
+
+  async getReceiptActionsDepositAmountDaily(params: {
+    predecessorAccountId?: string;
+    receiverAccountId?: string;
+  }): Promise<{ date: Date; value: string }[]> {
+    const [query, parameters] = this.buildReceiptActionsQuery({
+      ...params,
+      isDeposit: true,
+      daily: true,
+    })
+      .addSelect(`sum((ara.args ->> 'deposit')::decimal) as value`)
+      .getQueryAndParameters();
+
+    return this.connection.query(
+      `
+          with data as (${query})
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
+      parameters,
+    );
+  }
+
+  async getDaoCountDaily(
+    contractId: string,
+  ): Promise<{ date: Date; value: number }[]> {
+    return this.connection.query(
+      `
+          with data as (
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, count(1) as value
+              from action_receipt_actions ara
+              left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+              where ara.action_kind = 'FUNCTION_CALL'
+                and ara.args ->> 'method_name' = 'new'
+                and ara.receipt_predecessor_account_id = $1
+                and ara.receipt_receiver_account_id like $2
+                and eo.status != 'FAILURE'
+              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+          )
+          select date,
+                 sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from data
+      `,
       [contractId, `%.${contractId}`],
+    );
+  }
+
+  // This method returns balance slightly different from state
+  // TODO: find cause and fix query
+  async getAccountBalanceDaily(
+    accountId: string,
+  ): Promise<{ date: Date; value: number }[]> {
+    return this.connection.query(
+      `
+          with deposits as (
+              select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
+                     sum((args ->> 'deposit')::decimal)                                as value
+              from action_receipt_actions ara
+              left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+              where receipt_receiver_account_id = $1
+                and eo.status != 'FAILURE'
+                and args -> 'deposit' is not null
+                and args ->> 'deposit' != '0'
+              group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+          ),
+               withdrawals as (
+                   select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date,
+                          -sum((args ->> 'deposit')::decimal)                                as value
+                   from action_receipt_actions ara
+                   left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+                   where receipt_predecessor_account_id = $1
+                     and eo.status != 'FAILURE'
+                     and args -> 'deposit' is not null
+                     and args ->> 'deposit' != '0'
+                   group by date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))
+               ),
+               balance as (
+                   select date,
+                          coalesce(deposits.value, 0) + coalesce(withdrawals.value, 0) as value
+                   from deposits
+                   full outer join withdrawals using (date)
+               )
+          select date, sum(value) over (order by date rows between unbounded preceding and current row) as value
+          from balance;
+      `,
+      [accountId],
     );
   }
 }

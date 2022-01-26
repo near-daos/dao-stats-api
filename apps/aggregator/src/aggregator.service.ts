@@ -1,19 +1,25 @@
 import moment from 'moment';
+import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { LazyModuleLoader } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   Aggregator,
+  AGGREGATOR_POLLING_CRON_JOB,
+  CoinPriceHistoryService,
+  ContractService,
+  CurrencyType,
   DaoService,
-  DaoStatsService,
   DaoStatsHistoryService,
+  DaoStatsService,
   millisToNanos,
   nanosToMillis,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
 import { CacheService } from '@dao-stats/cache';
 import { ReceiptActionService } from '@dao-stats/receipt';
+import { CoinGeckoService, SodakiService } from '@dao-stats/exchange';
 
 @Injectable()
 export class AggregatorService {
@@ -29,20 +35,26 @@ export class AggregatorService {
     private readonly daoService: DaoService,
     private readonly daoStatsService: DaoStatsService,
     private readonly daoStatsHistoryService: DaoStatsHistoryService,
+    private readonly contractService: ContractService,
+    private readonly sodakiService: SodakiService,
+    private readonly coinGeckoService: CoinGeckoService,
+    private readonly coinPriceHistoryService: CoinPriceHistoryService,
   ) {
-    const { pollingInterval } = this.configService.get('aggregator');
+    const { pollingSchedule } = this.configService.get('aggregator');
 
-    const interval = setInterval(
-      () => this.scheduleAggregation(),
-      pollingInterval,
-    );
-    schedulerRegistry.addInterval('polling', interval);
+    const job = new CronJob(pollingSchedule, () => this.scheduleAggregation());
+
+    this.schedulerRegistry.addCronJob(AGGREGATOR_POLLING_CRON_JOB, job);
+
+    job.start();
   }
 
   public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
-    const { smartContracts } = this.configService.get('aggregator');
+    const contracts = await this.contractService.find();
 
-    for (const contractId of smartContracts) {
+    for (const contract of contracts) {
+      const { contractId, coin } = contract;
+
       this.logger.log(`Processing contract: ${contractId}...`);
 
       const { AggregationModule, AggregationService } = await import(
@@ -126,6 +138,40 @@ export class AggregatorService {
       )) {
         await this.daoStatsService.createOrUpdate(metric);
         await this.daoStatsHistoryService.createOrUpdate(metric);
+      }
+
+      this.logger.log(
+        `Retrieving current market price for contract: ${contractId}`,
+      );
+
+      for (const currency in CurrencyType) {
+        let price: number;
+
+        try {
+          price = await this.sodakiService.getCoinSpotPrice(
+            coin,
+            CurrencyType[currency],
+          );
+        } catch (e) {
+          this.logger.warn(e);
+
+          this.logger.log(
+            'Unable to get market price from Sodaki. Switching to CoinGecko for another try.',
+          );
+
+          price = await this.coinGeckoService.getCoinPrice(
+            coin,
+            CurrencyType[currency],
+          );
+        }
+
+        await this.coinPriceHistoryService.createOrUpdate({
+          coin,
+          currency: CurrencyType[currency],
+          price,
+        });
+
+        this.logger.log(`Stored market price for ${coin}: ${price}${currency}`);
       }
 
       this.logger.log(`Finished processing contract: ${contractId}`);

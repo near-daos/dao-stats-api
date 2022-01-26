@@ -30,8 +30,16 @@ export class ActionsDepositOutValueMetric
     return yoctoToNear(amount);
   }
 
-  async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistoricalValues({
+    contract,
+  }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+    const result =
+      await this.nearIndexerService.getReceiptActionsDepositAmountDaily({
+        predecessorAccountId: contract.contractId,
+      });
+    return result.map(({ date, value }) => ({
+      date,
+      value: yoctoToNear(value),
+    }));
   }
 }
