@@ -12,9 +12,10 @@ import {
   Transaction,
   TransactionType,
 } from '@dao-stats/common';
-import { TransactionLeaderboardDto } from './dto/transaction-leaderboard.dto';
 import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
 import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
+
+import { TransactionLeaderboardDto } from './dto/transaction-leaderboard.dto';
 
 @Injectable()
 export class TransactionService {

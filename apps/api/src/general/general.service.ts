@@ -9,11 +9,12 @@ import {
   MetricQuery,
   MetricResponse,
 } from '@dao-stats/common';
+import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
 import { TransactionService } from '@dao-stats/transaction';
+
 import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 import { getDailyIntervals, getGrowth } from '../utils';
-import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
 
 @Injectable()
 export class GeneralService {
