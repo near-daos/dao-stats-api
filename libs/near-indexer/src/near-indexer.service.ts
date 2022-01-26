@@ -377,7 +377,7 @@ export class NearIndexerService {
   ): Promise<{ date: Date; args: Record<string, any> }[]> {
     return this.connection.query(
       `
-        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))::timestamptz as date, 
+        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
                args
         from action_receipt_actions ara
         left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
