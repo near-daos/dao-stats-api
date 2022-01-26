@@ -16,4 +16,7 @@ export class UsersTotalResponse {
 
   @ApiProperty()
   averageInteractions: TotalMetric;
+
+  @ApiProperty()
+  activeUsers: TotalMetric;
 }
