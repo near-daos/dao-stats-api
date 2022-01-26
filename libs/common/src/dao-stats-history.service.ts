@@ -146,12 +146,13 @@ export class DaoStatsHistoryService {
 
   private buildDaoCountSubQuery(
     query: SelectQueryBuilder<any>,
+    parentAliasName: string,
     params: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
     query
-      .select('date, count(dao) as dao_count')
+      .select('count(distinct dao)')
       .from('dao_stats_history', 'h2')
-      .groupBy('date');
+      .where(`h2.date <= ${parentAliasName}.date`);
 
     this.buildWhere(query, 'h2', params);
 
@@ -160,7 +161,7 @@ export class DaoStatsHistoryService {
 
   private buildChangeByDateSubQuery(
     query: SelectQueryBuilder<any>,
-    params: DaoStatsHistoryTotalParams,
+    { averagePerDao, ...params }: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
     query
       .select('date, sum(change) as change')
@@ -170,6 +171,18 @@ export class DaoStatsHistoryService {
       )
       .groupBy('date');
 
+    if (averagePerDao) {
+      query.addSelect(
+        (subQuery) =>
+          this.buildDaoCountSubQuery(
+            subQuery,
+            'change_by_date_and_dao',
+            params,
+          ),
+        'dao_count',
+      );
+    }
+
     return query;
   }
 
@@ -177,7 +190,7 @@ export class DaoStatsHistoryService {
     query: SelectQueryBuilder<any>,
     { totals = true, averagePerDao, ...params }: DaoStatsHistoryTotalParams,
   ): SelectQueryBuilder<any> {
-    query.select('change_by_date.date').from(
+    query.select('date').from(
       (subQuery) =>
         this.buildChangeByDateSubQuery(subQuery, {
           ...params,
@@ -195,14 +208,6 @@ export class DaoStatsHistoryService {
       );
     } else {
       query.addSelect(`change${averagePerDao ? ' / dao_count' : ''}`, 'value');
-    }
-
-    if (averagePerDao) {
-      query.leftJoin(
-        (subQuery) => this.buildDaoCountSubQuery(subQuery, params),
-        'dc',
-        'dc.date = change_by_date.date',
-      );
     }
 
     return query;
