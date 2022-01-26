@@ -4,7 +4,7 @@
 
 1. Clone the repo:
 ```
-git clone git@bitbucket.org:magicpowered/dao-stats-api.git
+git clone git@github.com:near-daos/dao-stats-api.git
 ```
 
 2. Open the repo folder:
@@ -14,7 +14,7 @@ cd dao-stats-api
 
 3. Install dependencies:
 ```
-yarn
+yarn install
 ```
 
 4. Add `.env.local` to the root folder with required environment variables described in `.env`.
@@ -25,12 +25,7 @@ docker-compose -f docker-compose-dev.yml up
 ```
 Please make sure that Docker has been installed on your local machine.
 
-6. Run all services in dev mode:
-```
-yarn start-dev
-```
-
-Or run specific service you need:
+6. Run specific service you need:
 
 - Aggregator: `yarn start-aggregator:dev`
 - API: `yarn start-api:dev`
