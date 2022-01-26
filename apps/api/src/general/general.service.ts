@@ -8,8 +8,8 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
+  ActivityInterval,
 } from '@dao-stats/common';
-import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
 import { TransactionService } from '@dao-stats/transaction';
 
 import { GeneralTotalResponse } from './dto';

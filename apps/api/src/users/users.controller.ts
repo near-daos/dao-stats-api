@@ -7,8 +7,8 @@ import {
   MetricQuery,
   MetricResponse,
   LeaderboardMetricResponse,
+  IntervalMetricQuery,
 } from '@dao-stats/common';
-import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
 
 import { UsersTotalResponse } from './dto';
 import { UsersService } from './users.service';
