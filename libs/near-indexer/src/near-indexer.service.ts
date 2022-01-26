@@ -132,9 +132,7 @@ export class NearIndexerService {
       query.select(
         'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date',
       );
-      query.groupBy(
-        'date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9))',
-      );
+      query.groupBy('date');
     }
 
     return query;
@@ -159,6 +157,32 @@ export class NearIndexerService {
       ...params,
       actionKind: ActionKind.FunctionCall,
     }).getCount();
+  }
+
+  async getReceiptActionsFunctionCallCountDaily(params: {
+    predecessorAccountId?: string;
+    predecessorAccountIdCond?: string;
+    receiverAccountId?: string;
+    receiverAccountIdCond?: string;
+  }): Promise<{ date: Date; change: number; total: number }[]> {
+    const [query, parameters] = this.buildReceiptActionsQuery({
+      ...params,
+      actionKind: ActionKind.FunctionCall,
+      daily: true,
+    })
+      .addSelect(`count(1) as change`)
+      .getQueryAndParameters();
+
+    return this.connection.query(
+      `
+          with data as (${query})
+          select date, 
+                 change,
+                 sum(change) over (order by date rows between unbounded preceding and current row) as total
+          from data
+      `,
+      parameters,
+    );
   }
 
   async getReceiptActionsDepositCount(params: {

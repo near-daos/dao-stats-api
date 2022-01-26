@@ -84,6 +84,8 @@ export const DAO_METRICS = [
 
 export const DAO_HISTORICAL_METRICS = [
   AccountBalanceMetric,
+  ActionsFunctionCallInCountMetric,
+  ActionsFunctionCallOutCountMetric,
   ActionsDepositInternalInCountMetric,
   ActionsDepositInternalInValueMetric,
   ActionsDepositInternalOutCountMetric,
