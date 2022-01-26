@@ -13,9 +13,9 @@ import {
   MetricQuery,
   MetricResponse,
   MetricType,
+  ActivityInterval,
+  IntervalMetricQuery,
 } from '@dao-stats/common';
-import { ActivityInterval } from '@dao-stats/common/types/activity-interval';
-import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
 import { TransactionService } from '@dao-stats/transaction';
 
 import { MetricService } from '../common/metric.service';

@@ -16,3 +16,4 @@ export * from './receipt.dto';
 export * from './receipt-action.dto';
 export * from './total.dto';
 export * from './transaction.dto';
+export * from './interval-metric-query.dto';
