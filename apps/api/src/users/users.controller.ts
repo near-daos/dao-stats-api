@@ -8,11 +8,12 @@ import {
   MetricResponse,
   LeaderboardMetricResponse,
 } from '@dao-stats/common';
+import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
+
 import { UsersTotalResponse } from './dto';
 import { UsersService } from './users.service';
 import { ContractContextPipe, MetricQueryPipe } from '../pipes';
 import { HasDaoContractContext } from '../decorators';
-import { IntervalMetricQuery } from '@dao-stats/common/dto/interval-metric-query.dto';
 
 @ApiTags('Users')
 @Controller('users')
