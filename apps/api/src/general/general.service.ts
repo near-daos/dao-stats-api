@@ -8,8 +8,10 @@ import {
   LeaderboardMetricResponse,
   MetricQuery,
   MetricResponse,
+  ActivityInterval,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
+
 import { GeneralTotalResponse } from './dto';
 import { MetricService } from '../common/metric.service';
 import { getDailyIntervals, getGrowth } from '../utils';
@@ -68,9 +70,10 @@ export class GeneralService {
     metricQuery: MetricQuery,
   ): Promise<MetricResponse> {
     const metrics =
-      await this.transactionService.getContractActivityCountWeekly(
+      await this.transactionService.getContractActivityCountHistory(
         context,
         metricQuery,
+        ActivityInterval.Week,
       );
 
     return {
