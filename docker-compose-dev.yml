@@ -1,8 +1,37 @@
 version: '3.1'
 
 services:
+  api:
+    networks:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - REDIS_CONNECTION_STRING=redis://@redis:6379
+    build:
+      context: .
+      args:
+        - APP_NAME=api
+
+  aggregator:
+    networks:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - REDIS_CONNECTION_STRING=redis://@redis:6379
+    build:
+      context: .
+      args:
+        - APP_NAME=aggregator
+
   postgres:
-    container_name: postgres
     image: postgres
     restart: always
     ports:
@@ -17,7 +46,6 @@ services:
   pgadmin:
     links:
       - postgres:postgres
-    container_name: pgadmin
     image: dpage/pgadmin4
     ports:
       - '8080:80'
