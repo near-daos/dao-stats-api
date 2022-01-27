@@ -1,5 +1,37 @@
 # DAO Stats API
 
+[![Release version](https://img.shields.io/github/v/release/near-daos/dao-stats-api)](https://github.com/near-daos/dao-stats-api/releases/)
+[![Build](https://github.com/near-daos/dao-stats-api/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/near-daos/dao-stats-api/actions/workflows/build-deploy.yaml)
+
+A backend middleware for DAO Stats providing access to multiple DAO metrics. 
+
+#### Technology stack
+
+- Blockchain: **[NEAR](https://near.org/)**
+- Smart Contracts: **[Sputnik DAO Factory V2](https://github.com/near-daos/sputnik-dao-contract/tree/main/sputnikdao-factory2), [Sputnik DAO V2](https://github.com/near-daos/sputnik-dao-contract/tree/main/sputnikdao2)**
+- Package manager: **[Yarn](https://yarnpkg.com/)**
+- Core programming language: **[TypeScript](https://www.typescriptlang.org/)**
+- Application framework: **[React](https://reactjs.org/)**
+- Code quality: **[Eslint](https://eslint.org/), [Prettier](https://prettier.io/)**
+- Containers: **[Docker](https://www.docker.com/)**
+- Deployment: **[Kubernetes](https://kubernetes.io/)**
+
+#### Status
+
+[Change Log](https://github.com/near-daos/dao-stats-api/releases/latest)
+
+#### Links
+
+##### Development
+Testnet: [https://testnet.development.api.daostats.io](https://testnet.development.api.daostats.io/docs)  
+Mainnet: [https://mainnet.development.api.daostats.io](https://mainnet.development.api.daostats.io/docs)  
+
+##### Production
+Production Testnet: [https://testnet.api.daostats.io](https://testnet.api.daostats.io)  
+Production Mainnet: [https://mainnet.api.daostats.io](https://mainnet.api.daostats.io)
+
+## Getting Started
+
 ### Local Development
 
 1. Clone the repo:
