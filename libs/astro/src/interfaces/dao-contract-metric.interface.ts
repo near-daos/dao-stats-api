@@ -15,7 +15,7 @@ export interface DaoContractMetricHistoryParams
 export interface DaoContractMetricDaily {
   date: Date;
   total: number;
-  change: number;
+  change?: number;
 }
 
 export type DaoContractMetricHistoryResponse = DaoContractMetricDaily[];

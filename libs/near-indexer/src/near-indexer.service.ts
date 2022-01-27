@@ -1,4 +1,5 @@
 import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
+import { Cacheable } from '@type-cacheable/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
@@ -386,6 +387,31 @@ export class NearIndexerService {
           from data
       `,
       params,
+    );
+  }
+
+  @Cacheable({
+    ttlSeconds: 300,
+    cacheKey: ([factoryContractId, contractId]) =>
+      `create_args_daily:${factoryContractId}:${contractId}`,
+  })
+  async getCreateArgsDaily(
+    factoryContractId: string,
+    contractId: string,
+  ): Promise<{ date: Date; args: Record<string, any> }[]> {
+    return this.connection.query(
+      `
+        select date(to_timestamp(ara.receipt_included_in_block_timestamp / 1e9)) as date, 
+               args
+        from action_receipt_actions ara
+        left join execution_outcomes eo on ara.receipt_id = eo.receipt_id
+        where ara.action_kind = 'FUNCTION_CALL'
+          and ara.args ->> 'method_name' = 'new'
+          and ara.receipt_predecessor_account_id = $1
+          and ara.receipt_receiver_account_id = $2
+          and eo.status != 'FAILURE'
+      `,
+      [factoryContractId, contractId],
     );
   }
 }
