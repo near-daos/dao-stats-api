@@ -26,8 +26,11 @@ export class ActionsFunctionCallOutCountMetric
     });
   }
 
-  async getHistorical({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
-    // TODO: add implementation
-    return Promise.reject('Not implemented');
+  async getHistorical({
+    contract,
+  }: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
+    return this.nearIndexerService.getReceiptActionsFunctionCallCountDaily({
+      predecessorAccountId: contract.contractId,
+    });
   }
 }

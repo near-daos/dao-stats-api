@@ -52,9 +52,7 @@ export class UsersService {
       daoUsers,
       dayAgoDaoUsers,
       interactions,
-      dayAgoInteractions,
-      daoInteractions,
-      dayAgoDaoInteractions,
+      averageInteractions,
       members,
       activeUsers,
       weekAgoActiveUsers,
@@ -67,14 +65,15 @@ export class UsersService {
       this.transactionService.getDaoUsers(context, {
         to: dayAgo.valueOf(),
       }),
-      this.transactionService.getInteractionsCount(context),
-      this.transactionService.getInteractionsCount(context, {
-        to: dayAgo.valueOf(),
-      }),
-      this.transactionService.getDaoInteractions(context),
-      this.transactionService.getDaoInteractions(context, {
-        to: dayAgo.valueOf(),
-      }),
+      this.metricService.total(
+        context,
+        DaoStatsMetric.ActionsFunctionCallInCount,
+      ),
+      this.metricService.total(
+        context,
+        DaoStatsMetric.ActionsFunctionCallInCount,
+        true,
+      ),
       this.metricService.total(context, DaoStatsMetric.MembersCount),
       this.transactionService.getUsersTotalCount(context, {
         from: weekAgo.valueOf(),
@@ -90,13 +89,6 @@ export class UsersService {
       dayAgoDaoUsers.map(({ count }) => count),
     );
 
-    const avgDaoInteractions = getAverage(
-      daoInteractions.map(({ count }) => count),
-    );
-    const dayAgoAvgDaoInteractions = getAverage(
-      dayAgoDaoInteractions.map(({ count }) => count),
-    );
-
     return {
       users: {
         count: usersCount.count,
@@ -107,14 +99,8 @@ export class UsersService {
         count: avgDaoUsers,
         growth: getGrowth(avgDaoUsers, dayAgoAvgDaoUsers),
       },
-      interactions: {
-        count: interactions.count,
-        growth: getGrowth(interactions.count, dayAgoInteractions.count),
-      },
-      averageInteractions: {
-        count: avgDaoInteractions,
-        growth: getGrowth(avgDaoInteractions, dayAgoAvgDaoInteractions),
-      },
+      interactions,
+      averageInteractions,
       activeUsers: {
         count: activeUsers.count,
         growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
