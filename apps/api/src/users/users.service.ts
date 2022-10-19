@@ -113,14 +113,6 @@ export class UsersService {
         count: activeUsers.count,
         growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
       },
-      averageInteractions: {
-        count: avgDaoInteractions,
-        growth: getGrowth(avgDaoInteractions, dayAgoAvgDaoInteractions),
-      },
-      activeUsers: {
-        count: activeUsers.count,
-        growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
-      },
     };
   }
 
