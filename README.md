@@ -23,12 +23,10 @@ A backend middleware for DAO Stats providing access to multiple DAO metrics.
 #### Links
 
 ##### Development
-Testnet: [https://testnet.development.api.daostats.io](https://testnet.development.api.daostats.io/docs)  
-Mainnet: [https://mainnet.development.api.daostats.io](https://mainnet.development.api.daostats.io/docs)  
+Testnet: [https://api.testnet.daostats.io](https://api.testnet.daostats.io)  
 
 ##### Production
-Production Testnet: [https://testnet.api.daostats.io](https://testnet.api.daostats.io)  
-Production Mainnet: [https://mainnet.api.daostats.io](https://mainnet.api.daostats.io)
+Mainnet: [https://api.daostats.io](https://api.daostats.io)
 
 ## Getting Started
 

@@ -82,6 +82,14 @@ export class UsersService {
         from: twoWeeksAgo.valueOf(),
         to: weekAgo.valueOf(),
       }),
+      this.metricService.total(context, DaoStatsMetric.MembersCount),
+      this.transactionService.getUsersTotalCount(context, {
+        from: weekAgo.valueOf(),
+      }),
+      this.transactionService.getUsersTotalCount(context, {
+        from: twoWeeksAgo.valueOf(),
+        to: weekAgo.valueOf(),
+      }),
     ]);
 
     const avgDaoUsers = getAverage(daoUsers.map(({ count }) => count));
@@ -101,6 +109,14 @@ export class UsersService {
       },
       interactions,
       averageInteractions,
+      activeUsers: {
+        count: activeUsers.count,
+        growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
+      },
+      averageInteractions: {
+        count: avgDaoInteractions,
+        growth: getGrowth(avgDaoInteractions, dayAgoAvgDaoInteractions),
+      },
       activeUsers: {
         count: activeUsers.count,
         growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
