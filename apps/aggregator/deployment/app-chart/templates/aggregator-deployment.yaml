@@ -54,15 +54,15 @@ spec:
           #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
-              name: {{ .Release.Name }}-aggregator-configmap
+              name: {{ .Release.Name }}-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
-              name: astro-stats-rds-secrets
+              name: dao-stats-rds-secrets
           - secretRef:
-              name: astro-stats-redis-secrets
+              name: dao-stats-redis-secrets
           - secretRef:
-              name: astro-stats-service-secrets
+              name: dao-stats-service-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

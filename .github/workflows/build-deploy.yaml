@@ -79,6 +79,6 @@ jobs:
             export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
             helm lint $CHART_FOLDER
             helm --debug -n $EKS_NAMESPACE \
-              upgrade --install astro-stats-${{ matrix.app }} $CHART_FOLDER \
+              upgrade --install dao-stats-${{ matrix.app }} $CHART_FOLDER \
               --set image.tag=${{ needs.get-environment.outputs.docker_env_tag }} \
               --set ingress.host=$EKS_INGRESS_HOST
