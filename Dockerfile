@@ -15,9 +15,6 @@ ENV APP_NAME ${APP_NAME}
 # requirements
 RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
 
-# install node-prune (https://github.com/tj/node-prune)
-RUN curl -sfL https://install.goreleaser.com/github.com/tj/node-prune.sh | bash -s -- -b /usr/local/bin
-
 WORKDIR /usr/src/app
 
 COPY --from=dependencies /usr/src/app/node_modules ./node_modules
@@ -29,10 +26,7 @@ RUN npm link webpack && \
   npm run build $APP_NAME
 
 # remove development dependencies
-# RUN npm prune --production
-
-# run node prune
-RUN /usr/local/bin/node-prune
+RUN npm prune --production
 
 # remove unused dependencies
 RUN rm -rf node_modules/rxjs/src/
@@ -52,6 +46,12 @@ WORKDIR /usr/src/app
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/entrypoints ./
+
+# following files are required to run migrations
+COPY --from=development /usr/src/app/libs ./
+COPY --from=development /usr/src/app/ormconfig.js ./
+COPY --from=development /usr/src/app/tsconfig.json ./
+COPY --from=development /usr/src/app/package.json ./
 
 EXPOSE 3000
 

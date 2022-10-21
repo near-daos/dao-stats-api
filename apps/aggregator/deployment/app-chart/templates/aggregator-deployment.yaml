@@ -54,19 +54,17 @@ spec:
           #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
-              name: dao-stats-aggregator-configmap
+              name: {{ .Release.Name }}-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
-              name: db-secret
+              name: dao-stats-rds-secrets
           - secretRef:
-              name: redis-secret
+              name: dao-stats-redis-secrets
+          - secretRef:
+              name: dao-stats-service-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - mountPath: /usr/src/app/dist/config/astro-config.yml
-            name: aggregator-config
-            subPath: astro-config.yml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -79,7 +77,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      volumes:
-      - name: aggregator-config
-        secret:
-          secretName: aggregator-config
