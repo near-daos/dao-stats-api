@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Role, RoleKindGroup } from '@dao-stats/astro';
 import { DaoStatsMetric } from '@dao-stats/common';
 import {
   DaoContractMetricCurrentParams,
