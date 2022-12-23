@@ -5,8 +5,8 @@ on:
     branches:
       - '**'
     paths:
-      - 'apps/api/**'
-      - 'libs/**'
+      - '**'
+      - '!apps/aggregator/**'
 
 jobs:
   build:

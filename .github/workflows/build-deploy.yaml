@@ -7,9 +7,8 @@ on:
         description: Specify environment to run on. Valid values are development, production
   push:
     branches:
+      - main
       - develop
-    tags:
-      - "**"
 
 env:
   AWS_DEFAULT_REGION: us-east-1
@@ -29,7 +28,7 @@ jobs:
         id: get-environment
         shell: bash
         run: |
-          if [[ "${{ github.ref }}" =~ ^refs/tags.* ]]
+          if [[ "${{ github.ref }}" =~ ^refs/heads/main ]]
           then
             echo "::set-output name=environment::production"
           elif [[ "${{ github.ref }}" =~ ^refs/heads/develop ]]
