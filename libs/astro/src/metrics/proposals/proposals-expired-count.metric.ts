@@ -17,7 +17,11 @@ export class ProposalsExpiredCountMetric implements DaoContractMetricInterface {
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return (await contract.getProposalsByStatus(ProposalStatus.Expired)).length;
+    return (
+      await contract.getProposalsBy({
+        statuses: [ProposalStatus.Expired],
+      })
+    ).length;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
