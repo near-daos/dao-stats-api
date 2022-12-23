@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { DaoStatsMetric, convertFunds } from '@dao-stats/common';
-import { CurrencyType, CoinType } from '@dao-stats/common/types';
-import { NearHelperService } from '@dao-stats/near-helper';
+import { CurrencyType, CoinType } from '@dao-stats/common';
 import { SodakiService } from '@dao-stats/exchange';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 
 import { AstroService } from '../../astro.service';
 import {
@@ -19,7 +19,7 @@ export class FtsValueLockedMetric implements DaoContractMetricInterface {
 
   constructor(
     private readonly astroService: AstroService,
-    private readonly nearHelperService: NearHelperService,
+    private readonly nearIndexerService: NearIndexerService,
     private readonly sodakiService: SodakiService,
   ) {}
 
@@ -30,7 +30,7 @@ export class FtsValueLockedMetric implements DaoContractMetricInterface {
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    const tokens = await this.nearHelperService.getLikelyTokens(
+    const tokens = await this.nearIndexerService.findLikelyTokens(
       contract.contractId,
     );
     const nearPrice = await this.sodakiService.getCoinSpotPrice(

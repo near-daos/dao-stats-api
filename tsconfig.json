@@ -46,12 +46,6 @@
       "@dao-stats/near/*": [
         "libs/near/src/*"
       ],
-      "@dao-stats/near-helper": [
-        "libs/near-helper/src"
-      ],
-      "@dao-stats/near-helper/*": [
-        "libs/near-helper/src/*"
-      ],
       "@dao-stats/near-indexer": [
         "libs/near-indexer/src"
       ],

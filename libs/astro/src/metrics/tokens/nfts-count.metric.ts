@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
-import { NearHelperService } from '@dao-stats/near-helper';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import { AstroService } from '../../astro.service';
 import {
   DaoContractMetricCurrentParams,
@@ -15,7 +15,7 @@ export class NftsCountMetric implements DaoContractMetricInterface {
 
   constructor(
     private readonly astroService: AstroService,
-    private readonly nearHelperService: NearHelperService,
+    private readonly nearIndexerService: NearIndexerService,
   ) {}
 
   getType(): DaoStatsMetric {
@@ -25,7 +25,7 @@ export class NftsCountMetric implements DaoContractMetricInterface {
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    const tokens = await this.nearHelperService.getLikelyNFTs(
+    const tokens = await this.nearIndexerService.findLikelyNFTs(
       contract.contractId,
     );
     const nfts = (

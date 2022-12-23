@@ -141,8 +141,6 @@
       "@dao-stats/migrations": "<rootDir>/libs/migrations/src",
       "@dao-stats/near/(.*)": "<rootDir>/libs/near/src/$1",
       "@dao-stats/near": "<rootDir>/libs/near/src",
-      "@dao-stats/near-helper/(.*)": "<rootDir>/libs/near-helper/src/$1",
-      "@dao-stats/near-helper": "<rootDir>/libs/near-helper/src",
       "@dao-stats/near-indexer/(.*)": "<rootDir>/libs/near-indexer/src/$1",
       "@dao-stats/near-indexer": "<rootDir>/libs/near-indexer/src",
       "@dao-stats/receipt/(.*)": "<rootDir>/libs/receipt/src/$1",

@@ -7,9 +7,6 @@ Accept: application/json
 GET http://127.0.0.1:3000/api/v1/astro/tvl/tvl/leaderboard
 Accept: application/json
 ###
-GET http://127.0.0.1:3000/api/v1/astro/tvl/avg-tvl
-Accept: application/json
-###
 GET http://127.0.0.1:3000/api/v1/astro/tvl/bounties-and-grants-vl
 Accept: application/json
 ###
@@ -17,6 +14,9 @@ GET http://127.0.0.1:3000/api/v1/astro/tvl/bounties-and-grants-vl/leaderboard
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/tvl/vandao.sputnik-dao.near
+Accept: application/json
+###
+GET http://127.0.0.1:3000/api/v1/astro/tvl/vandao.sputnik-dao.near/tvl
 Accept: application/json
 ###
 GET http://127.0.0.1:3000/api/v1/astro/tvl/vandao.sputnik-dao.near/bounties/number
