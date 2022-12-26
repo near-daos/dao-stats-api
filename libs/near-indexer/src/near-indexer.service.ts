@@ -1,4 +1,5 @@
 import { Brackets, Connection, SelectQueryBuilder } from 'typeorm';
+import { Cacheable } from '@type-cacheable/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from './constants';
@@ -285,5 +286,113 @@ export class NearIndexerService {
       `,
       [accountId],
     );
+  }
+
+  // Account Likely Tokens - taken from NEAR Helper Indexer middleware
+  // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
+  @Cacheable({
+    ttlSeconds: 300,
+    cacheKey: ([accountId], context) =>
+      `likely_tokens:${context.env}:${accountId}`,
+  })
+  async findLikelyTokens(accountId: string): Promise<string[]> {
+    const { bridgeTokenFactoryContractName } = this.configService.get('near');
+
+    const received = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' = $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' in ('ft_transfer', 'ft_transfer_call','ft_mint')
+    `;
+
+    const mintedWithBridge = `
+        select distinct receipt_receiver_account_id as receiver_account_id from (
+            select args->'args_json'->>'account_id' as account_id, receipt_receiver_account_id
+            from action_receipt_actions
+            where action_kind = 'FUNCTION_CALL' and
+                receipt_predecessor_account_id = $2 and
+                args->>'method_name' = 'mint'
+        ) minted_with_bridge
+        where account_id = $1
+    `;
+
+    const calledByUser = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where receipt_predecessor_account_id = $1
+            and action_kind = 'FUNCTION_CALL'
+            and (args->>'method_name' like 'ft_%' or args->>'method_name' = 'storage_deposit')
+    `;
+
+    const ownershipChangeEvents = `
+        select distinct emitted_by_contract_account_id as receiver_account_id 
+        from assets__fungible_token_events
+        where token_new_owner_account_id = $1
+    `;
+
+    const [
+      receivedTokens,
+      mintedWithBridgeTokens,
+      calledByUserTokens,
+      ownershipChangeEventsTokens,
+    ] = await Promise.all([
+      this.connection.query(received, [accountId]),
+      this.connection.query(mintedWithBridge, [
+        accountId,
+        bridgeTokenFactoryContractName,
+      ]),
+      this.connection.query(calledByUser, [accountId]),
+      this.connection.query(ownershipChangeEvents, [accountId]),
+    ]);
+
+    return [
+      ...new Set(
+        [
+          ...receivedTokens,
+          ...mintedWithBridgeTokens,
+          ...calledByUserTokens,
+          ...ownershipChangeEventsTokens,
+        ].map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
+  }
+
+  // Account Likely NFTs - taken from NEAR Helper Indexer middleware
+  // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
+  @Cacheable({
+    ttlSeconds: 300,
+    cacheKey: ([accountId], context) =>
+      `likely_nfts:${context.env}:${accountId}`,
+  })
+  async findLikelyNFTs(accountId: string): Promise<string[]> {
+    const ownershipChangeFunctionCalls = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' = $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' like 'nft_%'
+    `;
+
+    const ownershipChangeEvents = `
+        select distinct emitted_by_contract_account_id as receiver_account_id 
+        from assets__non_fungible_token_events
+        where token_new_owner_account_id = $1
+    `;
+
+    const receivedTokens = await Promise.all([
+      this.connection.query(ownershipChangeFunctionCalls, [accountId]),
+      this.connection.query(ownershipChangeEvents, [accountId]),
+    ]);
+
+    return [
+      ...new Set(
+        receivedTokens
+          .flat()
+          .map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
   }
 }
