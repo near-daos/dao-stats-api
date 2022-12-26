@@ -18,10 +18,9 @@ export class ProposalsBountyCountMetric implements DaoContractMetricInterface {
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (
-      await contract.getProposalsByKinds([
-        ProposalKind.AddBounty,
-        ProposalKind.BountyDone,
-      ])
+      await contract.getProposalsBy({
+        kinds: [ProposalKind.AddBounty, ProposalKind.BountyDone],
+      })
     ).length;
   }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DaoStatsMetric } from '@dao-stats/common';
-import { NearHelperService } from '@dao-stats/near-helper';
+import { NearIndexerService } from '@dao-stats/near-indexer';
 import {
   DaoContractMetricCurrentParams,
   DaoContractMetricHistoryParams,
@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class FtsCountMetric implements DaoContractMetricInterface {
-  constructor(private readonly nearHelperService: NearHelperService) {}
+  constructor(private readonly nearIndexerService: NearIndexerService) {}
 
   getType(): DaoStatsMetric {
     return DaoStatsMetric.FtsCount;
@@ -19,7 +19,7 @@ export class FtsCountMetric implements DaoContractMetricInterface {
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return (await this.nearHelperService.getLikelyTokens(contract.contractId))
+    return (await this.nearIndexerService.findLikelyTokens(contract.contractId))
       .length;
   }
 

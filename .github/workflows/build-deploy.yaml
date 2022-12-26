@@ -7,9 +7,8 @@ on:
         description: Specify environment to run on. Valid values are development, production
   push:
     branches:
+      - main
       - develop
-    tags:
-      - "**"
 
 env:
   AWS_DEFAULT_REGION: us-east-1
@@ -29,7 +28,7 @@ jobs:
         id: get-environment
         shell: bash
         run: |
-          if [[ "${{ github.ref }}" =~ ^refs/tags.* ]]
+          if [[ "${{ github.ref }}" =~ ^refs/heads/main ]]
           then
             echo "::set-output name=environment::production"
           elif [[ "${{ github.ref }}" =~ ^refs/heads/develop ]]
@@ -37,6 +36,7 @@ jobs:
             echo "::set-output name=environment::development"
           fi
           echo "::set-output name=docker_env_tag::${GITHUB_REF#refs/*/}-$GITHUB_SHA"
+
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
@@ -75,6 +75,7 @@ jobs:
           command: |
             set -x
             aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --kubeconfig kubeconfig
+
             export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
             helm lint $CHART_FOLDER
             helm --debug -n $EKS_NAMESPACE \

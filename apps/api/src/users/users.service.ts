@@ -13,8 +13,11 @@ import {
   MetricQuery,
   MetricResponse,
   MetricType,
+  ActivityInterval,
+  IntervalMetricQuery,
 } from '@dao-stats/common';
 import { TransactionService } from '@dao-stats/transaction';
+
 import { MetricService } from '../common/metric.service';
 import { UsersTotalResponse } from './dto';
 import {
@@ -40,6 +43,9 @@ export class UsersService {
   ): Promise<UsersTotalResponse> {
     const dayAgo = moment().subtract(1, 'days');
 
+    const weekAgo = moment().subtract(1, 'week');
+    const twoWeeksAgo = moment().subtract(2, 'week');
+
     const [
       usersCount,
       dayAgoUsersCount,
@@ -50,6 +56,8 @@ export class UsersService {
       daoInteractions,
       dayAgoDaoInteractions,
       members,
+      activeUsers,
+      weekAgoActiveUsers,
     ] = await Promise.all([
       this.transactionService.getUsersTotalCount(context),
       this.transactionService.getUsersTotalCount(context, {
@@ -68,6 +76,13 @@ export class UsersService {
         to: dayAgo.valueOf(),
       }),
       this.metricService.total(context, DaoStatsMetric.MembersCount),
+      this.transactionService.getUsersTotalCount(context, {
+        from: weekAgo.valueOf(),
+      }),
+      this.transactionService.getUsersTotalCount(context, {
+        from: twoWeeksAgo.valueOf(),
+        to: weekAgo.valueOf(),
+      }),
     ]);
 
     const avgDaoUsers = getAverage(daoUsers.map(({ count }) => count));
@@ -100,6 +115,10 @@ export class UsersService {
         count: avgDaoInteractions,
         growth: getGrowth(avgDaoInteractions, dayAgoAvgDaoInteractions),
       },
+      activeUsers: {
+        count: activeUsers.count,
+        growth: getGrowth(activeUsers.count, weekAgoActiveUsers.count),
+      },
     };
   }
 
@@ -109,8 +128,9 @@ export class UsersService {
   ): Promise<MetricResponse> {
     const { from, to } = metricQuery;
     // TODO: optimize day-by-day querying
-    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+    const { results: byDays } = await PromisePool.withConcurrency(5)
       .for(getDailyIntervals(from, to || moment().valueOf()))
+      .handleError((e) => this.logger.error(e))
       .process(async ({ start, end }) => {
         const qr = await this.transactionService.getUsersTotalCount(context, {
           to: end,
@@ -119,39 +139,35 @@ export class UsersService {
         return { ...qr, start, end };
       });
 
-    if (errors && errors.length) {
-      errors.map((error) => this.logger.error(error));
-    }
-
     return this.combineDailyMetrics(byDays);
   }
 
   async usersLeaderboard(
     context: ContractContext,
+    interval?: ActivityInterval,
   ): Promise<LeaderboardMetricResponse> {
     const monthAgo = moment().subtract(1, 'month');
     const days = getDailyIntervals(monthAgo.valueOf(), moment().valueOf());
 
-    const { results: byDays, errors } = await PromisePool.withConcurrency(5)
+    const { results: byDays } = await PromisePool.withConcurrency(5)
       .for(days)
+      .handleError((e) => this.logger.error(e))
       .process(async ({ start, end }) => {
-        const qr = await this.transactionService.getDaoUsers(context, {
-          to: end,
-        });
+        const query = interval ? { from: start, to: end } : { to: end };
+        const qr = await this.transactionService.getDaoUsers(context, query);
 
         return { usersCount: [...qr], start, end };
       });
 
-    if (errors && errors.length) {
-      errors.map((error) => this.logger.error(error));
-    }
-
-    const dayAgo = moment().subtract(1, 'days');
+    const currentInterval = moment().subtract(1, interval || 'days');
+    const intervalAgo = moment().subtract(2, interval);
     const [dayAgoActivity, totalActivity] = await Promise.all([
       this.transactionService.getDaoUsers(context, {
-        to: dayAgo.valueOf(),
+        from: interval ? intervalAgo.valueOf() : null,
+        to: interval ? currentInterval.valueOf() : currentInterval.valueOf(),
       }),
       this.transactionService.getDaoUsers(context, {
+        from: interval ? currentInterval.valueOf() : null,
         to: moment().valueOf(),
       }),
     ]);
@@ -183,6 +199,23 @@ export class UsersService {
       });
 
     return { metrics };
+  }
+
+  async activeUsers(
+    context: DaoContractContext | ContractContext,
+    metricQuery: IntervalMetricQuery,
+  ): Promise<MetricResponse> {
+    const metrics = await this.transactionService.getUsersTotalCountHistory(
+      context,
+      metricQuery,
+    );
+
+    return {
+      metrics: metrics.map(({ day, count }) => ({
+        timestamp: moment(day).valueOf(),
+        count,
+      })),
+    };
   }
 
   async members(

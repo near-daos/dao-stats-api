@@ -21,6 +21,7 @@ export class MetricQueryPipe implements PipeTransform {
     const { contractId }: ContractContext = RequestContext.get();
 
     let { from, to } = query;
+    const { interval } = query;
 
     if (from) {
       from = moment(isNaN(from) ? from : parseInt(from));
@@ -41,6 +42,10 @@ export class MetricQueryPipe implements PipeTransform {
     to = moment(isNaN(to) ? to : parseInt(to));
     if (!to.isValid()) {
       throw new BadRequestException(`Invalid 'to' query parameter.`);
+    }
+
+    if (interval) {
+      to = to.subtract(1, interval).endOf(interval);
     }
 
     return {

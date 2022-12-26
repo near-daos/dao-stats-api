@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Role, RoleKindGroup } from '@dao-stats/astro';
 import { DaoStatsMetric } from '@dao-stats/common';
 import {
   DaoContractMetricCurrentParams,
@@ -18,7 +19,8 @@ export class CouncilSizeMetric implements DaoContractMetricInterface {
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     const groups = await contract.getGroups();
-    return groups.filter(isRoleGroupCouncil).length;
+    const [council] = groups.filter(isRoleGroupCouncil);
+    return council ? (council as Role<RoleKindGroup>).kind.Group.length : 0;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {

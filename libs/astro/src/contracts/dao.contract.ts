@@ -12,7 +12,7 @@ import {
   Config,
 } from '../types';
 import { DaoContractInterface } from '../interfaces';
-import { isRoleGroup } from '../utils';
+import { isProposalKind, isRoleGroup } from '../utils';
 
 // enable typings for dynamic methods
 const Base: {
@@ -87,17 +87,21 @@ export class DaoContract extends Base {
     return (await Promise.all(promises)).flat();
   }
 
-  async getProposalsByStatus(status: ProposalStatus): Promise<Proposal[]> {
+  async getProposalsBy({
+    kinds,
+    statuses,
+  }: {
+    kinds?: ProposalKind[];
+    statuses?: ProposalStatus[];
+  }): Promise<Proposal[]> {
     const proposals = await this.getProposals();
-    return proposals.filter((prop) => prop.status === status);
-  }
-
-  async getProposalsByKinds(kinds: ProposalKind[]): Promise<Proposal[]> {
-    const proposals = await this.getProposals();
-    return proposals.filter((prop) =>
-      (Object.keys(prop.kind) as ProposalKind[]).some((kind) =>
-        kinds.includes(kind),
-      ),
-    );
+    return proposals.filter((prop) => {
+      return (
+        (!kinds ||
+          !kinds.length ||
+          kinds.every((kind) => isProposalKind(prop, kind))) &&
+        (!statuses || !statuses.length || statuses.includes(prop.status))
+      );
+    });
   }
 }
