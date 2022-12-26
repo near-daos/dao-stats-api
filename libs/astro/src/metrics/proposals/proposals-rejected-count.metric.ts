@@ -19,8 +19,11 @@ export class ProposalsRejectedCountMetric
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return (await contract.getProposalsByStatus(ProposalStatus.Rejected))
-      .length;
+    return (
+      await contract.getProposalsBy({
+        statuses: [ProposalStatus.Rejected],
+      })
+    ).length;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {

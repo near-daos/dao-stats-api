@@ -86,10 +86,14 @@ export enum ProposalKind {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ProposalKindBody {
-  export type ChangeConfig = any;
+export namespace ProposalKindTypes {
+  export interface ChangeConfig {
+    config: Config;
+  }
 
-  export type ChangePolicy = Policy;
+  export interface ChangePolicy {
+    policy: Policy;
+  }
 
   export interface AddMemberToRole {
     member_id: AccountId;
@@ -101,9 +105,25 @@ export namespace ProposalKindBody {
     role: string;
   }
 
-  export type FunctionCall = any;
-  export type UpgradeSelf = any;
-  export type UpgradeRemote = any;
+  export interface FunctionCall {
+    receiver_id: AccountId;
+    actions: {
+      method_name: string;
+      args: string[];
+      deposit: NearAmount;
+      gas: number;
+    }[];
+  }
+
+  export interface UpgradeSelf {
+    hash: string;
+  }
+
+  export interface UpgradeRemote {
+    receiver_id: AccountId;
+    method_name: string;
+    hash: string;
+  }
 
   export interface Transfer {
     token_id: AccountId;
@@ -112,31 +132,41 @@ export namespace ProposalKindBody {
     msg: string | null;
   }
 
-  export type SetStakingContract = any;
-  export type AddBounty = any;
-  export type BountyDone = any;
-  export type Vote = any;
+  export interface SetStakingContract {
+    staking_id: AccountId;
+  }
+
+  export interface AddBounty {
+    bounty: Bounty;
+  }
+
+  export interface BountyDone {
+    bounty_id: number;
+    receiver_id: AccountId;
+  }
+
+  export type Vote = 'Vote';
 }
 
-export type ProposalKindBodies =
-  | ProposalKindBody.ChangeConfig
-  | ProposalKindBody.ChangePolicy
-  | ProposalKindBody.AddMemberToRole
-  | ProposalKindBody.RemoveMemberFromRole
-  | ProposalKindBody.FunctionCall
-  | ProposalKindBody.UpgradeSelf
-  | ProposalKindBody.UpgradeRemote
-  | ProposalKindBody.Transfer
-  | ProposalKindBody.SetStakingContract
-  | ProposalKindBody.AddBounty
-  | ProposalKindBody.BountyDone
-  | ProposalKindBody.Vote;
+export type ProposalKindType =
+  | ProposalKindTypes.ChangeConfig
+  | ProposalKindTypes.ChangePolicy
+  | ProposalKindTypes.AddMemberToRole
+  | ProposalKindTypes.RemoveMemberFromRole
+  | ProposalKindTypes.FunctionCall
+  | ProposalKindTypes.UpgradeSelf
+  | ProposalKindTypes.UpgradeRemote
+  | ProposalKindTypes.Transfer
+  | ProposalKindTypes.SetStakingContract
+  | ProposalKindTypes.AddBounty
+  | ProposalKindTypes.BountyDone
+  | ProposalKindTypes.Vote;
 
 export interface Proposal {
   id: number;
   proposer: AccountId;
   description: string;
-  kind: Record<ProposalKind, ProposalKindBodies>;
+  kind: ProposalKindType;
   status: ProposalStatus;
   vote_counts: Record<string, [Vote.Approve, Vote.Reject, Vote.Remove]>;
   votes: Record<AccountId, Vote>;
