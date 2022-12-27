@@ -8,6 +8,7 @@ services:
     env_file:
       - .env
     environment:
+      - NEST_APP_TYPE=api
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
       - REDIS_CONNECTION_STRING=redis://@redis:6379
@@ -23,9 +24,11 @@ services:
     env_file:
       - .env
     environment:
+      - NEST_APP_TYPE=aggregator
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
       - REDIS_CONNECTION_STRING=redis://@redis:6379
+      - AGGREGATOR_CONFIG=aW5kZXhlcjoNCiAgZGI6DQogICAgaG9zdDogJzEwNC4xOTkuODkuNTEnDQogICAgcG9ydDogJzU0MzInDQogICAgZGF0YWJhc2U6ICdtYWlubmV0X2V4cGxvcmVyJw0KICAgIHVzZXJuYW1lOiAncHVibGljX3JlYWRvbmx5Jw0KICAgIHBhc3N3b3JkOiAnbmVhcnByb3RvY29sJw0KDQpuZWFyOg0KICBlbnY6IG1haW5uZXQNCiAgY3JlZGVudGlhbHM6ICcubmVhci1jcmVkZW50aWFscycNCg0KZGFvOg0KICBjb250cmFjdE5hbWU6ICdzcHV0bmlrLWRhby5uZWFyJw0KICB0b2tlbkZhY3RvcnlDb250cmFjdE5hbWU6ICd0a24ubmVhcicNCiAgYnJpZGdlVG9rZW5GYWN0b3J5Q29udHJhY3ROYW1lOiAnZmFjdG9yeS5icmlkZ2UubmVhcicNCg==
     build:
       context: .
       args:

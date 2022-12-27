@@ -1,57 +1,44 @@
-FROM node:14.16.0-alpine As dependencies
-
-WORKDIR /usr/src/app
-
-COPY package*.json ./
-
-# install dependencies
-RUN npm install
-
-FROM node:14.16.0-alpine as development
+FROM node:16-alpine as build
 
 ARG APP_NAME
 ENV APP_NAME ${APP_NAME}
 
-# requirements
-RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
-
 WORKDIR /usr/src/app
 
-COPY --from=dependencies /usr/src/app/node_modules ./node_modules
+COPY apps/ apps/
+COPY libs/ libs/
+COPY yarn.lock ./
+COPY *.json ./
 
-COPY . .
+# update npm
+RUN npm -g install npm@^9.2.0
+
+# install dependencies
+RUN npm install
 
 # build application
-RUN npm link webpack && \
-  npm run build $APP_NAME
+RUN npm run build $APP_NAME
 
 # remove development dependencies
 RUN npm prune --production
 
-# remove unused dependencies
-RUN rm -rf node_modules/rxjs/src/
-RUN rm -rf node_modules/rxjs/bundles/
-RUN rm -rf node_modules/rxjs/_esm5/
-RUN rm -rf node_modules/rxjs/_esm2015/
-RUN rm -rf node_modules/swagger-ui-dist/*.map
+FROM node:16-alpine
 
-FROM node:14.16.0-alpine as production
-
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
 # copy from build image
-COPY --from=development /usr/src/app/dist ./dist
-COPY --from=development /usr/src/app/node_modules ./node_modules
-COPY --from=development /usr/src/app/entrypoints ./
+COPY --from=build /usr/src/app/dist/ dist/
+COPY --from=build /usr/src/app/node_modules/ node_modules/
 
-# following files are required to run migrations
-COPY --from=development /usr/src/app/libs ./
-COPY --from=development /usr/src/app/ormconfig.js ./
-COPY --from=development /usr/src/app/tsconfig.json ./
-COPY --from=development /usr/src/app/package.json ./
+# required for migrations
+COPY libs/common/src/migrations libs/common/src/migrations/
+COPY ormconfig.js ./
+
+# required for run
+COPY entrypoints/ ./
+COPY package.json ./
 
 EXPOSE 3000
 
