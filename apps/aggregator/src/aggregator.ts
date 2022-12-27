@@ -6,7 +6,6 @@ import cacheManager from '@type-cacheable/core';
 import { useAdapter } from '@type-cacheable/lru-cache-adapter';
 
 import { AggregatorModule } from './aggregator.module';
-import { AggregatorService } from './aggregator.service';
 
 export default class Aggregator {
   private readonly logger = new Logger(Aggregator.name);
@@ -28,8 +27,7 @@ export default class Aggregator {
 
     this.logger.log('Aggregator Microservice is listening...');
 
-    // TODO: handle the very 1st aggregation
     // Run initial aggregation
-    await app.get(AggregatorService).scheduleAggregation();
+    // await app.get(AggregatorService).scheduleAggregation();
   }
 }
