@@ -12,7 +12,7 @@ export type RoleKindMember = {
 
 // Set of accounts.
 export type RoleKindGroup = {
-  Group: string[];
+  Group: AccountId[];
 };
 
 export type RoleKind = RoleKindEveryone | RoleKindMember | RoleKindGroup;

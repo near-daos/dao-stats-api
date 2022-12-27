@@ -88,7 +88,7 @@ version:
 environment:
   smart_contracts: astro
   log_levels: log,warn,error
-  aggregator_polling_schedule: "0 * * * *"
+  aggregator_polling_schedule: "0 */3 * * *"
   sodaki_api_base_url: "https://api.stats.ref.finance/api"
   coingecko_api_base_url: "https://api.coingecko.com/api/v3"
   database_migrations_list: ContractsMigration,ReceiptActionArgsMigration,ContractIdRelationMigration,TransactionProposalVoteMigration,ReceiptActionBlockTimestampMigration
