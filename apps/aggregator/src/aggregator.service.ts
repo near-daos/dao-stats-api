@@ -24,6 +24,7 @@ import { CoinGeckoService, SodakiService } from '@dao-stats/exchange';
 @Injectable()
 export class AggregatorService {
   private readonly logger = new Logger(AggregatorService.name);
+  private running = false;
 
   constructor(
     private readonly configService: ConfigService,
@@ -50,6 +51,12 @@ export class AggregatorService {
   }
 
   public async scheduleAggregation(from?: bigint, to?: bigint): Promise<void> {
+    if (this.running) {
+      return;
+    }
+
+    this.running = true;
+
     const contracts = await this.contractService.find();
 
     for (const contract of contracts) {
@@ -178,5 +185,7 @@ export class AggregatorService {
     }
 
     await this.cacheService.clearCache();
+
+    this.running = false;
   }
 }

@@ -152,7 +152,7 @@ export class AggregationService implements Aggregator {
   async *aggregateDaos(contractId: string): AsyncGenerator<DaoDto> {
     const daoContracts = await this.astroService.getDaoContracts();
 
-    this.logger.log('Staring aggregating Astro DAOs...');
+    this.logger.log('Starting aggregating Astro DAOs...');
 
     for (const daoContract of daoContracts.values()) {
       let metadata: any;
@@ -179,7 +179,7 @@ export class AggregationService implements Aggregator {
   async *aggregateMetrics(contractId: string): AsyncGenerator<DaoStatsDto> {
     const { contractName } = this.configService.get('dao');
 
-    this.logger.log('Staring aggregating Astro metrics...');
+    this.logger.log('Starting aggregating Astro metrics...');
 
     const factoryContract = await this.astroService.getDaoFactoryContract();
 
@@ -256,7 +256,7 @@ export class AggregationService implements Aggregator {
   ): AsyncGenerator<DaoStatsHistoryDto> {
     const { contractName } = this.configService.get('dao');
 
-    this.logger.log('Staring aggregating Astro historical metrics...');
+    this.logger.log('Starting aggregating Astro historical metrics...');
 
     const factoryContract = await this.astroService.getDaoFactoryContract();
 

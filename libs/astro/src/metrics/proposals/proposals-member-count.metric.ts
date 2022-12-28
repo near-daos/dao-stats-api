@@ -18,10 +18,12 @@ export class ProposalsMemberCountMetric implements DaoContractMetricInterface {
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
     return (
-      await contract.getProposalsByKinds([
-        ProposalKind.AddMemberToRole,
-        ProposalKind.RemoveMemberFromRole,
-      ])
+      await contract.getProposalsBy({
+        kinds: [
+          ProposalKind.AddMemberToRole,
+          ProposalKind.RemoveMemberFromRole,
+        ],
+      })
     ).length;
   }
 

@@ -19,8 +19,11 @@ export class ProposalsPolicyChangeCountMetric
   async getCurrentValue({
     contract,
   }: DaoContractMetricCurrentParams): Promise<number> {
-    return (await contract.getProposalsByKinds([ProposalKind.ChangePolicy]))
-      .length;
+    return (
+      await contract.getProposalsBy({
+        kinds: [ProposalKind.ChangePolicy],
+      })
+    ).length;
   }
 
   async getHistoricalValues({}: DaoContractMetricHistoryParams): Promise<DaoContractMetricHistoryResponse> {
