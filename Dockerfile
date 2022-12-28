@@ -40,6 +40,9 @@ COPY ormconfig.js ./
 COPY entrypoints/ ./
 COPY package.json ./
 
+# update npm
+RUN npm -g install npm@^9.2.0
+
 EXPOSE 3000
 
 CMD [ "/bin/sh", "run.sh" ]
